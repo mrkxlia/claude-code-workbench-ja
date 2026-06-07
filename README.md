@@ -1,42 +1,21 @@
-# Claude Code on the Web — Windows マルチインスタンス起動
+# Claude Code on the Web — リソース・テンプレート集
 
-Windows Terminal で Claude Code を複数同時に起動するためのスクリプトとガイドをまとめたリポジトリです。
+Claude Code をより快適に使うためのスクリプト、テンプレート、ベストプラクティスをまとめたリポジトリです。
 
-## 収録内容
+## 収録セクション
 
-| ファイル | 内容 |
-|---|---|
-| [`windows/launch-6pane.ps1`](windows/launch-6pane.ps1) | 横3列×縦2行（6ペイン）をワンコマンドで起動するスクリプト |
-| [`windows/keybindings.md`](windows/keybindings.md) | ペイン分割・移動のキーバインド一覧 |
+### [`WindowsSplitTerminalSample/`](WindowsSplitTerminalSample/)
+Windows Terminal でのマルチインスタンス起動スクリプト。
+横3列×縦2行（6ペイン）をワンコマンドで開くスクリプトと、ペイン操作のキーバインド一覧を収録しています。
 
-## 動作環境
+### [`skills-guide/`](skills-guide/)
+おすすめSkillsガイド（2026年6月動作確認済み）。
+72個紹介された記事から「今すぐ使えるもの」に絞り込み、優先度別・業務タイプ別に整理しています。
 
-- Windows 10 / 11
-- [Windows Terminal](https://aka.ms/terminal)
-- [Claude Code CLI](https://claude.ai/download)
+### [`data-science/`](data-science/)
+データサイエンスプロジェクト用 CLAUDE.md テンプレート + Skills。
+Polars・uv・Jupyter を前提にした CLAUDE.md と、分析業務向け10種のスキルファイルをそのままコピーして使えます。
 
-## クイックスタート
-
-```powershell
-# 初回のみ: スクリプト実行を許可する
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-
-# 6ペインで起動
-.\windows\launch-6pane.ps1
-```
-
-起動後、各ペインで `claude` または `claude --worktree <名前>` を実行してください。
-
-## 同じリポジトリで複数インスタンスを使う場合
-
-同じリポジトリで複数の Claude Code を動かすときは `--worktree` オプションで競合を防げます。
-
-```powershell
-# ペイン1
-cd C:\myproject
-claude --worktree feature-a
-
-# ペイン2（同じリポジトリ、別タスク）
-cd C:\myproject
-claude --worktree bugfix-b
-```
+### [`GlobalClaudeMD-sample/`](GlobalClaudeMD-sample/)
+グローバルスコープ用 CLAUDE.md サンプル（`~/.claude/CLAUDE.md`）。
+Think Before Coding・Simplicity First・Surgical Changes など、すべてのプロジェクトに共通する行動原則を定義したファイルです。
