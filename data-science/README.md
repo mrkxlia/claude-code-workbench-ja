@@ -1,19 +1,25 @@
-# データサイエンティスト向け AGENTS.md & Skills テンプレート
+# データサイエンティスト向け CLAUDE.md & Skills テンプレート
 
-Claude Code や GitHub Copilot Agent Mode でデータ分析プロジェクトを進める際に使える
-AGENTS.md とスキルファイルのテンプレートです。
+Claude Code でデータ分析プロジェクトを進める際に使える
+CLAUDE.md とスキルファイルのテンプレートです。
 
 ## 概要
 
-このテンプレートは [データサイエンティストのためのAGENTS.mdとSkills](https://zenn.dev/green_tea/articles/d310e5cf809190)（著者: atsushi-green）の記事で紹介されているコンセプトをもとに、独自に実装したものです。
+このテンプレートは [データサイエンティストのためのAGENTS.mdとSkills](https://zenn.dev/green_tea/articles/d310e5cf809190)（著者: atsushi-green）の記事で紹介されているコンセプトをもとに、Claude Code の仕様に合わせて独自に実装したものです。
 元のリポジトリ: https://github.com/atsushi-green/ds-ai-coding-skills
+
+## Claude Code の仕様
+
+- **CLAUDE.md** — Claude Code がプロジェクト開始時に自動で読み込むファイル（AGENTS.md は Claude Code では暗黙的に使用されません）
+- **`.claude/skills/<name>/SKILL.md`** — スラッシュコマンド `/skill-name` で呼び出すスキルファイルの配置場所
+- スキルはユーザーが `/python-project-ops` のように明示的に呼び出して使います
 
 ## ファイル構成
 
 ```
 data-science/
-├── AGENTS.md                          # エージェントルーター（ここから全スキルへ誘導）
-└── .github/
+├── CLAUDE.md                          # Claude Codeが自動読み込み（ハードルール・開発コマンド・スキル一覧）
+└── .claude/
     └── skills/
         ├── python-project-ops/        # uv・テスト・リント・型チェック
         ├── safe-data-handling/        # 生データ保護・安全な読み書き
@@ -33,14 +39,14 @@ data-science/
 
 ```bash
 # 自分のプロジェクトのルートから実行する
-cp path/to/data-science/AGENTS.md ./AGENTS.md
-cp -r path/to/data-science/.github/skills ./.github/skills
+cp path/to/data-science/CLAUDE.md ./CLAUDE.md
+cp -r path/to/data-science/.claude ./.claude
 ```
 
-### 2. AGENTS.md をプロジェクトに合わせてカスタマイズする
+### 2. CLAUDE.md をプロジェクトに合わせてカスタマイズする
 
 - `docs/agent/` 配下のドキュメントをプロジェクト固有の内容で埋める
-- 使わないスキルのルーティングエントリを削除する
+- 使わないスキルのエントリを削除する
 - プロジェクト固有のハードルールを追加する
 
 ### 3. スキルファイルをカスタマイズする
@@ -50,12 +56,22 @@ cp -r path/to/data-science/.github/skills ./.github/skills
 例えば `dataframe-polars/SKILL.md` で Pandas を使うプロジェクトなら、
 `dataframe-pandas/SKILL.md` に書き換えるとよいです。
 
+### 4. スキルを呼び出す
+
+Claude Code のチャットで `/` に続けてスキル名を入力します。
+
+```
+/python-project-ops   # パッケージ管理・テスト・リント
+/dataframe-polars     # DataFrame操作
+/visualization        # グラフ作成
+```
+
 ## 推奨プロジェクト構造
 
 ```
 my-analysis-project/
-├── AGENTS.md
-├── .github/
+├── CLAUDE.md
+├── .claude/
 │   └── skills/
 │       └── ...（上記のスキルファイル群）
 ├── data/
