@@ -26,6 +26,9 @@ ClaudeCodeOnTheWeb/
 │   ├── CLAUDE.md
 │   ├── README.md
 │   └── .claude/skills/              #   10種のスキルファイル
+├── implementation-skills/           # 実装ノート記録 + 仕様書逆引きスキル
+│   ├── README.md
+│   └── .claude/skills/              #   notes / spec-extract の2スキル
 └── GlobalClaudeMD-sample/           # グローバルスコープ用 CLAUDE.md サンプル
     └── CLAUDE.md
 ```
