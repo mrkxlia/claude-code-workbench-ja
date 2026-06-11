@@ -8,8 +8,9 @@ description: >-
   差し替え箇所とビルダー3種の「担当範囲」を自動で充填する。既存の CLAUDE.md や
   .claude/settings.json は上書きせずマージを提案する。git 管理されていないリポジトリにも
   対応する（git init の提案、または非gitモードでの導入）。
-  「ソフトウェア工場をセットアップして」「software-factory を導入して」「工場を導入して」
-  といった依頼や、/factory-setup での手動起動で発動する。
+  多数のファイルを書き込むワンショットのブートストラップであるため、
+  自動発動はせず /factory-setup での手動起動でのみ実行する。
+disable-model-invocation: true
 ---
 
 # factory-setup — ソフトウェア工場ワンコマンドセットアップ

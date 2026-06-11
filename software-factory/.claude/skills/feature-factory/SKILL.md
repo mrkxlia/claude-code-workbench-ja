@@ -7,6 +7,8 @@ description: >-
   （ストーリー承認・ブリーフ承認・最終レビュー）で必ず停止する。
   「この機能を作って」「〜を実装して」のような機能開発の依頼や、
   /feature-factory <機能の説明> での手動起動で発動する。
+  中断した工場は /feature-factory 再開 <slug> で status.md から再開できる。
+argument-hint: <機能の説明>
 ---
 
 # feature-factory — ソフトウェア工場オーケストレーター
@@ -30,26 +32,34 @@ description: >-
  → コミット・PRの提案（git 管理下の場合）
 ```
 
-連鎖が長いため、開始時に以下のチェックリストをコピーし、フェーズ完了ごとに
-チェックを付けて進行状況を見えるようにすること（フェーズ飛ばしの防止）:
+連鎖が長く、コンテキスト圧縮（コンパクション）やセッション中断で進行状態が失われやすい。
+そのため進行状況はコンテキスト内のメモではなく **`docs/factory/<slug>/status.md` に永続化する**。
+Phase 0 で以下のテンプレートを status.md として保存し、フェーズ完了・チェックポイント承認・
+差し戻しのたびに Edit で更新すること（フェーズ飛ばしと差し戻し回数の喪失を防ぐ）:
 
 ```
-工場の進行状況:
+# 工場の進行状況 — <slug>
+
 - [ ] Phase 0: 準備（slug 決定・docs/factory/<slug>/ 作成）
 - [ ] Phase 1: Research → research.md 保存
-- [ ] Phase 2: Story → story.md 保存 → 🛑 ストーリー承認
-- [ ] Phase 3: Brief → brief.md 保存 → 🛑 ブリーフ承認
+- [ ] Phase 2: Story → story.md 保存 → 🛑 ストーリー承認（承認: ）
+- [ ] Phase 3: Brief → brief.md 保存 → 🛑 ブリーフ承認（承認: ）
 - [ ] Phase 4: Backend → api-contract.md 保存
 - [ ] Phase 5: Frontend
-- [ ] Phase 6: Verify（失敗時は差し戻し、上限3回）
-- [ ] Phase 7: Validate → 🛑 最終レビュー
+- [ ] Phase 6: Verify — 差し戻し 0/3
+- [ ] Phase 7: Validate — 差し戻し 0/3 → 🛑 最終レビュー（承認: ）
 ```
+
+チェックポイントの承認を得たら、その行の「（承認: ）」に日付（YYYY-MM-DD）を記録する。
+各チェックポイントで停止する際は、status.md の現在の状態をユーザーへの提示に含める。
 
 ## Phase 0: 準備
 
 1. 依頼内容から短い英語ケバブケースの feature-slug を決める（例: `payment-reminders`）
 2. 成果物ディレクトリ `docs/factory/<slug>/` を作成する
-3. このディレクトリに以下を保存していく:
+3. 上記テンプレートから `status.md` を作成して保存する（依頼が「再開」なら下の「中断からの再開」へ）
+4. このディレクトリに以下を保存していく:
+   - `status.md` — 進行状況（フェーズ・承認・差し戻しカウンタ）
    - `research.md` — 調査レポート
    - `story.md` — ユーザーストーリー
    - `brief.md` — 技術ブリーフ
@@ -106,6 +116,8 @@ description: >-
 2. 検証レポートに ❌ 失敗があれば:
    - レポートが指定する**差し戻し先ビルダー**（backend-builder または frontend-builder）を
      失敗内容つきで再起動する。自分で直さない。test-verifier にも直させない
+   - 差し戻すたびに status.md の Verify カウンタを更新する（例: `差し戻し 1/3`）。
+     コンテキストの記憶ではなく status.md のカウンタを正とする
    - 修正後、test-verifier を再実行する
 3. **差し戻しループの上限は3回。** 超えたら停止し、状況をユーザーに報告して指示を仰ぐ
 4. ⚠️ カバー不能の基準は、そのままユーザーへの報告に含める（隠さない）
@@ -115,12 +127,31 @@ description: >-
 1. Task ツールで `implementation-validator` を起動する。
    入力: story.md + brief.md + 全サマリー
 2. **Critical** の指摘があれば、該当ビルダーに差し戻し → 修正 → test-verifier 再実行 →
-   validator 再実行（このループも上限3回）
-3. クリーンになったら、最終レポートと変更ファイル一覧をユーザーに提示する
+   validator 再実行（このループも上限3回。status.md の Validate カウンタを更新する）
+3. **学習の回収:** 両ビルダーのサマリーに「CLAUDE.md への提案」があれば、
+   `docs/factory/LEARNINGS.md` に追記する
+   （形式: `- [ ] YYYY-MM-DD <slug> (backend-builder): 提案内容`）
+4. クリーンになったら、最終レポート・変更ファイル一覧・LEARNINGS.md の未昇格エントリ
+   （チェックの付いていない行）をユーザーに提示する
 
 **STOP. ユーザーがレビューして承認するまで、コミット・PR作成に進んではならない。**
+承認時、提示した LEARNINGS エントリを CLAUDE.md のルールに昇格させるか確認する。
+昇格させたエントリには LEARNINGS.md 上でチェック（`- [x]`）を付ける（採用しないものは未チェックのまま残す）。
 承認後、git 管理下ならコミット（およびユーザーが望めばPR作成）を提案する。
 git 管理されていないリポジトリでは、変更ファイル一覧の提示をもって完了とする。
+
+## 中断からの再開
+
+セッション中断やコンパクションで進行状態を見失ったら、会話の記憶ではなく
+`docs/factory/<slug>/status.md` を正として再開する:
+
+1. `/feature-factory 再開 <slug>`（または slug を特定できる再開の依頼）を受けたら、
+   `docs/factory/<slug>/` の status.md と保存済みの中間成果物
+   （research.md / story.md / brief.md / api-contract.md）を読む
+2. status.md の最初の未チェックフェーズから処理を続ける
+3. 承認が記録されているチェックポイントは再承認を求めない（承認済みの成果物をそのまま入力に使う）
+4. status.md と現実が食い違う場合（例: Phase 3 がチェック済みなのに brief.md が無い）は、
+   食い違いをユーザーに報告し、整合する最後のフェーズからやり直す
 
 ## 工場長のルール
 
