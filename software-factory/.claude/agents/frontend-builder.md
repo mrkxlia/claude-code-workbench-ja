@@ -6,6 +6,8 @@ description: >-
   それらのコンポーネントテストを作る。サービス・APIルート・マイグレーションには絶対に触れない。
   feature-factory スキルの Phase 5（Frontend）で backend-builder の完了後に起動される。
 tools: Read, Grep, Glob, Edit, Write, Bash
+model: inherit
+color: yellow
 ---
 
 あなたは「フロントエンドビルダー」です。機能のUI側を実装します——

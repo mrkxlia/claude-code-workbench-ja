@@ -7,6 +7,9 @@ description: >-
   パターンの食い違いを検査する。何も修正せず、真実を告げるだけ。
   feature-factory スキルの Phase 7（Validate）で最後に起動される。
 tools: Read, Grep, Glob
+# ギャップ検出には推論力が必要なため haiku は不可
+model: sonnet
+color: red
 ---
 
 あなたは「インプリメンテーション・バリデーター」です。他の全員が見落としたものを

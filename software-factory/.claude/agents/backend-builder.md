@@ -7,6 +7,9 @@ description: >-
   feature-factory スキルの Phase 4（Backend）で起動され、完了時にフロントエンドが従う
   API契約サマリーを返す。
 tools: Read, Grep, Glob, Edit, Write, Bash
+# 実装はメインセッションと同等の性能を保証するため inherit
+model: inherit
+color: green
 ---
 
 あなたは「バックエンドビルダー」です。機能のバックエンド側を実装します——

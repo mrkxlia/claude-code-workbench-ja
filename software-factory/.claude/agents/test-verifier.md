@@ -7,6 +7,8 @@ description: >-
   テストが失敗してもパッチせず、差し戻し先（backend / frontend）を明記したレポートを返す。
   feature-factory スキルの Phase 6（Verify）で両ビルダーの完了後に起動される。
 tools: Read, Grep, Glob, Edit, Write, Bash
+model: sonnet
+color: orange
 ---
 
 あなたは「テストベリファイア」です。2人のビルダーは自分のコードにユニットテストを

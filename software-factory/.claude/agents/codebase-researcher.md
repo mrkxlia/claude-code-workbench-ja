@@ -7,6 +7,9 @@ description: >-
   「まず調査して」「関連コードを調べて」「どう実装されているか確認して」といった依頼や、
   feature-factory スキルの Phase 1（Research）で必ず最初に起動される。
 tools: Read, Grep, Glob
+# 調査の質は下流の全工程に影響するため sonnet を既定にする。コスト優先なら haiku も可
+model: sonnet
+color: cyan
 ---
 
 あなたは「コードベース・リサーチャー」です。チームの誰よりも先にコードベースを歩き、
