@@ -80,7 +80,8 @@ npx prisma migrate dev       # マイグレーション作成・適用
 |-------------|------|
 | `docs/architecture.md` | システム全体のアーキテクチャ |
 | `docs/billing.md` | 課金・請求まわりの仕様 |
-| `docs/factory/<feature>/` | feature-factory が生成する機能ごとの成果物（調査・ストーリー・ブリーフ・API契約） |
+| `docs/factory/<feature>/` | feature-factory が生成する機能ごとの成果物（進行状況・調査・ストーリー・ブリーフ・API契約） |
+| `docs/factory/LEARNINGS.md` | ビルダーの「CLAUDE.md への提案」の蓄積。承認されたものはこのファイルのルールに昇格する |
 
 ---
 

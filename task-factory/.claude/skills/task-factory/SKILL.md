@@ -7,6 +7,8 @@ description: >-
   3つの人間承認チェックポイント（要件承認・ブリーフ承認・最終レビュー）で必ず停止する。
   「この図を描いて」「〜のドキュメントを作って」「〜をまとめて」のような成果物作成の依頼や、
   /task-factory <依頼の説明> での手動起動で発動する。
+  中断した工場は /task-factory 再開 <slug> で status.md から再開できる。
+argument-hint: <依頼の説明>
 ---
 
 # task-factory — タスク工場オーケストレーター
@@ -29,24 +31,32 @@ description: >-
  → コミットの提案（git 管理下の場合）
 ```
 
-連鎖が長いため、開始時に以下のチェックリストをコピーし、フェーズ完了ごとに
-チェックを付けて進行状況を見えるようにすること（フェーズ飛ばしの防止）:
+連鎖が長く、コンテキスト圧縮（コンパクション）やセッション中断で進行状態が失われやすい。
+そのため進行状況はコンテキスト内のメモではなく **`docs/taskfactory/<slug>/status.md` に永続化する**。
+Phase 0 で以下のテンプレートを status.md として保存し、フェーズ完了・チェックポイント承認・
+差し戻しのたびに Edit で更新すること（フェーズ飛ばしと差し戻し回数の喪失を防ぐ）:
 
 ```
-工場の進行状況:
+# 工場の進行状況 — <slug>
+
 - [ ] Phase 0: 準備（slug 決定・docs/taskfactory/<slug>/ 作成）
 - [ ] Phase 1: Research → research.md 保存
-- [ ] Phase 2: Requirements → requirements.md 保存 → 🛑 要件承認
-- [ ] Phase 3: Brief → brief.md 保存 → 🛑 ブリーフ承認
+- [ ] Phase 2: Requirements → requirements.md 保存 → 🛑 要件承認（承認: ）
+- [ ] Phase 3: Brief → brief.md 保存 → 🛑 ブリーフ承認（承認: ）
 - [ ] Phase 4: Build（セルフチェックに ❌ があれば差し戻し）
-- [ ] Phase 5: Review（Critical/Important は差し戻し、上限3回）→ 🛑 最終レビュー
+- [ ] Phase 5: Review — 差し戻し 0/3 → 🛑 最終レビュー（承認: ）
 ```
+
+チェックポイントの承認を得たら、その行の「（承認: ）」に日付（YYYY-MM-DD）を記録する。
+各チェックポイントで停止する際は、status.md の現在の状態をユーザーへの提示に含める。
 
 ## Phase 0: 準備
 
 1. 依頼内容から短い英語ケバブケースの task-slug を決める（例: `auth-architecture-diagram`）
 2. 中間成果物ディレクトリ `docs/taskfactory/<slug>/` を作成する
-3. このディレクトリに以下を保存していく:
+3. 上記テンプレートから `status.md` を作成して保存する（依頼が「再開」なら下の「中断からの再開」へ）
+4. このディレクトリに以下を保存していく:
+   - `status.md` — 進行状況（フェーズ・承認・差し戻しカウンタ）
    - `research.md` — 調査レポート
    - `requirements.md` — 成果物要件
    - `brief.md` — 作業ブリーフ
@@ -100,13 +110,34 @@ description: >-
    入力: requirements.md + brief.md + ビルダーのサマリー
 2. レポートに **Critical** または **Important** の指摘があれば:
    - deliverable-builder を指摘内容つきで再起動する。自分で直さない。reviewer にも直させない
+   - 差し戻すたびに status.md の Review カウンタを更新する（例: `差し戻し 1/3`）。
+     コンテキストの記憶ではなく status.md のカウンタを正とする
    - 修正後、deliverable-reviewer を再実行する
 3. **差し戻しループの上限は3回。** 超えたら停止し、状況をユーザーに報告して指示を仰ぐ
-4. クリーンになったら、最終レポートと成果物ファイル一覧をユーザーに提示する
+4. **学習の回収:** ビルダーのサマリーに「CLAUDE.md への提案」があれば、
+   `docs/taskfactory/LEARNINGS.md` に追記する
+   （形式: `- [ ] YYYY-MM-DD <slug> (deliverable-builder): 提案内容`）
+5. クリーンになったら、最終レポート・成果物ファイル一覧・LEARNINGS.md の未昇格エントリ
+   （チェックの付いていない行）をユーザーに提示する
 
 **STOP. ユーザーがレビューして承認するまで、納品・コミットに進んではならない。**
+承認時、提示した LEARNINGS エントリを CLAUDE.md のルール・規約に昇格させるか確認する。
+昇格させたエントリには LEARNINGS.md 上でチェック（`- [x]`）を付ける（採用しないものは未チェックのまま残す）。
 承認後、git 管理下ならコミット（およびユーザーが望めばPR作成）を提案する。
 git 管理されていないプロジェクトでは、成果物ファイル一覧の提示をもって完了とする。
+
+## 中断からの再開
+
+セッション中断やコンパクションで進行状態を見失ったら、会話の記憶ではなく
+`docs/taskfactory/<slug>/status.md` を正として再開する:
+
+1. `/task-factory 再開 <slug>`（または slug を特定できる再開の依頼）を受けたら、
+   `docs/taskfactory/<slug>/` の status.md と保存済みの中間成果物
+   （research.md / requirements.md / brief.md）を読む
+2. status.md の最初の未チェックフェーズから処理を続ける
+3. 承認が記録されているチェックポイントは再承認を求めない（承認済みの成果物をそのまま入力に使う）
+4. status.md と現実が食い違う場合（例: Phase 3 がチェック済みなのに brief.md が無い）は、
+   食い違いをユーザーに報告し、整合する最後のフェーズからやり直す
 
 ## 工場長のルール
 
