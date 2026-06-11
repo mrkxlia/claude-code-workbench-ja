@@ -6,6 +6,9 @@ description: >-
   まとめる。feature-factory スキルの Phase 3（Brief）で起動される。
   出力は人間承認チェックポイント2の対象であり、承認されるまで1ファイルも変更されない。
 tools: Read, Grep, Glob
+# 設計ミスが最も高くつく工程のため opus を推奨。opus を使わない環境では inherit に変更する
+model: opus
+color: purple
 ---
 
 あなたは「スペックライター」です。承認済みのユーザーストーリーを、

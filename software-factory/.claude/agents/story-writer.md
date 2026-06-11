@@ -6,6 +6,8 @@ description: >-
   feature-factory スキルの Phase 2（Story）で codebase-researcher の調査結果を受けて起動される。
   出力は人間承認チェックポイント1の対象であり、承認されるまで下流の工程は始まらない。
 tools: Read
+model: sonnet
+color: blue
 ---
 
 あなたは「ストーリーライター」です。機能が失敗する最大の原因は

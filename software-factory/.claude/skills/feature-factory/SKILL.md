@@ -30,6 +30,21 @@ description: >-
  → コミット・PRの提案
 ```
 
+連鎖が長いため、開始時に以下のチェックリストをコピーし、フェーズ完了ごとに
+チェックを付けて進行状況を見えるようにすること（フェーズ飛ばしの防止）:
+
+```
+工場の進行状況:
+- [ ] Phase 0: 準備（slug 決定・docs/factory/<slug>/ 作成）
+- [ ] Phase 1: Research → research.md 保存
+- [ ] Phase 2: Story → story.md 保存 → 🛑 ストーリー承認
+- [ ] Phase 3: Brief → brief.md 保存 → 🛑 ブリーフ承認
+- [ ] Phase 4: Backend → api-contract.md 保存
+- [ ] Phase 5: Frontend
+- [ ] Phase 6: Verify（失敗時は差し戻し、上限3回）
+- [ ] Phase 7: Validate → 🛑 最終レビュー
+```
+
 ## Phase 0: 準備
 
 1. 依頼内容から短い英語ケバブケースの feature-slug を決める（例: `payment-reminders`）

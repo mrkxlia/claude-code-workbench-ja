@@ -33,7 +33,7 @@ claude-code-workbench-ja/
 ├── software-factory/                # 7エージェント構成「ソフトウェア工場」テンプレート
 │   ├── README.md
 │   ├── CLAUDE.md                    #   コピーして使う CLAUDE.md サンプル
-│   └── .claude/                     #   agents 7種 / skills 2種 / hooks / settings.json
+│   └── .claude/                     #   agents 7種 / skills 3種 / hooks / settings.json
 └── GlobalClaudeMD-sample/           # グローバルスコープ用 CLAUDE.md サンプル
     └── CLAUDE.md
 ```
