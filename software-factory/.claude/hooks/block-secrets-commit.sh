@@ -8,6 +8,7 @@
 # .claude/settings.json の hooks.PreToolUse から呼び出される想定。
 # 人間の手コミットも守りたい場合は、このファイルを .git/hooks/pre-commit に
 # コピー/リンクしてもよい（stdin が JSON でない場合は自動でスキップする）。
+# git 管理されていないリポジトリでは何もしない（git diff が失敗した時点で exit 0）。
 
 set -u
 
