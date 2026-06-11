@@ -34,6 +34,10 @@ claude-code-workbench-ja/
 │   ├── README.md
 │   ├── CLAUDE.md                    #   コピーして使う CLAUDE.md サンプル
 │   └── .claude/                     #   agents 7種 / skills 3種 / hooks / settings.json
+├── task-factory/                    # 汎用5エージェント構成「タスク工場」テンプレート（コード以外の成果物向け）
+│   ├── README.md
+│   ├── CLAUDE.md                    #   コピーして使う CLAUDE.md サンプル
+│   └── .claude/                     #   agents 5種 / skills 2種
 └── GlobalClaudeMD-sample/           # グローバルスコープ用 CLAUDE.md サンプル
     └── CLAUDE.md
 ```
