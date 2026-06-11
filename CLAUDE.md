@@ -30,6 +30,10 @@ claude-code-workbench-ja/
 ├── implementation-skills/           # 実装ノート記録 + 仕様書逆引きスキル
 │   ├── README.md
 │   └── .claude/skills/              #   notes / spec-extract の2スキル
+├── software-factory/                # 7エージェント構成「ソフトウェア工場」テンプレート
+│   ├── README.md
+│   ├── CLAUDE.md                    #   コピーして使う CLAUDE.md サンプル
+│   └── .claude/                     #   agents 7種 / skills 2種 / hooks / settings.json
 └── GlobalClaudeMD-sample/           # グローバルスコープ用 CLAUDE.md サンプル
     └── CLAUDE.md
 ```
