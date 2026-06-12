@@ -80,8 +80,13 @@ npx prisma migrate dev       # マイグレーション作成・適用
 |-------------|------|
 | `docs/architecture.md` | システム全体のアーキテクチャ |
 | `docs/billing.md` | 課金・請求まわりの仕様 |
-| `docs/factory/<feature>/` | feature-factory が生成する機能ごとの成果物（進行状況・調査・ストーリー・ブリーフ・API契約） |
+| `docs/factory/<feature>/` | feature-factory が生成する機能ごとの成果物（進行状況・調査・ストーリー・ブリーフ・API契約・実装ノート） |
 | `docs/factory/LEARNINGS.md` | ビルダーの「CLAUDE.md への提案」の蓄積。承認されたものはこのファイルのルールに昇格する |
+
+## セッション開始時
+
+- 作業対象の機能に `docs/factory/<feature>/implementation-notes.md` がある場合、
+  コードを書く前に冒頭の Status ブロック（State / Next / Watch out）を読むこと
 
 ---
 
@@ -94,9 +99,9 @@ npx prisma migrate dev       # マイグレーション作成・適用
 | `codebase-researcher` | 作る前にコードをマッピングする | なし（読み取り専用） |
 | `story-writer` | アイデアを受け入れ基準つきストーリーにする | なし（読み取り専用） |
 | `spec-writer` | ストーリーを技術ブリーフにする | なし（読み取り専用） |
-| `backend-builder` | API・サービス・ジョブ・ユニットテスト | バックエンドのフォルダのみ |
-| `frontend-builder` | コンポーネント・ページ・フック・UIテスト | フロントエンドのフォルダのみ |
-| `test-verifier` | ストーリーに対する受け入れテスト | テストファイルのみ |
+| `backend-builder` | API・サービス・ジョブ・ユニットテスト | バックエンドのフォルダ + 実装ノート |
+| `frontend-builder` | コンポーネント・ページ・フック・UIテスト | フロントエンドのフォルダ + 実装ノート |
+| `test-verifier` | ストーリーに対する受け入れテスト | テストファイル + 実装ノート |
 | `implementation-validator` | 実装とストーリー/ブリーフのギャップ報告 | なし（読み取り専用） |
 
 ## 利用可能なスキル
@@ -105,3 +110,5 @@ npx prisma migrate dev       # マイグレーション作成・適用
 |-------------------|-------------|
 | `/feature-factory <機能の説明>` | 機能を end-to-end で開発する（7エージェント連鎖 + 3チェックポイント） |
 | `/build-with-tests <タスク>` | 工場を通すほどではない小さな実装・修正をテスト並行で行う |
+| `/spec-extract [対象パス]` | 仕様書のないレガシーコードの挙動を SPEC.md に逆引き固定する（工場導入の前工程） |
+| `/notes` | 実装ノートを手動で開始・更新する（工場内ではビルダーが自動記録） |
