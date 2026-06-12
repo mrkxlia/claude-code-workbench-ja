@@ -26,6 +26,11 @@
 | 起動コマンド | `/feature-factory` | `/task-factory` |
 | チェックポイント | 3つ（ストーリー・ブリーフ・最終） | 3つ（要件・ブリーフ・最終） |
 
+迷ったら: **コード開発（実装ノート・仕様逆引きを含む）→ software-factory、コード以外の成果物 → task-factory**。
+[`implementation-skills/`](../implementation-skills/) の notes / spec-extract スキルの工場統合は
+software-factory 側のみです。task-factory のプロジェクトで単体利用したい場合は
+implementation-skills/ から直接コピーしてください。
+
 2つの工場は**同じプロジェクトに併存できます**。エージェント名・スキル名・中間成果物の
 保存先（`docs/factory/` と `docs/taskfactory/`）が重ならないように設計してあります。
 task-factory は出力ディレクトリ外への書き込みを確認するフック
