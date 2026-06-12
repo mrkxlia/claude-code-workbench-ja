@@ -1,0 +1,14 @@
+{
+  "name": "software-factory",
+  "version": "1.0.0",
+  "description": "7つの専門エージェントで機能開発を流れ作業化する「ソフトウェア工場」テンプレート。/software-factory:factory-setup が対象リポジトリを解析してエージェント・CLAUDE.md・フックを自動導入する。",
+  "author": {
+    "name": "mrkxlia",
+    "url": "https://github.com/mrkxlia"
+  },
+  "homepage": "https://github.com/mrkxlia/claude-code-workbench-ja/tree/main/software-factory",
+  "repository": "https://github.com/mrkxlia/claude-code-workbench-ja",
+  "license": "MIT",
+  "keywords": ["workflow", "subagents", "software-factory", "japanese"],
+  "skills": "./.claude/skills/"
+}

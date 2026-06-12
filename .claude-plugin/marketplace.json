@@ -1,0 +1,21 @@
+{
+  "name": "workbench-ja",
+  "description": "claude-code-workbench-ja のプラグインマーケットプレイス。Claude Code を快適に使うための日本語テンプレート集。",
+  "owner": {
+    "name": "mrkxlia"
+  },
+  "plugins": [
+    {
+      "name": "software-factory",
+      "source": "./software-factory",
+      "description": "7つの専門エージェントで機能開発を流れ作業化する「ソフトウェア工場」テンプレート。スキル6種（factory-setup / feature-factory / build-with-tests / notes / spec-extract / factory-improve）を提供する。",
+      "version": "1.0.0",
+      "category": "workflow",
+      "author": {
+        "name": "mrkxlia"
+      },
+      "license": "MIT",
+      "keywords": ["workflow", "subagents", "software-factory", "japanese"]
+    }
+  ]
+}
