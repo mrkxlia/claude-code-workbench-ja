@@ -1,0 +1,26 @@
+{
+  "_comment": "これは ~/.claude/settings.json へ手動マージするためのサンプルです。既存の settings.json を丸ごと上書きせず、hooks.SessionStart / hooks.SessionEnd の配列に下記オブジェクトを追記してください（install.sh が jq で安全に追記マージします）。フックはユーザーレベルに置くため、パスは $CLAUDE_PROJECT_DIR ではなく $HOME を使います。",
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$HOME\"/.claude/hooks/kb-session-start.sh"
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$HOME\"/.claude/hooks/kb-session-end.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
