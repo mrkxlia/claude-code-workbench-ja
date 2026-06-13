@@ -26,8 +26,10 @@
 | 未回収の通知 | **SessionStart フック**（matcher: `startup\|resume`、stdout がコンテキストに注入される） | [hooks](https://code.claude.com/docs/en/hooks) |
 | 過去会話の採掘元 | **トランスクリプト** `~/.claude/projects/<project>/<session-id>.jsonl`（保持期間は `cleanupPeriodDays`、既定30日） | [sessions](https://code.claude.com/docs/en/sessions) |
 
-**ポイント**: インデックスの常時読み込みは**フックではなく @import**（メモリ機能そのもの）が
-担当します。フックが無効でも知見は届きますし、SessionStart での二重注入も避けられます。
+**ポイント**: インデックスの常時読み込みは、**install.sh 導入なら @import**（メモリ機能
+そのもの）が担当します。**プラグイン導入では SessionStart フック**が index を注入します
+（プラグインは `~/.claude/CLAUDE.md` を編集できないため）。フックは `@import` の有無を
+自動判定し、両方ある環境でも二重注入しません。
 
 ---
 
@@ -98,9 +100,30 @@
 
 ---
 
-## セットアップ
+導入方法は3つあります。**プラグイン**が最も簡単（clone 不要・フック配線も自動）、
+**install.sh** は `@import` ベースで導入したい場合、**手動**は中身を把握して入れたい場合。
 
-### 推奨: install.sh
+### 方法1: プラグインで導入する（推奨・最も簡単）
+
+Claude Code でそのまま実行します（clone 不要）:
+
+```
+/plugin marketplace add mrkxlia/claude-code-workbench-ja
+/plugin install knowledge-share@workbench-ja
+```
+
+これだけで完了です。スキルは `/knowledge-share:kb` `/knowledge-share:kb-harvest` として
+全プロジェクトで使え、SessionStart/SessionEnd フックも自動で全セッションに適用されます
+（`~/.claude/settings.json` を手で編集する必要はありません）。
+
+> プラグインは導入時にスクリプトを実行できず `~/.claude/CLAUDE.md` も編集できないため、
+> **インデックスの読み込みは @import ではなく SessionStart フックが担当**します
+> （フックの stdout がコンテキストに注入される公式仕様）。`~/.claude/knowledge/` の
+> 足場とテンプレート index・採掘スクリプトは、初回セッションでフックが自動的に用意します。
+> install.sh で `@import` を入れている環境では、フックは二重注入を避けて index 注入を
+> スキップします（自動判定）。
+
+### 方法2: install.sh で導入する（@import ベース）
 
 ```bash
 git clone --depth 1 https://github.com/mrkxlia/claude-code-workbench-ja /tmp/workbench
@@ -108,10 +131,11 @@ bash /tmp/workbench/knowledge-share/install.sh
 ```
 
 何度実行しても安全（冪等）です。既存のナレッジ・`CLAUDE.md`・他のフックは壊しません。
-`settings.json` のマージには `jq` を使います（無い場合は手動マージ用のサンプルを表示して
-終了します）。
+`~/.claude/CLAUDE.md` に `@import` を1行足し、`settings.json` のマージには `jq` を使います
+（無い場合は手動マージ用のサンプルを表示して終了します）。スキルは `/kb` `/kb-harvest` の
+名前で使えます。
 
-### 手動セットアップ
+### 方法3: 手動セットアップ
 
 1. **@import を1行追記** — `~/.claude/CLAUDE.md` に次を足す（これだけで読み込みは有効）:
 
