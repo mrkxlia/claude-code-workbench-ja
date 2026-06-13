@@ -41,6 +41,12 @@ claude-code-workbench-ja/
 │   ├── README.md
 │   ├── CLAUDE.md                    #   コピーして使う CLAUDE.md サンプル
 │   └── .claude/                     #   agents 5種 / skills 2種 / hooks / settings.json
+├── knowledge-share/                 # セッション/リポジトリ横断ナレッジ共有テンプレート（~/.claude/ 導入）
+│   ├── README.md
+│   ├── install.sh                   #   ~/.claude/ への冪等インストーラ
+│   ├── templates/index.md           #   ナレッジ・インデックスの初期テンプレート
+│   ├── bin/kb-extract-candidates.sh #   jsonl 採掘スクリプト
+│   └── .claude/                     #   skills 2種（kb / kb-harvest）/ hooks 2種 / settings.json サンプル
 └── GlobalClaudeMD-sample/           # グローバルスコープ用 CLAUDE.md サンプル
     └── CLAUDE.md
 ```
