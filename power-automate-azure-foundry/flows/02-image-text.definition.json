@@ -1,0 +1,127 @@
+{
+  "definition": {
+    "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {},
+    "triggers": {
+      "manual": {
+        "type": "Request",
+        "kind": "PowerAppV2",
+        "inputs": {
+          "schema": {
+            "type": "object",
+            "properties": {
+              "text": {
+                "title": "prompt",
+                "type": "string",
+                "x-ms-dynamically-added": true,
+                "description": "画像に対する指示（OCR の場合は「画像の文字をすべて書き起こして」など）"
+              },
+              "text_1": {
+                "title": "imageBase64",
+                "type": "string",
+                "x-ms-dynamically-added": true,
+                "description": "data:image/...;base64, を除いた純粋な Base64 文字列"
+              }
+            },
+            "required": ["text", "text_1"]
+          }
+        }
+      }
+    },
+    "actions": {
+      "HTTP_ChatCompletions_Vision": {
+        "type": "Http",
+        "inputs": {
+          "method": "POST",
+          "uri": "https://<resource>.openai.azure.com/openai/deployments/<deployment>/chat/completions?api-version=2024-10-21",
+          "headers": {
+            "Content-Type": "application/json",
+            "api-key": "<api-key>"
+          },
+          "body": {
+            "messages": [
+              {
+                "role": "system",
+                "content": "あなたは精密な OCR エンジンです。画像内の文字を改行・記号も含めて忠実に書き起こします。推測や補完はしないでください。"
+              },
+              {
+                "role": "user",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "@{triggerBody()?['text']}"
+                  },
+                  {
+                    "type": "image_url",
+                    "image_url": {
+                      "url": "data:image/jpeg;base64,@{triggerBody()?['text_1']}",
+                      "detail": "high"
+                    }
+                  }
+                ]
+              }
+            ],
+            "max_tokens": 2000,
+            "temperature": 0
+          }
+        },
+        "runAfter": {},
+        "runtimeConfiguration": {
+          "secureData": {
+            "properties": ["inputs", "outputs"]
+          }
+        }
+      },
+      "Parse_JSON": {
+        "type": "ParseJson",
+        "inputs": {
+          "content": "@body('HTTP_ChatCompletions_Vision')",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "choices": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "object",
+                      "properties": {
+                        "role": { "type": "string" },
+                        "content": { "type": "string" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "runAfter": {
+          "HTTP_ChatCompletions_Vision": ["Succeeded"]
+        }
+      },
+      "Respond_to_a_PowerApp_or_flow": {
+        "type": "Response",
+        "kind": "PowerApp",
+        "inputs": {
+          "statusCode": 200,
+          "body": {
+            "result": "@body('Parse_JSON')?['choices'][0]?['message']?['content']"
+          },
+          "schema": {
+            "type": "object",
+            "properties": {
+              "result": { "type": "string" }
+            }
+          }
+        },
+        "runAfter": {
+          "Parse_JSON": ["Succeeded"]
+        }
+      }
+    },
+    "outputs": {}
+  }
+}

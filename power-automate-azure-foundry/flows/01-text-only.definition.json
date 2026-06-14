@@ -1,0 +1,107 @@
+{
+  "definition": {
+    "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {},
+    "triggers": {
+      "manual": {
+        "type": "Request",
+        "kind": "Button",
+        "inputs": {
+          "schema": {
+            "type": "object",
+            "properties": {
+              "prompt": {
+                "type": "string",
+                "title": "prompt",
+                "description": "GPT に送る質問・指示",
+                "x-ms-content-hint": "TEXT"
+              }
+            },
+            "required": ["prompt"]
+          }
+        }
+      }
+    },
+    "actions": {
+      "HTTP_ChatCompletions": {
+        "type": "Http",
+        "inputs": {
+          "method": "POST",
+          "uri": "https://<resource>.openai.azure.com/openai/deployments/<deployment>/chat/completions?api-version=2024-10-21",
+          "headers": {
+            "Content-Type": "application/json",
+            "api-key": "<api-key>"
+          },
+          "body": {
+            "messages": [
+              {
+                "role": "system",
+                "content": "あなたは有能なアシスタントです。日本語で簡潔に回答してください。"
+              },
+              {
+                "role": "user",
+                "content": "@{triggerBody()?['prompt']}"
+              }
+            ],
+            "max_tokens": 800,
+            "temperature": 0.2
+          }
+        },
+        "runAfter": {},
+        "runtimeConfiguration": {
+          "secureData": {
+            "properties": ["inputs", "outputs"]
+          }
+        }
+      },
+      "Parse_JSON": {
+        "type": "ParseJson",
+        "inputs": {
+          "content": "@body('HTTP_ChatCompletions')",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "choices": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "object",
+                      "properties": {
+                        "role": { "type": "string" },
+                        "content": { "type": "string" }
+                      }
+                    },
+                    "finish_reason": { "type": "string" },
+                    "index": { "type": "integer" }
+                  }
+                }
+              },
+              "usage": {
+                "type": "object",
+                "properties": {
+                  "prompt_tokens": { "type": "integer" },
+                  "completion_tokens": { "type": "integer" },
+                  "total_tokens": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "runAfter": {
+          "HTTP_ChatCompletions": ["Succeeded"]
+        }
+      },
+      "Compose_Answer": {
+        "type": "Compose",
+        "inputs": "@body('Parse_JSON')?['choices'][0]?['message']?['content']",
+        "runAfter": {
+          "Parse_JSON": ["Succeeded"]
+        }
+      }
+    },
+    "outputs": {}
+  }
+}
