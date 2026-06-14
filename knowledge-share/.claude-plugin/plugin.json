@@ -1,0 +1,15 @@
+{
+  "name": "knowledge-share",
+  "version": "1.0.0",
+  "description": "セッション/リポジトリ横断のナレッジ共有テンプレート。kb（記録・検索・昇格）/ kb-harvest（過去トランスクリプト採掘）スキルと、SessionStart/SessionEnd フックによる知見の自動読み込み・回収キューを提供する。Claude Code の公式機能だけで構成。",
+  "author": {
+    "name": "mrkxlia",
+    "url": "https://github.com/mrkxlia"
+  },
+  "homepage": "https://github.com/mrkxlia/claude-code-workbench-ja/tree/main/knowledge-share",
+  "repository": "https://github.com/mrkxlia/claude-code-workbench-ja",
+  "license": "MIT",
+  "keywords": ["knowledge", "memory", "hooks", "cross-session", "japanese"],
+  "skills": "./.claude/skills/",
+  "hooks": "./.claude/hooks/hooks.json"
+}

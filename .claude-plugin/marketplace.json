@@ -16,6 +16,18 @@
       },
       "license": "MIT",
       "keywords": ["workflow", "subagents", "software-factory", "japanese"]
+    },
+    {
+      "name": "knowledge-share",
+      "source": "./knowledge-share",
+      "description": "セッション/リポジトリ横断のナレッジ共有テンプレート。スキル2種（kb / kb-harvest）と SessionStart/SessionEnd フックで、解決した知見の自動読み込み・記録・回収を Claude Code の公式機能だけで実現する。",
+      "version": "1.0.0",
+      "category": "productivity",
+      "author": {
+        "name": "mrkxlia"
+      },
+      "license": "MIT",
+      "keywords": ["knowledge", "memory", "hooks", "cross-session", "japanese"]
     }
   ]
 }
