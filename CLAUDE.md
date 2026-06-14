@@ -48,6 +48,11 @@ claude-code-workbench-ja/
 │   ├── bin/kb-extract-candidates.sh #   jsonl 採掘スクリプト
 │   ├── .claude-plugin/plugin.json   #   プラグインマニフェスト
 │   └── .claude/                     #   skills 2種（kb / kb-harvest）/ hooks 2種＋hooks.json / settings.json サンプル
+├── token-usage-tracker/             # AIエージェントのトークン消費トラッカー（独立Pythonツール / uv / TDD）
+│   ├── README.md
+│   ├── pyproject.toml               #   uv 管理・[project.scripts] tokentracker
+│   ├── tokentracker/                #   parsers(claude_code) / db / pricing / queries / ingest / cli / dashboard
+│   └── tests/                       #   pytest（fixtures に実ログ匿名化の代表ケースを固定）
 └── GlobalClaudeMD-sample/           # グローバルスコープ用 CLAUDE.md サンプル
     └── CLAUDE.md
 ```
