@@ -1,0 +1,102 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Azure Foundry GPT",
+    "description": "Azure AI Foundry / Azure OpenAI の Chat Completions を呼び出すカスタムコネクタ。api-key はコネクション側に保管され、フロー定義には残りません。",
+    "version": "1.0"
+  },
+  "host": "<resource>.openai.azure.com",
+  "basePath": "/",
+  "schemes": ["https"],
+  "consumes": ["application/json"],
+  "produces": ["application/json"],
+  "paths": {
+    "/openai/deployments/{deployment}/chat/completions": {
+      "post": {
+        "summary": "Chat Completions",
+        "description": "テキストまたは画像(Vision)を含むチャット補完を実行します。",
+        "operationId": "ChatCompletions",
+        "parameters": [
+          {
+            "name": "deployment",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "デプロイ名（例: gpt-4o）"
+          },
+          {
+            "name": "api-version",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "default": "2024-10-21"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "messages": {
+                  "type": "array",
+                  "items": { "type": "object" }
+                },
+                "max_tokens": { "type": "integer" },
+                "temperature": { "type": "number" }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "choices": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "object",
+                        "properties": {
+                          "role": { "type": "string" },
+                          "content": { "type": "string" }
+                        }
+                      },
+                      "finish_reason": { "type": "string" }
+                    }
+                  }
+                },
+                "usage": {
+                  "type": "object",
+                  "properties": {
+                    "prompt_tokens": { "type": "integer" },
+                    "completion_tokens": { "type": "integer" },
+                    "total_tokens": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {},
+  "parameters": {},
+  "responses": {},
+  "securityDefinitions": {
+    "api_key": {
+      "type": "apiKey",
+      "in": "header",
+      "name": "api-key"
+    }
+  },
+  "security": [
+    { "api_key": [] }
+  ],
+  "tags": []
+}
