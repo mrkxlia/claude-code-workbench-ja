@@ -23,6 +23,11 @@ from rich.table import Table
 
 from tokentracker import db, queries
 from tokentracker.ingest import INGESTORS, ingest_all
+from tokentracker.pricing import (
+    BUNDLED_PRICING,
+    active_pricing_path,
+    default_pricebook,
+)
 from tokentracker.queries import DEFAULT_TZ
 
 app = typer.Typer(add_completion=False, help="AIエージェントのトークン消費トラッカー")
@@ -53,6 +58,68 @@ def ingest(
     total = conn.execute("SELECT COUNT(*) FROM usage_event").fetchone()[0]
     detail = " / ".join(f"{s}:{n}" for s, n in per_source.items())
     console.print(f"[green]取り込み完了[/]: {detail} / DB 合計 {total} 件 -> {db_path}")
+
+
+@app.command()
+def pricing(
+    db_path: Path = typer.Option(DEFAULT_DB, "--db", help="SQLite ファイルパス"),
+    missing: bool = typer.Option(
+        False, "--missing",
+        help="DB に出現したが単価未登録のモデルだけを表示",
+    ),
+) -> None:
+    """使用中の単価ファイルと登録モデルを表示（--missing で未登録モデルを抽出）。"""
+    if missing:
+        conn = _open(db_path)
+        book = default_pricebook()
+        rows = conn.execute(
+            "SELECT model, "
+            "SUM(input_tokens+output_tokens+reasoning_output_tokens"
+            "    +cache_creation_tokens+cache_read_tokens) AS toks, COUNT(*) AS n "
+            "FROM usage_event GROUP BY model"
+        ).fetchall()
+        table = Table(title="単価未登録のモデル（TOML に追記すべき対象）")
+        table.add_column("model", overflow="fold")
+        table.add_column("未割当tok", justify="right")
+        table.add_column("件数", justify="right")
+        unpriced = [
+            r for r in rows
+            if r["model"] and book.compute_cost(_probe(r["model"])) is None
+        ]
+        for r in sorted(unpriced, key=lambda r: r["toks"], reverse=True):
+            table.add_row(str(r["model"]), f"{r['toks']:,}", f"{r['n']:,}")
+        if unpriced:
+            console.print(table)
+            console.print("[yellow]※ pricing.toml に [models.\"<ID>\"] を追記すると次回 ingest から反映されます。[/]")
+        else:
+            console.print("[green]未登録モデルはありません。[/]")
+        return
+
+    path = active_pricing_path()
+    console.print(f"使用中の単価ファイル: [cyan]{path or '(なし)'}[/]")
+    console.print(f"同梱の既定ファイル  : {BUNDLED_PRICING}")
+    book = default_pricebook()
+    table = Table(title="登録モデル単価（$/1M tokens）")
+    table.add_column("model", overflow="fold")
+    table.add_column("input", justify="right")
+    table.add_column("output", justify="right")
+    table.add_column("cache_read", justify="right")
+    for model, rate in sorted(book.prices.items()):
+        table.add_row(
+            model, f"{rate.get('input', 0):g}", f"{rate.get('output', 0):g}",
+            f"{rate.get('cache_read', 0):g}",
+        )
+    console.print(table)
+    if book.aliases:
+        console.print("エイリアス: " + ", ".join(f"{k}→{v}" for k, v in book.aliases.items()))
+
+
+def _probe(model: str):
+    """単価判定用の最小 UsageEvent（compute_cost が None かどうかだけを見る）。"""
+    from tokentracker.models import UsageEvent
+
+    return UsageEvent(source="", message_id="", session_id="", model=model,
+                      timestamp_utc="", input_tokens=1)
 
 
 def _render(

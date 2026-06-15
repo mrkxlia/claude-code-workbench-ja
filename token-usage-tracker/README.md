@@ -67,16 +67,44 @@ uv run --extra dashboard streamlit run tokentracker/dashboard.py \
 
 ## コスト単価について（重要）
 
-`tokentracker/pricing.py` の `DEFAULT_PRICES` は**ひな型**です。
+単価は**静的な TOML ファイル**で管理します（コードを編集せず差し替え可能）。同梱の既定値は
+`tokentracker/pricing.toml` で、Claude（Anthropic 公式）と GPT（Web 調査）の現行価格が入っています。
 
-- 知りたいのは Anthropic 定価ではなく **Azure Foundry の実課金レート**のはずなので、
-  自社の課金単価に合わせて上書きしてください（1M トークンあたりの USD）。
-- 単価は **トークン種別ごと**に分けています: `input` / `output` /
-  `cache_write_1h` / `cache_write_5m` / `cache_read`（read は割引、write は 1h>5m）。
-- 単価が**未登録のモデル**は「未割当トークン」として別計上され、判明コストに紛れ込みません
-  （静かに 0 円化しない）。集計表の「未割当tok」列に出ます。
-- Foundry のデプロイ名が正規モデル ID と異なる場合は `MODEL_ALIASES` にマッピングを追加します。
-  日付サフィックス（例 `claude-...-20251001`）は自動で基底 ID に解決されます。
+> ⚠️ **GPT の単価は二次情報のため、必ず自社の Azure ポータルの実課金レートで検証・上書き**してください。
+> 知りたいのは定価ではなく **Azure Foundry の実課金額**です（1M トークンあたりの USD）。
+
+### 単価ファイルの読み込み優先順位
+1. 環境変数 `TOKENTRACKER_PRICING=/path/to/pricing.toml`
+2. `~/.tokentracker/pricing.toml`（利用者の上書き用）
+3. パッケージ同梱の `tokentracker/pricing.toml`（既定値）
+
+現在使われているファイルと登録モデルは `uv run tokentracker pricing` で確認できます。
+
+### 編集方法（モデルが増えたとき）
+1. 同梱ファイルは直接編集せず、上書き用にコピー（または `TOKENTRACKER_PRICING` で別ファイル指定）:
+   ```bash
+   mkdir -p ~/.tokentracker && cp tokentracker/pricing.toml ~/.tokentracker/pricing.toml
+   ```
+2. `~/.tokentracker/pricing.toml` に `[models."<モデルID>"]` テーブルを追記/編集:
+   ```toml
+   [models."gpt-5.4"]
+   input = 1.25
+   output = 10.0
+   cache_write_1h = 0.0
+   cache_write_5m = 0.0
+   cache_read = 0.125
+   ```
+   キーは `input` / `output` / `cache_write_1h` / `cache_write_5m` / `cache_read`（$/1M）。
+   Claude のキャッシュ単価の目安は input に対し read=0.1×・write_5m=1.25×・write_1h=2×。
+   OpenAI/GPT 系はキャッシュ書込が無いので write=0、read は cached input 単価。
+3. Foundry のデプロイ名が正規 ID と違う場合は `[aliases]` に `"デプロイ名" = "正規ID"` を追加。
+   末尾の日付サフィックス（例 `claude-...-20251001`）は自動で基底 ID に解決されます。
+
+### 単価未登録モデルの扱い
+- 単価が**未登録のモデル**は `cost_usd=None` となり「未割当トークン」として別計上されます
+  （判明コストに紛れ込まず、静かに 0 円化しない）。集計表の「未割当tok」列に出ます。
+- **`uv run tokentracker pricing --missing`** で、ログに出たのに単価未登録のモデルだけを
+  未割当トークンの多い順に一覧できます。これを見て pricing.toml に追記してください。
 
 ## 集計の正確性（実環境ログで検証済み）
 
