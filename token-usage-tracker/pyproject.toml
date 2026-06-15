@@ -31,6 +31,9 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["tokentracker"]
+# 単価 TOML を wheel に同梱する。
+artifacts = ["tokentracker/pricing.toml"]
+force-include = { "tokentracker/pricing.toml" = "tokentracker/pricing.toml" }
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

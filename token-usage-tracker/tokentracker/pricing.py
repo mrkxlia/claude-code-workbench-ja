@@ -1,36 +1,64 @@
 """モデル別単価とコスト計算。
 
-知りたいのは Anthropic 定価ではなく **Foundry の実課金額** なので、単価は
-``DEFAULT_PRICES`` をひな型に各自で上書きする前提（README 参照）。
-単価が無いモデルは ``cost_usd=None`` を返し、集計側で「未割当コスト」として可視化する。
+単価は **静的 TOML ファイル**から読み込む（コードを編集せず差し替え可能）。
+読み込み優先順位（最初に見つかったものを使用）:
+  1. 環境変数 ``TOKENTRACKER_PRICING`` が指すファイル
+  2. ``~/.tokentracker/pricing.toml``（利用者の上書き用）
+  3. パッケージ同梱の ``tokentracker/pricing.toml``（既定値）
+
+知りたいのは定価ではなく **Azure Foundry の実課金額** なので、利用者は上記 1/2 に置いた
+ファイルで自由に上書きできる。単価が無いモデルは ``cost_usd=None`` を返し、集計側で
+「未割当コスト」として可視化する（0 円化しない）。
 """
 
 from __future__ import annotations
 
+import os
 import re
+import tomllib
 from dataclasses import dataclass
+from pathlib import Path
 
 from tokentracker.models import SYNTHETIC_MODEL, UsageEvent
 
 # 末尾の日付サフィックス（例 -20251001）。単価キーは日付なしの基底IDで持つ。
 _DATE_SUFFIX = re.compile(r"-\d{8}$")
 
-# 1M トークンあたりの USD。トークン種別ごとに別単価（cache_write は 1h>5m、read は割引）。
-# 値はあくまでひな型。Foundry の実課金レートに合わせて上書きすること。
+# 1M トークンあたりの USD。種別ごとに別単価（cache_write は 1h>5m、read は割引）。
 PriceTable = dict[str, dict[str, float]]
 
-DEFAULT_PRICES: PriceTable = {
-    "claude-sonnet-4-6": {"input": 3.0, "output": 15.0, "cache_write_1h": 6.0, "cache_write_5m": 3.75, "cache_read": 0.30},
-    "claude-opus-4-8": {"input": 15.0, "output": 75.0, "cache_write_1h": 30.0, "cache_write_5m": 18.75, "cache_read": 1.50},
-    "claude-haiku-4-5": {"input": 1.0, "output": 5.0, "cache_write_1h": 2.0, "cache_write_5m": 1.25, "cache_read": 0.10},
-    # Codex (OpenAI) — ひな型。Foundry の実課金レートに合わせて上書きすること。
-    # cache_write は OpenAI 側に概念が無いため 0（Codex は cache_read=cached_input のみ）。
-    "gpt-5": {"input": 1.25, "output": 10.0, "cache_write_1h": 0.0, "cache_write_5m": 0.0, "cache_read": 0.125},
-    "gpt-5-mini": {"input": 0.25, "output": 2.0, "cache_write_1h": 0.0, "cache_write_5m": 0.0, "cache_read": 0.025},
-}
+#: 同梱の既定単価ファイル。
+BUNDLED_PRICING = Path(__file__).with_name("pricing.toml")
 
-# Foundry のデプロイ名 → 正規モデル ID。必要に応じて追記する。
-MODEL_ALIASES: dict[str, str] = {}
+
+def _candidate_paths() -> list[Path]:
+    paths: list[Path] = []
+    env = os.environ.get("TOKENTRACKER_PRICING")
+    if env:
+        paths.append(Path(env))
+    paths.append(Path.home() / ".tokentracker" / "pricing.toml")
+    paths.append(BUNDLED_PRICING)
+    return paths
+
+
+def load_price_table(path: str | Path | None = None) -> tuple[PriceTable, dict[str, str], dict]:
+    """単価 TOML を読み込み ``(prices, aliases, meta)`` を返す。
+
+    ``path`` 指定時はそれを、無指定なら優先順位に従って最初に存在するファイルを読む。
+    """
+    candidates = [Path(path)] if path is not None else _candidate_paths()
+    for p in candidates:
+        if p.exists():
+            with p.open("rb") as f:
+                data = tomllib.load(f)
+            prices: PriceTable = {
+                model: {k: float(v) for k, v in rate.items()}
+                for model, rate in (data.get("models") or {}).items()
+            }
+            aliases = {str(k): str(v) for k, v in (data.get("aliases") or {}).items()}
+            return prices, aliases, (data.get("meta") or {})
+    # どれも見つからない場合は空（全モデルが未割当になる）。
+    return {}, {}, {}
 
 
 @dataclass
@@ -39,7 +67,7 @@ class PriceBook:
     aliases: dict[str, str] | None = None
 
     def resolve_model(self, model: str) -> str:
-        aliases = self.aliases if self.aliases is not None else MODEL_ALIASES
+        aliases = self.aliases or {}
         return aliases.get(model, model)
 
     def compute_cost(self, ev: UsageEvent) -> float | None:
@@ -67,5 +95,14 @@ class PriceBook:
         return per_million / 1_000_000
 
 
+def active_pricing_path() -> Path | None:
+    """実際に使われる単価ファイルのパス（存在する最初の候補）。"""
+    for p in _candidate_paths():
+        if p.exists():
+            return p
+    return None
+
+
 def default_pricebook() -> PriceBook:
-    return PriceBook(prices=DEFAULT_PRICES, aliases=MODEL_ALIASES)
+    prices, aliases, _meta = load_price_table()
+    return PriceBook(prices=prices, aliases=aliases)
