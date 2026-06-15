@@ -1,8 +1,12 @@
 """DB 取り込み(冪等)と集計クエリ(未割当コスト併記・TZ バケット)のテスト。"""
 
+from pathlib import Path
+
 from tokentracker import db, queries
-from tokentracker.ingest import ingest_claude_code
+from tokentracker.ingest import ingest_claude_code, ingest_cline, ingest_codex
 from tokentracker.pricing import PriceBook
+
+FIXTURES = Path(__file__).parent / "fixtures"
 
 
 def _book():
@@ -76,6 +80,16 @@ def test_daily_bucket_uses_local_timezone(tmp_path, claude_root):
     rows = queries.summary(conn, "daily", tz="Asia/Tokyo")
     days = {r["key"] for r in rows}
     assert days == {"2026-06-14"}
+
+
+def test_agent_dimension_spans_three_sources(tmp_path, claude_root):
+    """3 ソースを投入すると agent 軸に claude_code/codex/cline が並ぶ。"""
+    conn = db.connect(tmp_path / "all.db")
+    ingest_claude_code(conn, claude_root, pricebook=_book())
+    ingest_codex(conn, FIXTURES / "codex_sessions", pricebook=_book())
+    ingest_cline(conn, FIXTURES / "cline_tasks", pricebook=_book())
+    agents = {r["key"] for r in queries.summary(conn, "agent")}
+    assert agents == {"claude_code", "codex", "cline"}
 
 
 def test_daily_bucket_crosses_midnight_in_utc_minus():

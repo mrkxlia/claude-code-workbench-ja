@@ -28,6 +28,7 @@ class UsageEvent:
     timestamp_utc: str
     input_tokens: int = 0
     output_tokens: int = 0
+    reasoning_output_tokens: int = 0
     cache_creation_tokens: int = 0
     cache_creation_1h_tokens: int = 0
     cache_creation_5m_tokens: int = 0
