@@ -34,7 +34,7 @@ def load(db_path: str, tz: str) -> pd.DataFrame:
         lambda t: local_date_bucket(t, tz) if t else None
     )
     df["total_tokens"] = (
-        df["input_tokens"] + df["output_tokens"]
+        df["input_tokens"] + df["output_tokens"] + df["reasoning_output_tokens"]
         + df["cache_creation_tokens"] + df["cache_read_tokens"]
     )
     df["is_subagent"] = df["is_subagent"].astype(bool)

@@ -22,7 +22,7 @@ from rich.console import Console
 from rich.table import Table
 
 from tokentracker import db, queries
-from tokentracker.ingest import ingest_claude_code
+from tokentracker.ingest import INGESTORS, ingest_all
 from tokentracker.queries import DEFAULT_TZ
 
 app = typer.Typer(add_completion=False, help="AIエージェントのトークン消費トラッカー")
@@ -39,13 +39,20 @@ def _open(db_path: Path):
 @app.command()
 def ingest(
     db_path: Path = typer.Option(DEFAULT_DB, "--db", help="SQLite ファイルパス"),
-    root: Optional[Path] = typer.Option(None, "--root", help="Claude Code projects ルート(既定: ~/.claude/projects)"),
+    source: str = typer.Option(
+        "all", "--source",
+        help="取り込むソース: all / claude_code / codex / cline",
+    ),
 ) -> None:
-    """ローカルログを取り込む（現状 Claude Code。Codex/Cline は今後）。"""
+    """ローカルログを取り込む（Claude Code / Codex / Cline、既定の保存場所を走査）。"""
+    if source != "all" and source not in INGESTORS:
+        raise typer.BadParameter(f"--source は all/{'/'.join(INGESTORS)} のいずれか")
+    sources = None if source == "all" else [source]
     conn = _open(db_path)
-    n = ingest_claude_code(conn, root)
+    per_source = ingest_all(conn, sources=sources)
     total = conn.execute("SELECT COUNT(*) FROM usage_event").fetchone()[0]
-    console.print(f"[green]取り込み完了[/]: {n} 件処理 / DB 合計 {total} 件 -> {db_path}")
+    detail = " / ".join(f"{s}:{n}" for s, n in per_source.items())
+    console.print(f"[green]取り込み完了[/]: {detail} / DB 合計 {total} 件 -> {db_path}")
 
 
 def _render(

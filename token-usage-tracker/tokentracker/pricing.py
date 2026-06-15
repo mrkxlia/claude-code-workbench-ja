@@ -23,6 +23,10 @@ DEFAULT_PRICES: PriceTable = {
     "claude-sonnet-4-6": {"input": 3.0, "output": 15.0, "cache_write_1h": 6.0, "cache_write_5m": 3.75, "cache_read": 0.30},
     "claude-opus-4-8": {"input": 15.0, "output": 75.0, "cache_write_1h": 30.0, "cache_write_5m": 18.75, "cache_read": 1.50},
     "claude-haiku-4-5": {"input": 1.0, "output": 5.0, "cache_write_1h": 2.0, "cache_write_5m": 1.25, "cache_read": 0.10},
+    # Codex (OpenAI) — ひな型。Foundry の実課金レートに合わせて上書きすること。
+    # cache_write は OpenAI 側に概念が無いため 0（Codex は cache_read=cached_input のみ）。
+    "gpt-5": {"input": 1.25, "output": 10.0, "cache_write_1h": 0.0, "cache_write_5m": 0.0, "cache_read": 0.125},
+    "gpt-5-mini": {"input": 0.25, "output": 2.0, "cache_write_1h": 0.0, "cache_write_5m": 0.0, "cache_read": 0.025},
 }
 
 # Foundry のデプロイ名 → 正規モデル ID。必要に応じて追記する。
@@ -54,7 +58,8 @@ class PriceBook:
             return None
         per_million = (
             ev.input_tokens * rate.get("input", 0.0)
-            + ev.output_tokens * rate.get("output", 0.0)
+            # reasoning は output 側のトークンなので output 単価で計上（output_tokens とは別計上）。
+            + (ev.output_tokens + ev.reasoning_output_tokens) * rate.get("output", 0.0)
             + ev.cache_creation_1h_tokens * rate.get("cache_write_1h", 0.0)
             + ev.cache_creation_5m_tokens * rate.get("cache_write_5m", 0.0)
             + ev.cache_read_tokens * rate.get("cache_read", 0.0)

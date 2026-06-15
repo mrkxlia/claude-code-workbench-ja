@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS usage_event (
     model                    TEXT,
     input_tokens             INTEGER NOT NULL DEFAULT 0,
     output_tokens            INTEGER NOT NULL DEFAULT 0,
+    reasoning_output_tokens  INTEGER NOT NULL DEFAULT 0,
     cache_creation_tokens    INTEGER NOT NULL DEFAULT 0,
     cache_creation_1h_tokens INTEGER NOT NULL DEFAULT 0,
     cache_creation_5m_tokens INTEGER NOT NULL DEFAULT 0,
@@ -60,6 +61,7 @@ CREATE TABLE IF NOT EXISTS ingest_state (
 _COLUMNS = [
     "source", "message_id", "session_id", "agent_id", "request_id", "timestamp_utc",
     "repo_path", "git_branch", "model", "input_tokens", "output_tokens",
+    "reasoning_output_tokens",
     "cache_creation_tokens", "cache_creation_1h_tokens", "cache_creation_5m_tokens",
     "cache_read_tokens", "web_search_requests", "web_fetch_requests", "cost_usd",
     "is_subagent",
@@ -77,7 +79,8 @@ def _event_row(ev: UsageEvent) -> tuple:
     return (
         ev.source, ev.message_id, ev.session_id, ev.agent_id, ev.request_id,
         ev.timestamp_utc, ev.repo_path, ev.git_branch, ev.model,
-        ev.input_tokens, ev.output_tokens, ev.cache_creation_tokens,
+        ev.input_tokens, ev.output_tokens, ev.reasoning_output_tokens,
+        ev.cache_creation_tokens,
         ev.cache_creation_1h_tokens, ev.cache_creation_5m_tokens, ev.cache_read_tokens,
         ev.web_search_requests, ev.web_fetch_requests, ev.cost_usd,
         1 if ev.is_subagent else 0,

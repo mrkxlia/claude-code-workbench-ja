@@ -51,7 +51,7 @@ claude-code-workbench-ja/
 ├── token-usage-tracker/             # AIエージェントのトークン消費トラッカー（独立Pythonツール / uv / TDD）
 │   ├── README.md
 │   ├── pyproject.toml               #   uv 管理・[project.scripts] tokentracker
-│   ├── tokentracker/                #   parsers(claude_code) / db / pricing / queries / ingest / cli / dashboard
+│   ├── tokentracker/                #   parsers(claude_code/codex/cline) / db / pricing / queries / ingest / cli / dashboard
 │   └── tests/                       #   pytest（fixtures に実ログ匿名化の代表ケースを固定）
 └── GlobalClaudeMD-sample/           # グローバルスコープ用 CLAUDE.md サンプル
     └── CLAUDE.md

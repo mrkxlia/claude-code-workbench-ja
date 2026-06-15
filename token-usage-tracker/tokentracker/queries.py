@@ -76,11 +76,12 @@ def summary(
         )
         b["events"] += 1
         b["input_tokens"] += row["input_tokens"]
-        b["output_tokens"] += row["output_tokens"]
+        # reasoning は表示上 output に畳む（コストは output 単価で別計上）。
+        b["output_tokens"] += row["output_tokens"] + row["reasoning_output_tokens"]
         b["cache_creation_tokens"] += row["cache_creation_tokens"]
         b["cache_read_tokens"] += row["cache_read_tokens"]
         tokens = (
-            row["input_tokens"] + row["output_tokens"]
+            row["input_tokens"] + row["output_tokens"] + row["reasoning_output_tokens"]
             + row["cache_creation_tokens"] + row["cache_read_tokens"]
         )
         if row["cost_usd"] is None:
