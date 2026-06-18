@@ -9,7 +9,7 @@
       "name": "software-factory",
       "source": "./software-factory",
       "description": "7つの専門エージェントで機能開発を流れ作業化する「ソフトウェア工場」テンプレート。スキル6種（factory-setup / feature-factory / build-with-tests / notes / spec-extract / factory-improve）を提供する。",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "category": "workflow",
       "author": {
         "name": "mrkxlia"
