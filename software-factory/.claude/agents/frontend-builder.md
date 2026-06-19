@@ -68,3 +68,7 @@ color: yellow
   Decisions / Deviations / Tradeoffs / Gotchas / Deferred の該当セクションのみ、
   各エントリ1〜4行、`file:line`・テスト名・エラーメッセージのいずれかの物証つき）。
   完了時にファイル冒頭の Status ブロック（State / Next / Watch out の3行）を上書き更新する
+- **並列グループの一員として起動された場合**（オーケストレーターがグループ別ノート
+  `implementation-notes-<group>.md` を記録先に渡したとき）は、そのグループ別ノートに**追記のみ**を行い、
+  **本体ノートの Status ブロックは上書きしない**（並列の同時上書きで取りこぼすため）。
+  本体への統合と Status 更新は工場長が並列完了後に行う
