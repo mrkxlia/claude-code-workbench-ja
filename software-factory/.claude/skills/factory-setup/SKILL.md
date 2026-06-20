@@ -224,7 +224,7 @@ CLAUDE.md のアーキテクチャルールとビルダーの担当範囲は、*
 ### 6-1. スキルのコピー
 
 `mkdir -p .claude/skills` して `feature-factory/`・`build-with-tests/`・`notes/`・
-`spec-extract/`・`factory-improve/` の5つをコピーする。
+`spec-extract/`・`factory-improve/`・`clarify/` の6つをコピーする。
 **factory-setup 自身は対象リポジトリにコピーしない**（ワンショットのブートストラップであり、
 プロジェクトのスラッシュコマンド一覧を汚さないため）。
 
@@ -244,11 +244,17 @@ CLAUDE.md のアーキテクチャルールとビルダーの担当範囲は、*
 ```bash
 mkdir -p .claude/hooks
 cp "$SRC/.claude/hooks/block-secrets-commit.sh" .claude/hooks/
-chmod +x .claude/hooks/block-secrets-commit.sh
+cp "$SRC/.claude/hooks/guard-builder-writes.sh" .claude/hooks/
+chmod +x .claude/hooks/block-secrets-commit.sh .claude/hooks/guard-builder-writes.sh
 ```
 
-🔓 非gitモード: フックはそのままコピーしてよい。git の無い環境では何もせず素通りし
-（`git diff` が失敗した時点で exit 0）、後から `git init` した時点で自動的に有効になる。
+`guard-builder-writes.sh` は並列実装フェーズ中の共有ファイル衝突だけを `ask` に回すフック。
+共有ファイル禁止リスト（`SHARED_PATTERNS`）を、承認済みのスタック（Prisma/型バレル/ルーティング等）に
+合わせて差し替える。
+
+🔓 非gitモード: フックはそのままコピーしてよい。git の無い環境でも、`guard-builder-writes.sh` は
+`.parallel-active` マーカーが無ければ素通りするため無害。`block-secrets-commit.sh` も
+（`git diff` が失敗した時点で exit 0）後から `git init` した時点で自動的に有効になる。
 
 ### 6-3. settings.json のマージ
 
@@ -269,11 +275,13 @@ chmod +x .claude/hooks/block-secrets-commit.sh
 導入検証:
 - [ ] .claude/agents/ にエージェント定義（7ファイル、FE無し構成なら6）がある
 - [ ] 各エージェントの frontmatter が妥当な YAML である
-- [ ] .claude/skills/ に feature-factory / build-with-tests / notes / spec-extract / factory-improve がある
+- [ ] .claude/skills/ に feature-factory / build-with-tests / notes / spec-extract / factory-improve / clarify がある
       （既存同名スキルでスキップしたものは報告済みである）
 - [ ] build-with-tests の typecheck コマンドが置換済みである
-- [ ] block-secrets-commit.sh に実行権限がある（ls -l で確認)
-- [ ] .claude/settings.json が妥当な JSON で、既存キーが失われていない
+- [ ] block-secrets-commit.sh と guard-builder-writes.sh に実行権限がある（ls -l で確認)
+- [ ] guard-builder-writes.sh のドライラン: マーカー無しで共有ファイルへの Write を流すと exit 0
+      （`echo '{"tool_name":"Write","tool_input":{"file_path":"prisma/schema.prisma"}}' | bash .claude/hooks/guard-builder-writes.sh; echo $?` → 0）
+- [ ] .claude/settings.json が妥当な JSON で、既存キーが失われていない（PreToolUse に Bash と Edit|Write の両エントリがある）
 - [ ] CLAUDE.md のフォルダ境界とビルダー3種の「担当範囲」が一致している
 - [ ] ビルダー3種の「担当範囲」に `docs/factory/<slug>/implementation-notes.md` の行が残っている
 - [ ] フックのドライラン: echo '{"tool_name":"Bash","tool_input":{"command":"git commit -m x"}}' を

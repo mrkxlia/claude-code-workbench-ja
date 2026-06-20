@@ -36,11 +36,11 @@ claude-code-workbench-ja/
 │   ├── README.md
 │   ├── CLAUDE.md                    #   コピーして使う CLAUDE.md サンプル
 │   ├── .claude-plugin/plugin.json   #   プラグインマニフェスト
-│   └── .claude/                     #   agents 7種 / skills 6種（notes / spec-extract 工場連携版・factory-improve 含む）/ hooks / settings.json
+│   └── .claude/                     #   agents 7種 / skills 7種（clarify / notes / spec-extract 工場連携版・factory-improve 含む）/ hooks 2種（block-secrets-commit・並列共有衝突を確認する guard-builder-writes）/ settings.json
 ├── task-factory/                    # 汎用5エージェント構成「タスク工場」テンプレート（コード以外の成果物向け）
 │   ├── README.md
 │   ├── CLAUDE.md                    #   コピーして使う CLAUDE.md サンプル
-│   └── .claude/                     #   agents 5種 / skills 2種 / hooks / settings.json
+│   └── .claude/                     #   agents 5種 / skills 3種（task-factory / clarify / task-factory-setup）/ hooks / settings.json
 ├── codex-bridge/                    # Codex にレビュー・実装・相談を依頼するスキル＆エージェント（プラグイン導入可）
 │   ├── README.md
 │   ├── .claude-plugin/plugin.json   #   プラグインマニフェスト
