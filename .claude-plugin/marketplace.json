@@ -28,6 +28,18 @@
       },
       "license": "MIT",
       "keywords": ["knowledge", "memory", "hooks", "cross-session", "japanese"]
+    },
+    {
+      "name": "codex-bridge",
+      "source": "./codex-bridge",
+      "description": "コードレビュー・実装・相談を OpenAI Codex に依頼するスキル4種（codex-review / codex-implement / codex-ask / codex-agents）とサブエージェント3種。ユーザー自身は Codex を操作せず、Claude Code が Codex CLI を非対話モードで駆動する。プラン承認で Codex 実装へ委譲する opt-in フックと、Claude ルールを取り込む AGENTS.md ジェネレータを同梱。",
+      "version": "1.2.0",
+      "category": "workflow",
+      "author": {
+        "name": "mrkxlia"
+      },
+      "license": "MIT",
+      "keywords": ["codex", "review", "subagents", "delegation", "japanese"]
     }
   ]
 }
