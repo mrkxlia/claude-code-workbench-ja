@@ -32,15 +32,15 @@ claude-code-workbench-ja/
 ├── implementation-skills/           # 実装ノート記録 + 仕様書逆引きスキル（単体利用向け原本）
 │   ├── README.md
 │   └── .claude/skills/              #   notes / spec-extract の2スキル
-├── software-factory/                # 7エージェント構成「ソフトウェア工場」テンプレート（プラグイン導入可）
+├── software-pipeline/                # 7エージェント構成「ソフトウェアパイプライン」テンプレート（プラグイン導入可）
 │   ├── README.md
 │   ├── CLAUDE.md                    #   コピーして使う CLAUDE.md サンプル
 │   ├── .claude-plugin/plugin.json   #   プラグインマニフェスト
-│   └── .claude/                     #   agents 7種 / skills 7種（clarify / notes / spec-extract 工場連携版・factory-improve 含む）/ hooks 2種（block-secrets-commit・並列共有衝突を確認する guard-builder-writes）/ settings.json
-├── task-factory/                    # 汎用5エージェント構成「タスク工場」テンプレート（コード以外の成果物向け）
+│   └── .claude/                     #   agents 7種 / skills 7種（clarify / notes / spec-extract パイプライン連携版・pipeline-improve 含む）/ hooks 2種（block-secrets-commit・並列共有衝突を確認する guard-builder-writes）/ settings.json
+├── task-pipeline/                    # 汎用5エージェント構成「タスクパイプライン」テンプレート（コード以外の成果物向け）
 │   ├── README.md
 │   ├── CLAUDE.md                    #   コピーして使う CLAUDE.md サンプル
-│   └── .claude/                     #   agents 5種 / skills 3種（task-factory / clarify / task-factory-setup）/ hooks / settings.json
+│   └── .claude/                     #   agents 5種 / skills 3種（task-pipeline / clarify / task-pipeline-setup）/ hooks / settings.json
 ├── codex-bridge/                    # Codex にレビュー・実装・相談を依頼するスキル＆エージェント（プラグイン導入可）
 │   ├── README.md
 │   ├── .claude-plugin/plugin.json   #   プラグインマニフェスト
@@ -69,7 +69,7 @@ claude-code-workbench-ja/
 2. **各ディレクトリには README.md を置く** — セクションの目的・使い方・ファイル構成を説明する README.md を必ず用意する。
 3. **リポジトリ全体の言語は日本語** — README.md・CLAUDE.md など、このリポジトリ自体のドキュメントは日本語で記述する。
 4. **マーケットプレイス定義はルートの `.claude-plugin/` に置く** — Claude Code プラグイン仕様上の必須配置であり、規約1の例外。
-5. **プラグイン配下を変更したら version を上げる** — `software-factory/`・`knowledge-share/`・`codex-bridge/` のプラグイン対象ファイルを変更したら、該当する `<section>/.claude-plugin/plugin.json` と `.claude-plugin/marketplace.json` の対応エントリの `version` をセマンティックバージョニングで更新する（プラグイン利用者への更新配信に必要）。
+5. **プラグイン配下を変更したら version を上げる** — `software-pipeline/`・`knowledge-share/`・`codex-bridge/` のプラグイン対象ファイルを変更したら、該当する `<section>/.claude-plugin/plugin.json` と `.claude-plugin/marketplace.json` の対応エントリの `version` をセマンティックバージョニングで更新する（プラグイン利用者への更新配信に必要）。
 
 ---
 

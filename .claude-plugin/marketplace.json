@@ -6,16 +6,16 @@
   },
   "plugins": [
     {
-      "name": "software-factory",
-      "source": "./software-factory",
-      "description": "7つの専門エージェントで機能開発を流れ作業化する「ソフトウェア工場」テンプレート。スキル7種（factory-setup / feature-factory / clarify / build-with-tests / notes / spec-extract / factory-improve）を提供する。",
-      "version": "1.2.0",
+      "name": "software-pipeline",
+      "source": "./software-pipeline",
+      "description": "7つの専門エージェントで機能開発を流れ作業化する「ソフトウェアパイプライン」テンプレート。スキル7種（pipeline-setup / feature-pipeline / clarify / build-with-tests / notes / spec-extract / pipeline-improve）を提供する。",
+      "version": "2.0.0",
       "category": "workflow",
       "author": {
         "name": "mrkxlia"
       },
       "license": "MIT",
-      "keywords": ["workflow", "subagents", "software-factory", "japanese"]
+      "keywords": ["workflow", "subagents", "software-pipeline", "japanese"]
     },
     {
       "name": "knowledge-share",
