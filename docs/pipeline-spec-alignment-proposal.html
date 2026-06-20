@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>パイプライン整合性提案 — 既存仕様の吸い出し＋以降の合致性の強制化</title>
+<style>
+  :root{
+    --bg:#fbfbfa; --fg:#1c2024; --muted:#5b6770; --line:#e3e6e8;
+    --accent:#2e6fb0; --accent-soft:#eaf2fb;
+    --good:#2e8b57; --good-soft:#e4f5ea; --warn:#b8860b; --warn-soft:#fff6da;
+    --bad:#cc4b37; --bad-soft:#fdeae6; --card:#ffffff;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--fg);
+    font-family:-apple-system,"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;
+    line-height:1.75;font-size:16px}
+  .wrap{max-width:980px;margin:0 auto;padding:32px 22px 96px}
+  header.title{border-bottom:3px solid var(--accent);padding-bottom:18px;margin-bottom:8px}
+  h1{font-size:27px;margin:0 0 6px;line-height:1.35}
+  .sub{color:var(--muted);font-size:14px;margin:0}
+  h2{font-size:21px;margin:42px 0 12px;padding-left:11px;border-left:5px solid var(--accent)}
+  h3{font-size:17px;margin:26px 0 8px}
+  p,li{font-size:15.5px}
+  code{background:#eef1f3;border-radius:4px;padding:1px 5px;font-size:13px;
+    font-family:"SFMono-Regular",Consolas,"Liberation Mono",monospace}
+  a{color:var(--accent)}
+  /* badges */
+  .badge{display:inline-block;font-size:12px;font-weight:700;border-radius:999px;
+    padding:2px 10px;vertical-align:middle}
+  .b-rec{background:var(--good-soft);color:var(--good);border:1px solid #bfe6cd}
+  .b-warn{background:var(--warn-soft);color:var(--warn);border:1px solid #ecd99a}
+  .b-bad{background:var(--bad-soft);color:var(--bad);border:1px solid #f2c3b8}
+  /* exec summary card */
+  .summary{background:var(--accent-soft);border:1px solid #cbe0f5;border-radius:12px;
+    padding:18px 22px;margin:18px 0 8px}
+  .summary h2{border:0;margin:0 0 8px;padding:0;font-size:18px;color:var(--accent)}
+  .summary ul{margin:6px 0 0;padding-left:20px}
+  .summary li{margin:4px 0}
+  /* TOC */
+  nav.toc{background:var(--card);border:1px solid var(--line);border-radius:10px;
+    padding:14px 20px;margin:22px 0}
+  nav.toc strong{font-size:13px;color:var(--muted);letter-spacing:.04em}
+  nav.toc ol{margin:8px 0 0;padding-left:22px;columns:2;column-gap:28px}
+  nav.toc a{text-decoration:none}
+  nav.toc li{margin:3px 0;font-size:14px}
+  /* tables */
+  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);
+    border:1px solid var(--line);border-radius:8px;overflow:hidden;font-size:14.5px}
+  th,td{border:1px solid var(--line);padding:9px 12px;text-align:left;vertical-align:top}
+  th{background:#f2f5f7;font-size:13.5px}
+  td.c{text-align:center;font-weight:700;font-size:16px}
+  .mark-good{color:var(--good)} .mark-mid{color:var(--warn)} .mark-bad{color:var(--bad)}
+  /* gap cards */
+  .gap{border:1px solid var(--line);border-left:5px solid var(--bad);background:var(--card);
+    border-radius:8px;padding:12px 16px;margin:12px 0}
+  .gap .n{font-weight:700;color:var(--bad)}
+  .gap .ref{color:var(--muted);font-size:13px}
+  /* plan option cards */
+  .opt{border:1px solid var(--line);border-radius:10px;background:var(--card);
+    padding:16px 20px;margin:14px 0}
+  .opt.rec{border:2px solid var(--good)}
+  .opt h3{margin-top:4px}
+  .files{background:var(--card);border:1px solid var(--line);border-radius:8px;
+    padding:6px 4px;margin:10px 0}
+  .files table{margin:0;border:0}
+  .note{color:var(--muted);font-size:13.5px}
+  .callout{background:var(--warn-soft);border:1px solid #ecd99a;border-radius:8px;
+    padding:12px 16px;margin:16px 0;font-size:14.5px}
+  footer{margin-top:48px;border-top:1px solid var(--line);padding-top:16px;
+    color:var(--muted);font-size:13px}
+  .src{font-size:13.5px}
+  .src li{margin:5px 0}
+  hr{border:0;border-top:1px solid var(--line);margin:30px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="title">
+  <h1>パイプライン整合性提案<br>― 既存仕様の「吸い出し」と以降要件の「合致性」を強制化する</h1>
+  <p class="sub">対象: <code>software-pipeline</code> / <code>task-pipeline</code> / <code>implementation-skills</code> ｜ 作成: 2026-06-20 ｜ ステータス: 判断材料（実装は案選択後）</p>
+</header>
+
+<!-- ============ EXEC SUMMARY ============ -->
+<section class="summary">
+  <h2>エグゼクティブサマリ（30秒）</h2>
+  <ul>
+    <li><b>課題</b>: 両パイプラインは「概要の機能・タスク要件」はブレずに流せるが、<b>対象リポジトリの既存仕様・既存内容との整合性</b>が保証されない。</li>
+    <li><b>要求（ユーザー）</b>: ①既存リポジトリからの仕様の<b>吸い出し（extraction）を必須化</b>、②以降の要件・成果物がその仕様に<b>合致すること（conformance）を必須化</b>。</li>
+    <li><b>研究結論</b>: 仕様駆動開発（SDD）の業界標準は「<b>永続的で“生きた”仕様・規約の層</b>」を要件→設計→実装の下に敷くこと（Kiro steering / Spec Kit constitution）。最大の敵は<b>コンテキスト・ドリフト</b>（一度作った仕様が放置で陳腐化）。</li>
+    <li><b>推奨</b>: <span class="badge b-rec">案A 軽量強化</span> — 新ファイル規約を増やさず、既存の <code>SPEC.md</code> / researcher / validator / spec-extract を強化し、吸い出しと合致を「任意」から「必須」へ格上げ＋<b>SPEC.md を“生きた仕様”として維持</b>して drift を断つ。</li>
+    <li><b>対案</b>: <span class="badge b-warn">案B steering 層新設</span> — Kiro 流に <code>docs/steering/</code> を新設。最強だが規約層自体が drift し、メンテ・トークン・導入摩擦が増える。</li>
+  </ul>
+</section>
+
+<!-- ============ TOC ============ -->
+<nav class="toc">
+  <strong>目次</strong>
+  <ol>
+    <li><a href="#bg">背景と要求</a></li>
+    <li><a href="#research">DeepResearch サマリ</a></li>
+    <li><a href="#have">既存パイプラインが既に持つ整合性機構</a></li>
+    <li><a href="#gap">ギャップ分析（なぜ「怪しい」のか）</a></li>
+    <li><a href="#options">判断材料: 案A / 案B 比較</a></li>
+    <li><a href="#rec">推奨と理由</a></li>
+    <li><a href="#scope">案A の章別・ファイル別 改修リスト</a></li>
+    <li><a href="#verify">検証方法</a></li>
+    <li><a href="#sources">出典</a></li>
+  </ol>
+</nav>
+
+<!-- ============ 1. BACKGROUND ============ -->
+<h2 id="bg">1. 背景と要求</h2>
+<p>
+<code>task-pipeline</code>・<code>software-pipeline</code> は、依頼された機能・タスクの<b>概要要件</b>をブレずに流すことはできる。
+一方で、<b>対象リポジトリにすでに存在する仕様・規約・実装内容との整合性</b>が保たれるかは保証が弱い、というのが本件の出発点である。
+</p>
+<p>ユーザーが求めるのは、次の2点の<b>強制化（enforce）</b>:</p>
+<ol>
+  <li><b>吸い出し（extraction）</b> — 既存リポジトリから要件・仕様を取り出す工程を<b>必須</b>にする。</li>
+  <li><b>合致（conformance）</b> — 以降に作る要件・成果物が、その吸い出した仕様に<b>合致することを必須</b>にする。</li>
+</ol>
+<p class="note">本ドキュメントは「軽量強化（案A）」と「steering 層新設（案B）」を比較する<b>判断材料</b>。実装はユーザーの案選択後に着手する。</p>
+
+<!-- ============ 2. RESEARCH ============ -->
+<h2 id="research">2. DeepResearch サマリ</h2>
+<p>OSS・Agent Skills・Anthropic / OpenAI・仕様駆動開発（SDD）の最新動向（2025–2026）を調査した。要点は以下。</p>
+
+<table>
+  <thead><tr><th style="width:24%">トピック</th><th>分かったこと</th><th style="width:26%">本件への示唆</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><b>GitHub Spec Kit</b><br><span class="note">OSS・広く採用</span></td>
+      <td><code>constitution</code>（プロジェクト原則）→ specify → plan → tasks → implement。各段に人間レビューのゲート。30+ のコーディングエージェント（Claude Code 含む）対応。</td>
+      <td>「原則（constitution）」を全工程の下敷きにする発想は、本リポジトリの <code>CLAUDE.md</code> と同型。</td>
+    </tr>
+    <tr>
+      <td><b>Amazon Kiro</b><br><span class="note">SDD ネイティブ IDE</span></td>
+      <td><code>.kiro/steering/</code>（<code>product.md</code>/<code>structure.md</code>/<code>tech.md</code>/<code>testing-standards.md</code>）で<b>永続的なプロジェクト文脈</b>を全エージェントに一貫適用。Requirements→Design→Tasks の3フェーズ。</td>
+      <td>「<b>規約を毎回説明せず永続ファイルで一貫ロードさせる</b>」のが整合性の核。案B はこれを直輸入する形。</td>
+    </tr>
+    <tr>
+      <td><b>Codified Context</b><br><span class="note">arXiv 2602.20478</span></td>
+      <td>「<b>hot-memory constitution（規約）＋ cold-memory 仕様ナレッジベース</b>＋ドメイン専門エージェント」の3層。</td>
+      <td>規約（hot）と仕様（cold）を分けて両方持つ設計。本件は cold=「生きた SPEC.md」。</td>
+    </tr>
+    <tr>
+      <td><b>コンテキスト・ドリフト<br>／Bootstrapping Illusion</b></td>
+      <td>設定ファイルは“完全に見えても”、最初のアーキ判断を反映し損ねた瞬間から劣化する。<b>メンテは一回きりでなく継続</b>でなければ意味がない。</td>
+      <td class="mark-bad"><b>最重要</b>。spec-extract が「入口専用」では、まさにこのドリフトに陥る。</td>
+    </tr>
+    <tr>
+      <td><b>Anthropic Agent Skills<br>ベストプラクティス</b></td>
+      <td>progressive disclosure（名前・説明→本文→参照ファイルの段階ロード）。SKILL.md は<b>500 行以内</b>、参照ファイルは必要時のみ。トークン経済。</td>
+      <td>規約層を増やしすぎるとトークンを食う。<b>最小ロードで最大整合</b>を狙うべき＝案A 寄り。</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout">
+<b>研究からの一言:</b> 解決策は「新フレームワーク」ではなく、<b>既存仕様を吸い出して“生きた仕様（spec of record）”として維持し、全工程で必須ロード＆整合チェックさせる</b>こと。これは Kiro/Spec Kit の本質（永続＋一貫ロード）と、Anthropic のトークン経済（段階ロード）の交点にある。
+</div>
+
+<!-- ============ 3. WHAT WE HAVE ============ -->
+<h2 id="have">3. 既存パイプラインが既に持つ整合性機構（再発明しない）</h2>
+<p>本リポジトリのパイプラインは、すでに整合性機構を<b>かなり</b>持っている。これらは活かす。</p>
+<ul>
+  <li><b>codebase-researcher / source-researcher</b> — 作る前に既存コード・パターンを <code>file:line</code> 付きで地図化。</li>
+  <li><b>spec-writer / builder</b> — 「既存パターンの再利用を最優先」「<code>CLAUDE.md</code> と矛盾する設計を書かない」が明文ルール（<code>spec-writer.md</code>）。</li>
+  <li><b>implementation-validator</b> — 項目5で「<code>CLAUDE.md</code> や既存コードと食い違うパターン」を検査（<code>implementation-validator.md:37</code>）。</li>
+  <li><b>spec-extract</b> — レガシーコードの挙動を <code>SPEC.md</code> に逆引きし、全記述に <code>[確定]/[推定]/[不明]</code> の確度ラベル。</li>
+  <li><b>LEARNINGS.md → CLAUDE.md 昇格</b> / <b>pipeline-improve</b> — 運用からルールを育てる自己改善ループ。</li>
+</ul>
+
+<!-- ============ 4. GAP ============ -->
+<h2 id="gap">4. ギャップ分析（SDD パターンと比べた“真の穴”）</h2>
+
+<div class="gap">
+  <p><span class="n">穴① SPEC.md が「入口専用」で維持されない</span> <span class="ref">根拠: <code>spec-extract/SKILL.md:187</code>「Phase 7 の後では呼ばない」</span></p>
+  <p>2〜3 機能流すと spec-of-record が陳腐化する。以降の機能は per-feature の <code>story.md</code>/<code>brief.md</code> には照合されるが、<b>“生きた全体仕様”には照合されない</b>。研究が警告するドリフトそのもの。</p>
+</div>
+<div class="gap">
+  <p><span class="n">穴② 規約層が単一 CLAUDE.md ＋“任意の”ポインタ</span> <span class="ref">根拠: <code>software-pipeline/CLAUDE.md</code> の「深いドキュメントへのポインタ」</span></p>
+  <p><code>docs/architecture.md</code> 等へのリンクはあるが、エージェントに<b>ロード義務がない</b>。Kiro の steering のような「保証された一貫ロード」が無い。</p>
+</div>
+<div class="gap">
+  <p><span class="n">穴③ task-pipeline は仕様/規約の前工程が実質未設計</span> <span class="ref">根拠: <code>task-pipeline/README.md</code>（spec-extract 連携は software-pipeline 側のみ）</span></p>
+  <p>spec-extract 連携なし・<code>SPEC.md</code> 入力なし。整合性は <code>source-researcher</code> が既存物を<b>偶然見つけるか</b>に依存。</p>
+</div>
+<div class="gap">
+  <p><span class="n">穴④ validator の既存仕様チェックが 1 行・無誘導</span> <span class="ref">根拠: <code>implementation-validator.md:37</code> 項目5</span></p>
+  <p>「既存コードと食い違うパターン」が他項目に埋もれた1行。<code>SPEC.md</code> が<b>名前付き一次入力になっていない</b>ため、合致は検査者の気づき頼み。</p>
+</div>
+
+<!-- ============ 5. OPTIONS ============ -->
+<h2 id="options">5. 判断材料: 案A / 案B 比較</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th style="width:30%">評価軸</th>
+      <th style="width:35%">案A: 既存プリミティブ強化 <span class="badge b-rec">推奨</span></th>
+      <th style="width:35%">案B: steering 層を新設</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><b>整合性の強さ</b></td><td class="c mark-good">○</td><td class="c mark-good">◎</td></tr>
+    <tr><td><b>実装・複雑さの低さ</b></td><td class="c mark-good">◎</td><td class="c mark-bad">△</td></tr>
+    <tr><td><b>メンテ費用の低さ</b><br><span class="note">＝drift しにくさ</span></td><td class="c mark-good">◎</td><td class="c mark-bad">△<br><span class="note">層自体が drift</span></td></tr>
+    <tr><td><b>トークン経済</b></td><td class="c mark-good">◎</td><td class="c mark-mid">○</td></tr>
+    <tr><td><b>導入摩擦の低さ</b><br><span class="note">利用者のカスタム負担</span></td><td class="c mark-good">◎</td><td class="c mark-bad">△</td></tr>
+    <tr><td><b>リポジトリ方針との整合</b><br><span class="note">「CLAUDE.md は 100–300 行」</span></td><td class="c mark-good">◎</td><td class="c mark-bad">△<br><span class="note">単一 CLAUDE.md 方針と衝突</span></td></tr>
+  </tbody>
+</table>
+
+<div class="opt rec">
+  <h3>案A — 既存プリミティブの強化 <span class="badge b-rec">推奨・軽量</span></h3>
+  <p>新しいファイル規約は増やさず、既存の <code>SPEC.md</code> / <code>CLAUDE.md</code> / researcher / validator / spec-extract / pipeline-improve を強化し、吸い出しと合致を<b>「任意」から「必須」へ格上げ</b>する。</p>
+  <ol>
+    <li><b>吸い出しの強制化（入口）</b> — <code>SPEC.md</code> が無いレガシーは spec-extract を<b>前工程として必須化</b>（現状は README で「任意」）。researcher に <code>SPEC.md</code>＋規約ドキュメントの<b>一次ロードを義務化</b>し、依頼が既存仕様と矛盾したら「未解決の質問」で止める。</li>
+    <li><b>SPEC.md を“生きた仕様”に（drift を断つ）</b> — feature-pipeline の Phase 7（最終承認後）に、確定した新挙動を <code>SPEC.md</code> へ反映する<b>増分更新ステップ</b>を追加。spec-extract の確度ラベルを流用。「入口=全体逆引き／出口=該当要件の増分更新」へ。</li>
+    <li><b>合致ゲートの明示化（強制）</b> — validator / reviewer に「<code>SPEC.md</code>・既存仕様との整合性」を<b>独立チェック項目</b>として立て、<code>SPEC.md</code> を名前付き入力にし、矛盾を Critical 扱い。spec-writer は brief×SPEC を突合し<b>仕様変更を明示列挙</b>（沈黙の drift を禁止）。</li>
+    <li><b>task-pipeline の前工程を新設</b> — source-researcher に既存規約/仕様/テンプレの一次ロードを義務化＋規約キャプチャ前工程を追加。brief-writer・deliverable-reviewer に整合ゲートを追加。</li>
+    <li><b>implementation-skills 原本の更新</b> — spec-extract 原本に「増分更新／生きた仕様」運用を追記、notes 原本に「逸脱は SPEC.md 更新候補」を追記。連携版コピーを同期。</li>
+  </ol>
+  <p class="note"><b>トレードオフ:</b> 低複雑・低メンテ。リポジトリのミニマリズムと Anthropic の progressive-disclosure に整合。全プリミティブを再利用。
+  残リスク① 大規模コードで <code>SPEC.md</code> が肥大 → spec-extract 既存の「1モジュールずつ」スケーリング規則で緩和。
+  残リスク② <b>「義務化」はプロンプト指示ベースのため、案B の構造的な必須ロード保証より徹底度が下がりうる</b>（＝穴②が完全には消えない）→ validator の独立 SPEC 整合ゲート（合致を後工程で構造的に二重化）で緩和。</p>
+</div>
+
+<div class="opt">
+  <h3>案B — steering 層を新設 <span class="badge b-warn">本格・大きい</span></h3>
+  <p>Kiro/Spec Kit に倣い <code>docs/steering/</code>（<code>product.md</code>/<code>structure.md</code>/<code>tech.md</code>/<code>testing-standards.md</code>）の<b>構造化規約層を新設</b>し、全エージェントに必須ロード。<code>CLAUDE.md</code> は hot constitution としてそれを指す。<b>案Aの内容も全部含む</b>。</p>
+  <p class="note"><b>トレードオフ:</b> 最強・最も明示的で Kiro/Spec Kit と 1:1。ただし
+  (i) 複数ファイルの規約層<b>自体が drift する</b>（まさに Bootstrapping Illusion）、
+  (ii) エージェントごとのロードトークン増、
+  (iii) リポジトリの「単一 100–300 行 <code>CLAUDE.md</code>」方針と衝突、
+  (iv) テンプレ表面積・利用者のカスタム負担・導入摩擦が増える。</p>
+</div>
+
+<!-- ============ 6. RECOMMENDATION ============ -->
+<h2 id="rec">6. 推奨と理由</h2>
+<p><b>案A を推奨する。</b></p>
+<ul>
+  <li>ユーザー要求（吸い出し必須化＋以降の合致必須化）を、<b>既存プリミティブで過不足なく</b>満たせる。</li>
+  <li>「SPEC.md を生きた仕様として維持」する 1 手で、研究が指摘した<b>ドリフトのループを閉じる</b>。これが整合性の本丸。</li>
+  <li>Anthropic のトークン指針（段階ロード・500 行ルール）とリポジトリの<b>ミニマリズム</b>に沿う。</li>
+  <li>案B の追加構造は、<code>CLAUDE.md</code>＋生きた <code>SPEC.md</code> で実質カバー済みの内容を、<b>より高い drift/メンテ費用で再実装</b>する面が大きい。</li>
+</ul>
+<div class="callout">
+<b>折衷案:</b> 案B の<b>“語彙”だけ採用</b>する。維持された <code>SPEC.md</code> を「<b>spec of record / steering baseline</b>」と呼び、概念的には Kiro steering と同じ役割だと位置づけつつ、<b>ファイルの増殖は避ける</b>。費用対効果が最も高い。
+</div>
+
+<!-- ============ 7. SCOPE ============ -->
+<h2 id="scope">7. 案A の章別・ファイル別 改修リスト（実装時）</h2>
+<p class="note">承認後に着手する具体対象。<b>赤字バッジ</b>はリポジトリ規約5（プラグインの version 更新）に関わる箇所。</p>
+
+<h3>software-pipeline <span class="badge b-bad">プラグイン → version 更新必須</span></h3>
+<div class="files"><table>
+  <thead><tr><th style="width:38%">ファイル</th><th>変更点</th></tr></thead>
+  <tbody>
+    <tr><td><code>.claude/agents/codebase-researcher.md</code></td><td><code>SPEC.md</code> の一次ロードを義務化＋既存仕様との矛盾検出</td></tr>
+    <tr><td><code>.claude/agents/story-writer.md</code></td><td>既存仕様に反する要求は「未解決の質問」へ回す</td></tr>
+    <tr><td><code>.claude/agents/spec-writer.md</code></td><td>brief×<code>SPEC.md</code> 突合・意図的な仕様変更の明示列挙</td></tr>
+    <tr><td><code>.claude/agents/implementation-validator.md</code></td><td>「SPEC 整合」を独立 Critical 項目に昇格（<code>SPEC.md</code> を名前付き入力に）</td></tr>
+    <tr><td><code>.claude/skills/feature-pipeline/SKILL.md</code></td><td>Phase 7 に「生きた仕様」の増分更新ステップ</td></tr>
+    <tr><td><code>.claude/skills/spec-extract/SKILL.md</code></td><td>入口=全体逆引き／出口=増分更新（「Phase 7 後は呼ばない」を緩和）</td></tr>
+    <tr><td><code>.claude/skills/pipeline-setup/SKILL.md</code></td><td>SPEC 無しレガシーで spec-extract を必須前工程化</td></tr>
+    <tr><td><code>CLAUDE.md</code>（サンプル）</td><td><code>SPEC.md</code> を spec-of-record ポインタに＋合致をハードルール化</td></tr>
+    <tr><td><code>README.md</code></td><td>必須吸い出し・生きた仕様・合致ゲートを記述、SDD/steering 研究を出典に</td></tr>
+    <tr><td><code>.claude-plugin/plugin.json</code> ＋ ルート <code>.claude-plugin/marketplace.json</code></td><td>software-pipeline エントリの <b>version を semver 更新</b>（規約5）</td></tr>
+  </tbody>
+</table></div>
+
+<h3>task-pipeline <span class="badge b-rec">プラグイン対象外 → version 更新不要</span></h3>
+<div class="files"><table>
+  <thead><tr><th style="width:38%">ファイル</th><th>変更点</th></tr></thead>
+  <tbody>
+    <tr><td><code>.claude/agents/source-researcher.md</code></td><td>既存規約/仕様/テンプレの一次ロードを義務化</td></tr>
+    <tr><td><code>.claude/agents/requirements-writer.md</code></td><td>既存仕様に反する要求は「未解決の質問」へ</td></tr>
+    <tr><td><code>.claude/agents/brief-writer.md</code></td><td>既存仕様/規約との整合ゲートを追加</td></tr>
+    <tr><td><code>.claude/agents/deliverable-reviewer.md</code></td><td>「既存仕様/規約との整合性」を独立チェック項目に</td></tr>
+    <tr><td><code>.claude/skills/task-pipeline/SKILL.md</code> ／ <code>task-pipeline-setup/SKILL.md</code></td><td>規約・仕様キャプチャの前工程を追加</td></tr>
+    <tr><td><code>CLAUDE.md</code> ／ <code>README.md</code></td><td>合致ゲート・前工程を記述</td></tr>
+  </tbody>
+</table></div>
+
+<h3>implementation-skills <span class="badge b-rec">プラグイン対象外</span></h3>
+<div class="files"><table>
+  <thead><tr><th style="width:38%">ファイル</th><th>変更点</th></tr></thead>
+  <tbody>
+    <tr><td><code>.claude/skills/spec-extract/SKILL.md</code>（原本）</td><td>「生きた仕様／増分更新」運用を追記</td></tr>
+    <tr><td><code>.claude/skills/notes/SKILL.md</code>（原本）</td><td>「記録した逸脱は SPEC.md 更新候補」を追記</td></tr>
+    <tr><td><code>README.md</code></td><td>spec-of-record の維持運用を記述</td></tr>
+    <tr><td><span class="note">同期</span> software-pipeline 側の連携版コピー</td><td><code>PIPELINE-INTEGRATION</code> マーカー方式で原本と同期（README の diff コマンドで一致確認）</td></tr>
+  </tbody>
+</table></div>
+
+<!-- ============ 8. VERIFY ============ -->
+<h2 id="verify">8. 検証方法（実装時）</h2>
+<ul>
+  <li><b>原本と連携版の一致</b>: <code>diff &lt;(awk '/PIPELINE-INTEGRATION/{exit} {print}' software-pipeline/.claude/skills/spec-extract/SKILL.md) implementation-skills/.claude/skills/spec-extract/SKILL.md</code> が空。</li>
+  <li><b>Agent Skills 規則</b>: 各 <code>SKILL.md</code> 本文が 500 行以内。</li>
+  <li><b>version 規約</b>: software-pipeline 変更時に <code>plugin.json</code> と <code>marketplace.json</code> の version が更新済み。</li>
+  <li><b>手動シナリオ</b>: <code>SPEC.md</code> を持つ小リポジトリで <code>/feature-pipeline</code> を流し、
+    (1) researcher が <code>SPEC.md</code> をロード、
+    (2) SPEC に反する要求が「未解決の質問」で停止、
+    (3) Phase 7 で <code>SPEC.md</code> が増分更新、
+    (4) validator が SPEC 整合を独立項目で報告、を確認。</li>
+</ul>
+
+<!-- ============ 9. SOURCES ============ -->
+<h2 id="sources">9. 出典</h2>
+<ul class="src">
+  <li>GitHub Spec Kit ガイド — <a href="https://intuitionlabs.ai/articles/spec-driven-development-spec-kit">IntuitionLabs: Spec-Driven AI Development</a></li>
+  <li>SDD ツール比較 2026 — <a href="https://www.marktechpost.com/2026/05/08/9-best-ai-tools-for-spec-driven-development-in-2026-kiro-bmad-gsd-and-more-compare/">MarkTechPost: 9 Best AI Tools for Spec-Driven Development</a></li>
+  <li>Spec-Driven Development（論文）— <a href="https://arxiv.org/html/2602.00180v1">arXiv 2602.00180</a></li>
+  <li>Kiro Steering（公式）— <a href="https://kiro.dev/docs/steering/">kiro.dev/docs/steering</a></li>
+  <li>Kiro Steering 解説 — <a href="https://builder.aws.com/content/3ELQi0SxjCJDdqFRtdLKiaCfcv5/kiro-steering-bringing-infrastructure-level-consistency-to-ai-assisted-development">AWS Builder Center: Infrastructure-Level Consistency</a></li>
+  <li>Codified Context（論文）— <a href="https://arxiv.org/html/2602.20478v1">arXiv 2602.20478</a></li>
+  <li>コンテキスト・ドリフト — <a href="https://blog.getbind.co/context-engineering-in-2026-the-complete-developers-guide/">Bind AI: Context Engineering 2026</a></li>
+  <li>Agent Skills ベストプラクティス（公式）— <a href="https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices">Claude Docs: Skill authoring best practices</a></li>
+</ul>
+
+<footer>
+  本ドキュメントは判断材料（実装は案A/B選択後）。リポジトリ規約に準拠: ①ルート直下に裸ファイルを置かず <code>docs/</code> 配下に配置、③日本語で記述、⑤プラグイン（software-pipeline）変更時は version を semver 更新。
+</footer>
+
+</div>
+</body>
+</html>
