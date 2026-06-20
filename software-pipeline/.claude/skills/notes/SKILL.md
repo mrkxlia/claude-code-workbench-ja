@@ -139,13 +139,24 @@ This file is a first-class evidence source for the `spec-extract` skill
 "推定" into "確定" in a recovered spec — one more reason to anchor entries
 to files and tests.
 
+### Keeping a living SPEC.md in sync (small / out-of-band changes)
+
+If the repo already has a `SPEC.md` (the spec of record) and your change
+**alters behavior it describes**, don't wait for a full re-extraction: in the
+same session, do a **lightweight incremental update of the affected `F-NN`
+row(s) only** (rewrite the requirement, append a 改訂履歴 line — see the
+spec-extract skill's 変更管理). Recording the deviation here and touching the
+one `F-NN` row keeps the spec from rotting, without running the whole pipeline.
+
+This stays **signal, not a changelog**: only sync rows whose described behavior
+actually changed — routine edits that match the existing spec need no SPEC touch.
+
 ## Style
 
 Match the surrounding project's language. If the user writes in Japanese or the
 existing notes are in Japanese, write the notes in Japanese. Be terse: this is a
 working document, not prose. Concrete facts (file names, function names, version
 numbers, error messages) beat vague description.
-
 <!-- PIPELINE-INTEGRATION: この行より上は implementation-skills/.claude/skills/notes/SKILL.md の原本と同一に保つ。
      原本を更新したら、この行より上をまるごと新しい原本で差し替え、この行以降は維持すること。
      一致確認: diff <(awk '/PIPELINE-INTEGRATION/{exit} {print}' このファイル) 原本 -->

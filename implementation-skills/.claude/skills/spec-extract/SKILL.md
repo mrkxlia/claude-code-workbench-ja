@@ -118,6 +118,7 @@ Use this structure; omit sections that genuinely don't apply:
 
 ## 9. 改訂履歴
 - YYYY-MM-DD 初版（逆引き生成）
+- YYYY-MM-DD F-03 変更 — 〜の挙動が〜に変わったため（根拠: `src/x.py:88`）
 ```
 
 Requirement IDs (`F-01`…) exist so the user can answer open questions by ID and
@@ -137,7 +138,28 @@ This pass is what makes the spec trustworthy:
 4. Anything you couldn't verify gets demoted to `[推定]` or `[不明]`. When in
    doubt, demote.
 
-### 6. Deliver
+### 6. clarify パス（対話時のみ — 読むだけで終わらせない）
+
+Reading evidence alone leaves `[不明]` and shaky `[推定]` entries. In an
+interactive session, **resolve them with the user before delivering** — gently
+and thoroughly. This is the `clarify` *protocol embedded here* (not a separate
+skill invocation):
+
+1. Take the `[不明]` list (section 8) and the weakest `[推定]` items.
+2. Ask **one question at a time**, each with a **recommended answer and why**.
+   Wait for the reply before the next — don't batch. Push back on vague answers.
+3. Turn each confirmed answer into a `[確定]`/`[推定]` requirement, citing the
+   user as evidence (`確認: user, YYYY-MM-DD`).
+4. End with one **catch-all** question to cover what the code can't show:
+   「証拠に現れていないが、確認しておくべき暗黙の要望・前提・将来意図は
+   ありますか？」 — surface tacit needs, not just labeled gaps.
+5. Update section 8: promote resolved items to requirements; keep the rest with
+   their 確認先.
+
+**Headless / batch（`claude -p` など対話できない場合）はこのパスをスキップ**し、
+`[不明]` を section 8 の成果物としてそのまま残す（推測を `[確定]` にしない＝物証主義）。
+
+### 7. Deliver
 
 Present the SPEC.md, then summarize in a few lines: how many requirements,
 the confidence breakdown (e.g. 確定 18 / 推定 5 / 不明 3), and the top 1–2 open
@@ -149,6 +171,23 @@ questions worth answering first. Don't restate the whole spec in chat.
 - If a spec already exists, do **not** overwrite it — write
   `SPEC-recovered.md` and note discrepancies against the original as open
   questions.
+
+## 生きた仕様として維持する（増分更新・変更管理）
+
+A recovered `SPEC.md` is not a one-shot artifact — keep it as the **living spec
+of record**. After the first reverse pass, update it incrementally as the code
+changes (a spec rots the moment a decision lands without updating it):
+
+- **追加** — new behavior → a new `F-NN` row with evidence.
+- **変更** — behavior changed → **keep the same `F-NN` id**, rewrite the
+  requirement sentence, and record what changed and why. Don't silently overwrite.
+- **廃止** — behavior removed → mark the row `[廃止]`（superseded）with the date
+  and the replacing `F-NN` if any. Keep the history; don't delete the row.
+- Every change appends one line to **section 9 改訂履歴**:
+  `YYYY-MM-DD F-NN 追加/変更/廃止 — 理由`.
+
+A small, out-of-band edit only needs the affected `F-NN` row touched — not a
+full re-extraction. This keeps the spec a contract that evolves with the code.
 
 ## Scaling to large targets
 
