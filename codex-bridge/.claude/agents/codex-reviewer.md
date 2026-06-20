@@ -52,9 +52,9 @@ git rev-parse --is-inside-work-tree 2>/dev/null
 git 配下なら Codex 内蔵のレビューサブコマンドを使う:
 
 ```bash
-codex exec review --uncommitted          > /tmp/codex-review-$$.txt 2>/dev/null
+codex exec review --uncommitted          > "${TMPDIR:-/tmp}/codex-review-$$.txt" 2>/dev/null
 # または
-codex exec review --base <branch>        > /tmp/codex-review-$$.txt 2>/dev/null
+codex exec review --base <branch>        > "${TMPDIR:-/tmp}/codex-review-$$.txt" 2>/dev/null
 ```
 
 > **注意（実装時に要確認）**: `codex exec review` のフラグ・P1–P4 の出力形式・
@@ -68,7 +68,7 @@ codex exec review --base <branch>        > /tmp/codex-review-$$.txt 2>/dev/null
 stdin/heredoc で同梱**する（パス名指しだけに頼らない。「コンテキストの渡し方」参照）:
 
 ```bash
-codex exec --sandbox read-only --skip-git-repo-check - > /tmp/codex-review-$$.txt 2>/dev/null <<'EOF'
+codex exec --sandbox read-only --skip-git-repo-check - > "${TMPDIR:-/tmp}/codex-review-$$.txt" 2>/dev/null <<'EOF'
 以下のコードをレビューしてください。問題を重大度 P1（致命的）〜 P4（軽微）で分類し、
 各指摘に file:line と根拠、推奨対応を付けてください。
 
@@ -79,7 +79,7 @@ EOF
 
 ### 5. 出力の捕捉（全エージェント統一の正準形）
 
-`> /tmp/codex-review-<id>.txt 2>/dev/null` で **stdout（最終メッセージ）をファイルへ**、
+`> "${TMPDIR:-/tmp}/codex-review-<id>.txt" 2>/dev/null` で **stdout（最終メッセージ）をファイルへ**、
 stderr のバナー/進捗は破棄する。`-o <file>` は併用しない（挙動が重複し紛らわしい）。
 
 ## サンドボックス
@@ -102,7 +102,7 @@ stderr のバナー/進捗は破棄する。`-o <file>` は併用しない（挙
 
 1. **指摘リスト** — P1〜P4 ごとに、`file:line` ＋ 一行要約 ＋ 推奨対応
 2. **総評** — 全体所感・マージ可否の目安
-3. **生ログの保存先** — `/tmp/codex-review-<id>.txt`
+3. **生ログの保存先** — `${TMPDIR:-/tmp}/codex-review-<id>.txt`
 4. **どのパスで実行したか** — 構造化（`codex exec review`）か plain か。
    **plain パスの重大度は「Codex（モデル）の判断」であり、codex 構造化出力ではない**旨を明記する。
 

@@ -43,7 +43,7 @@ command -v codex
 関連ファイルの内容を **stdin / heredoc で同梱**して相談プロンプトを渡す:
 
 ```bash
-codex exec --sandbox read-only --skip-git-repo-check - > /tmp/codex-ask-$$.txt 2>/dev/null <<'EOF'
+codex exec --sandbox read-only --skip-git-repo-check - > "${TMPDIR:-/tmp}/codex-ask-$$.txt" 2>/dev/null <<'EOF'
 次の設計について意見をください。妥当性・リスク・代替案・推奨を、根拠つきで述べてください。
 
 <相談内容>
@@ -53,7 +53,7 @@ codex exec --sandbox read-only --skip-git-repo-check - > /tmp/codex-ask-$$.txt 2
 EOF
 ```
 
-出力は正準形 `> /tmp/codex-ask-<id>.txt 2>/dev/null` で捕捉する。
+出力は正準形 `> "${TMPDIR:-/tmp}/codex-ask-<id>.txt" 2>/dev/null` で捕捉する。
 
 ## サンドボックス
 
@@ -71,7 +71,7 @@ EOF
 2. **根拠** — なぜそう言えるか
 3. **推奨アクション** — 次に何をすべきか
 4. **留意点 / リスク** — 採用時の注意
-5. **生ログの保存先** — `/tmp/codex-ask-<id>.txt`
+5. **生ログの保存先** — `${TMPDIR:-/tmp}/codex-ask-<id>.txt`
 
 ## やらないこと
 

@@ -1,7 +1,7 @@
 {
   "name": "codex-bridge",
-  "version": "1.0.0",
-  "description": "コードレビュー・実装・相談を OpenAI Codex に依頼するスキル3種とサブエージェント3種。ユーザー自身は Codex を操作せず、Claude Code が Codex CLI を非対話モードで駆動する（/codex-review・/codex-implement・/codex-ask）。",
+  "version": "1.2.0",
+  "description": "コードレビュー・実装・相談を OpenAI Codex に依頼するスキル4種とサブエージェント3種。ユーザー自身は Codex を操作せず、Claude Code が Codex CLI を非対話モードで駆動する（/codex-review・/codex-implement・/codex-ask）。プラン承認で Codex 実装へ委譲する opt-in フックと、Claude ルールを取り込む AGENTS.md ジェネレータ（/codex-agents）を同梱。",
   "author": {
     "name": "mrkxlia",
     "url": "https://github.com/mrkxlia"

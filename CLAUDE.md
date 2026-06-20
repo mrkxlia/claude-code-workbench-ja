@@ -44,7 +44,7 @@ claude-code-workbench-ja/
 ├── codex-bridge/                    # Codex にレビュー・実装・相談を依頼するスキル＆エージェント（プラグイン導入可）
 │   ├── README.md
 │   ├── .claude-plugin/plugin.json   #   プラグインマニフェスト
-│   └── .claude/                     #   skills 3種（codex-review / codex-implement / codex-ask）/ agents 3種（codex-reviewer / codex-implementer / codex-advisor）
+│   └── .claude/                     #   skills 4種（codex-review / codex-implement / codex-ask / codex-agents）/ agents 3種（codex-reviewer / codex-implementer / codex-advisor）/ hooks（gen-agents-md＋hooks.json 常時ON・plan-to-codex は opt-in）
 ├── knowledge-share/                 # セッション/リポジトリ横断ナレッジ共有テンプレート（プラグイン導入可）
 │   ├── README.md
 │   ├── install.sh                   #   ~/.claude/ への冪等インストーラ（@import ベース導入用）
