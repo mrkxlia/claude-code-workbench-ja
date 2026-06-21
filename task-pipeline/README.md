@@ -345,6 +345,11 @@ AIが「えっ」と驚くミスをするたびに自問します——**「CLAU
 
 `guard-deliverable-writes.sh`（`PreToolUse` フック）が、Edit / Write の直前に書き込み先を検査し、
 **出力ディレクトリ外**への書き込みをユーザー確認（`ask`）に回します。詳細は下記。
+あわせて `spec-sync-reminder.sh`（SessionStart/Stop）が成果物仕様 SPEC.md の未同期をやさしく通知します（非ブロッキング）。
+
+**Windows**: 実行環境は **Git Bash / WSL の bash が前提**（baseline は `.sh`）。純 PowerShell 環境向けに
+同等の `.ps1`（`guard-deliverable-writes.ps1` / `spec-sync-reminder.ps1`）を同梱し、`/task-pipeline-setup` が
+「`command -v bash` が使えるか」で `.sh`/`.ps1` を振り分けます。
 
 <details>
 <summary>判定の仕組みと動作確認</summary>
