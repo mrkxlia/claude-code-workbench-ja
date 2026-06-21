@@ -18,6 +18,18 @@
       "keywords": ["workflow", "subagents", "software-pipeline", "japanese"]
     },
     {
+      "name": "task-pipeline",
+      "source": "./task-pipeline",
+      "description": "5つの専門エージェントでコード以外の成果物（drawio 図・ドキュメント・レポート）の作成を流れ作業化する「タスクパイプライン」テンプレート。スキル5種（task-pipeline-setup / task-pipeline / clarify / notes / spec-extract）を提供する。",
+      "version": "1.0.0",
+      "category": "workflow",
+      "author": {
+        "name": "mrkxlia"
+      },
+      "license": "MIT",
+      "keywords": ["workflow", "subagents", "task-pipeline", "deliverables", "japanese"]
+    },
+    {
       "name": "knowledge-share",
       "source": "./knowledge-share",
       "description": "セッション/リポジトリ横断のナレッジ共有テンプレート。スキル2種（kb / kb-harvest）と SessionStart/SessionEnd フックで、解決した知見の自動読み込み・記録・回収を Claude Code の公式機能だけで実現する。",
