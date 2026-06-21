@@ -9,7 +9,7 @@
       "name": "software-pipeline",
       "source": "./software-pipeline",
       "description": "7つの専門エージェントで機能開発を流れ作業化する「ソフトウェアパイプライン」テンプレート。スキル7種（pipeline-setup / feature-pipeline / clarify / build-with-tests / notes / spec-extract / pipeline-improve）を提供する。",
-      "version": "2.0.0",
+      "version": "2.1.0",
       "category": "workflow",
       "author": {
         "name": "mrkxlia"

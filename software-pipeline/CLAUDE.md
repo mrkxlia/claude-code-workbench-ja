@@ -19,6 +19,7 @@ This file is an independent implementation based on the concepts from the articl
 4. **新しい依存パッケージを勝手に追加しない** — 必要なら提案して承認を待つ
 5. **テストと型チェックを走らせずに「完了」と言わない**
 6. **ビジネスルールを推測で埋めない** — 不明点は「未解決の質問」として人間に確認する
+7. **既存仕様（SPEC.md）に黙って反しない** — `SPEC.md` がある場合、その `[確定]` 要件を変える/廃止するなら、ブリーフの「既存仕様への影響」で明示し承認を得る。承認された変更は Phase 7 で SPEC.md に増分反映する（spec of record を陳腐化させない）
 
 ---
 
@@ -78,6 +79,7 @@ npx prisma migrate dev       # マイグレーション作成・適用
 
 | ドキュメント | 内容 |
 |-------------|------|
+| `SPEC.md` | 既存仕様（spec of record）。`/spec-extract` で逆引き生成し、Phase 7 で増分更新して維持する。researcher / validator が一次参照する |
 | `docs/architecture.md` | システム全体のアーキテクチャ |
 | `docs/billing.md` | 課金・請求まわりの仕様 |
 | `docs/pipeline/<feature>/` | feature-pipeline が生成する機能ごとの成果物（進行状況・調査・ストーリー・ブリーフ・API契約・実装ノート） |
