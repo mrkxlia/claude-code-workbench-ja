@@ -9,8 +9,12 @@ description: >-
   "write a spec for this", "document this codebase/module/script", "handoff
   docs", or when preparing to refactor / rewrite / migrate legacy code and no
   written spec exists. Also trigger before large refactors when the user wants
-  to pin down current behavior first. Can be invoked manually as /spec-extract
-  [target path].
+  to pin down current behavior first. **Also use this skill to revise / update an
+  existing SPEC.md** as the living spec of record when requirements or behavior
+  change midway — add / change / deprecate requirements with revision history —
+  triggering on phrases like "仕様を変更したい", "要件を改訂したい", "仕様を更新",
+  "SPEC を直したい", "要件が変わった", "この仕様はもう古い". Can be invoked
+  manually as /spec-extract [target path].
 ---
 
 # Spec Extraction (/spec-extract)

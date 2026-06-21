@@ -4,7 +4,7 @@
 2つのスキルは対になっています。
 
 - **notes** — これから書くコードの文脈を *残す*（実装しながら implementation-notes.md を記録）
-- **spec-extract** — すでにあるコードの文脈を *取り戻す*（既存コードから SPEC.md を逆引き生成）
+- **spec-extract** — すでにあるコードの文脈を *取り戻す*（既存コードから SPEC.md を逆引き生成）。一度作った後は **既存 SPEC.md の改訂・更新**（要件/仕様を途中で変える）にも使う
 
 notes が残した implementation-notes.md は spec-extract の一次資料になり、逆引き仕様書の
 「推定」を「確定」に格上げします。
