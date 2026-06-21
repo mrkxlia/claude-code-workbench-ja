@@ -139,6 +139,18 @@ This file is a first-class evidence source for the `spec-extract` skill
 "推定" into "確定" in a recovered spec — one more reason to anchor entries
 to files and tests.
 
+### Keeping a living SPEC.md in sync (small / out-of-band changes)
+
+If the repo already has a `SPEC.md` (the spec of record) and your change
+**alters behavior it describes**, don't wait for a full re-extraction: in the
+same session, do a **lightweight incremental update of the affected `F-NN`
+row(s) only** (rewrite the requirement, append a 改訂履歴 line — see the
+spec-extract skill's 変更管理). Recording the deviation here and touching the
+one `F-NN` row keeps the spec from rotting, without running the whole pipeline.
+
+This stays **signal, not a changelog**: only sync rows whose described behavior
+actually changed — routine edits that match the existing spec need no SPEC touch.
+
 ## Style
 
 Match the surrounding project's language. If the user writes in Japanese or the

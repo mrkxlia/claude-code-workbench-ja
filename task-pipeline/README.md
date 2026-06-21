@@ -34,9 +34,9 @@
 
 迷ったら: **コード変更が必要なら（実装・修正・実装ノート・仕様逆引きを含む）→ software-pipeline、
 コード以外の成果物（図・ドキュメント・レポート）→ task-pipeline**。
-[`implementation-skills/`](../implementation-skills/) の notes / spec-extract スキルのパイプライン統合は
-software-pipeline 側のみです。task-pipeline のプロジェクトで単体利用したい場合は
-implementation-skills/ から直接コピーしてください。
+[`implementation-skills/`](../implementation-skills/) の notes / spec-extract スキルは、**software-pipeline・
+task-pipeline の両方にパイプライン連携版が同梱**されています（task 版は「成果物仕様」向けに読み替え）。
+単体利用したい場合は implementation-skills/ の原本を直接コピーしてください。
 
 2つのパイプラインは**同じプロジェクトに併存できます**。エージェント名・スキル名・中間成果物の
 保存先（`docs/pipeline/` と `docs/task-pipeline/`）が重ならないように設計してあります。
@@ -196,6 +196,7 @@ software-pipeline と同じ思想で、次の2つを取り入れています。
 task-pipeline/
 ├── README.md                                # このファイル
 ├── CLAUDE.md                                # コピーして使う CLAUDE.md のサンプル
+├── .claude-plugin/plugin.json               # プラグインマニフェスト（skills を配信）
 └── .claude/
     ├── agents/                              # 5人の専門エージェントの定義
     │   ├── source-researcher.md
@@ -206,7 +207,9 @@ task-pipeline/
     ├── skills/
     │   ├── task-pipeline/SKILL.md            # 5エージェントを連鎖させるオーケストレーター
     │   ├── clarify/SKILL.md                 # 要件・構成を一問ずつ詰める徹底質問スキル（dig/grill 由来）
-    │   └── task-pipeline-setup/SKILL.md      # パイプライン一式を対象プロジェクトへ自動導入するスキル
+    │   ├── task-pipeline-setup/SKILL.md      # パイプライン一式を対象プロジェクトへ自動導入するスキル
+    │   ├── notes/SKILL.md                    # 実装ノート記録（implementation-skills 原本の連携版）
+    │   └── spec-extract/SKILL.md             # 既存成果物から成果物仕様を逆引き（implementation-skills 原本の連携版）
     ├── hooks/
     │   └── guard-deliverable-writes.sh      # 出力ディレクトリ外への書き込みを確認するフック
     └── settings.json                        # 上記フックを配線する設定サンプル
@@ -215,6 +218,19 @@ task-pipeline/
 ---
 
 ## セットアップ
+
+### 最も簡単: プラグインで導入する
+
+Claude Code でそのまま実行します（clone 不要）:
+
+```
+/plugin marketplace add mrkxlia/claude-code-workbench-ja
+/plugin install task-pipeline@workbench-ja
+```
+
+導入後、新しいセッションで `/task-pipeline:task-pipeline-setup` を実行すると、対象プロジェクトを
+解析・ヒアリングしてエージェント5種・CLAUDE.md・フックを自動導入します（下の自動セットアップと同じ）。
+プラグインは5スキル（`task-pipeline` / `task-pipeline-setup` / `clarify` / `notes` / `spec-extract`）を配信します。
 
 ### 推奨: `/task-pipeline-setup` で自動セットアップ（2ステップ）
 
@@ -329,6 +345,12 @@ AIが「えっ」と驚くミスをするたびに自問します——**「CLAU
 
 `guard-deliverable-writes.sh`（`PreToolUse` フック）が、Edit / Write の直前に書き込み先を検査し、
 **出力ディレクトリ外**への書き込みをユーザー確認（`ask`）に回します。詳細は下記。
+あわせて `spec-sync-reminder.sh`（SessionStart/Stop）が成果物仕様 SPEC.md の未同期をやさしく通知します（非ブロッキング）。
+
+**Windows**: 実行環境は **Git Bash / WSL の bash が前提**（baseline は `.sh`）。純 PowerShell 環境向けに
+同等の `.ps1`（`guard-deliverable-writes.ps1` / `spec-sync-reminder.ps1`）を同梱し、`/task-pipeline-setup` が
+「`command -v bash` が使えるか」で `.sh`/`.ps1` を振り分けます。`.ps1` は **Windows PowerShell 5.1 でも動作**します
+（UTF-8 BOM 付きで配布し、`powershell -NoProfile -ExecutionPolicy Bypass -File ...` で起動。PowerShell 7 があれば `pwsh`）。
 
 <details>
 <summary>判定の仕組みと動作確認</summary>
@@ -367,6 +389,23 @@ echo '{"tool_name":"Write","tool_input":{"file_path":"src/main.py"}}' \
 </details>
 
 ---
+
+## スキル名と名前空間
+
+task-pipeline と software-pipeline は **`clarify` / `notes` / `spec-extract` という同名スキルを両方が持ちます**。
+プラグインとして導入した場合は**プラグイン名前空間で区別**されます（例: `/task-pipeline:clarify` と
+`/software-pipeline:clarify`）。プロジェクトに直接コピーした場合は短い名（`/clarify` 等）で呼べます。
+スキル名の棚卸し表（維持／名前空間で解決の判定）は
+[software-pipeline/README.md の「スキル名の棚卸し」](../software-pipeline/README.md#スキル名の棚卸し名前空間で区別後方互換維持)に
+まとめてあります。後方互換のため**改名は行いません**（オーケストレータ名は `docs/task-pipeline/<slug>/` の
+保存先や `/task-pipeline 再開 <slug>` と結合しているため）。
+
+### 原本との同期（notes / spec-extract）
+
+このセクションの notes / spec-extract は [`implementation-skills/`](../implementation-skills/) の**原本の連携版**です
+（`PIPELINE-INTEGRATION` マーカーより上が原本と同一）。原本を更新したら、software-pipeline と task-pipeline の
+**両連携版**でマーカーより上を差し替えます。一致確認コマンドは
+[software-pipeline/README.md の同期ルール](../software-pipeline/README.md)に awk / PowerShell 版があります。
 
 ## 参考リンク
 

@@ -79,7 +79,7 @@
 
 <header class="title">
   <h1>パイプライン整合性提案<br>― 既存仕様の「吸い出し」と以降要件の「合致性」を強制化する</h1>
-  <p class="sub">対象: <code>software-pipeline</code> / <code>task-pipeline</code> / <code>implementation-skills</code> ｜ 作成: 2026-06-20 ｜ ステータス: 判断材料（実装は案選択後）</p>
+  <p class="sub">対象: <code>software-pipeline</code> / <code>task-pipeline</code> / <code>implementation-skills</code> ｜ 作成: 2026-06-20 ｜ 更新: 2026-06-20（追加要望5件を反映） ｜ ステータス: <b>案A 採用</b>・追加要望5件（M1〜M5）反映済み（テンプレ実装は次ラウンド）</p>
 </header>
 
 <!-- ============ EXEC SUMMARY ============ -->
@@ -91,6 +91,7 @@
     <li><b>研究結論</b>: 仕様駆動開発（SDD）の業界標準は「<b>永続的で“生きた”仕様・規約の層</b>」を要件→設計→実装の下に敷くこと（Kiro steering / Spec Kit constitution）。最大の敵は<b>コンテキスト・ドリフト</b>（一度作った仕様が放置で陳腐化）。</li>
     <li><b>推奨</b>: <span class="badge b-rec">案A 軽量強化</span> — 新ファイル規約を増やさず、既存の <code>SPEC.md</code> / researcher / validator / spec-extract を強化し、吸い出しと合致を「任意」から「必須」へ格上げ＋<b>SPEC.md を“生きた仕様”として維持</b>して drift を断つ。</li>
     <li><b>対案</b>: <span class="badge b-warn">案B steering 層新設</span> — Kiro 流に <code>docs/steering/</code> を新設。最強だが規約層自体が drift し、メンテ・トークン・導入摩擦が増える。</li>
+    <li><b>決定</b>: <span class="badge b-rec">案A 採用</span>。さらにユーザーの<b>追加要望5件</b>を案Aに反映（<a href="#refine">§7 M1〜M5</a>）— 小変更の軽量追従／空リポ・既存リポの clarify ヒアリング／要件変更の改訂管理／既存からの再構成は read だけでなく clarify でとことんヒアリング。</li>
   </ul>
 </section>
 
@@ -104,6 +105,7 @@
     <li><a href="#gap">ギャップ分析（なぜ「怪しい」のか）</a></li>
     <li><a href="#options">判断材料: 案A / 案B 比較</a></li>
     <li><a href="#rec">推奨と理由</a></li>
+    <li><a href="#refine">追加要望5件の反映（M1〜M5）</a></li>
     <li><a href="#scope">案A の章別・ファイル別 改修リスト</a></li>
     <li><a href="#verify">検証方法</a></li>
     <li><a href="#sources">出典</a></li>
@@ -177,7 +179,7 @@
 <h2 id="gap">4. ギャップ分析（SDD パターンと比べた“真の穴”）</h2>
 
 <div class="gap">
-  <p><span class="n">穴① SPEC.md が「入口専用」で維持されない</span> <span class="ref">根拠: <code>spec-extract/SKILL.md:187</code>「Phase 7 の後では呼ばない」</span></p>
+  <p><span class="n">穴① SPEC.md が「入口専用」で維持されない</span> <span class="ref">根拠: <code>software-pipeline/.claude/skills/spec-extract/SKILL.md:187</code>「パイプラインの出口（Phase 7 の後）では呼ばない」（この記述は原本ではなくパイプライン連携版にのみ存在）</span></p>
   <p>2〜3 機能流すと spec-of-record が陳腐化する。以降の機能は per-feature の <code>story.md</code>/<code>brief.md</code> には照合されるが、<b>“生きた全体仕様”には照合されない</b>。研究が警告するドリフトそのもの。</p>
 </div>
 <div class="gap">
@@ -252,8 +254,72 @@
 <b>折衷案:</b> 案B の<b>“語彙”だけ採用</b>する。維持された <code>SPEC.md</code> を「<b>spec of record / steering baseline</b>」と呼び、概念的には Kiro steering と同じ役割だと位置づけつつ、<b>ファイルの増殖は避ける</b>。費用対効果が最も高い。
 </div>
 
-<!-- ============ 7. SCOPE ============ -->
-<h2 id="scope">7. 案A の章別・ファイル別 改修リスト（実装時）</h2>
+<!-- ============ 7. REFINEMENTS (5 reqs) ============ -->
+<h2 id="refine">7. 追加要望5件の反映（M1〜M5）</h2>
+<p>案A 採用を受け、ユーザーの追加要望5件を案Aに織り込んだ。下表で<b>要望→反映する仕組み→対象ファイル</b>を一望できる。設計の核は <code>implementation-skills</code> の <b>notes（残す）↔ spec-extract（取り戻す）</b>の対構造を「<b>生きた仕様（spec of record）</b>」の両輪に据えること。</p>
+
+<table>
+  <thead><tr><th style="width:5%">#</th><th style="width:31%">追加要望</th><th style="width:33%">反映する仕組み</th><th style="width:31%">主な対象ファイル</th></tr></thead>
+  <tbody>
+    <tr>
+      <td class="c">1</td>
+      <td>スキル経由でない<b>小さな変更でも SPEC.md を追従</b>させたい（フル pipeline は重い）</td>
+      <td><b>M1 軽量同期＋やさしい注意喚起</b>。<code>notes</code> を拡張し、挙動を変えたら該当 <code>F-NN</code> だけ増分更新。<span class="badge b-rec">フック強制はしない</span>非ブロッキング通知で未同期を知らせる。</td>
+      <td><code>notes/SKILL.md</code>、SessionStart/Stop フック＋<code>settings.json</code></td>
+    </tr>
+    <tr>
+      <td class="c">2</td>
+      <td><b>空リポジトリからの初期化</b>。種別（ソフト／ドキュメント／その他）から clarify でヒアリングして要件・仕様を決める</td>
+      <td><b>M3 初期化＋既存リポ確認</b>。setup の Step 0/2 に空リポ分岐を追加し clarify で前向きに初期 SPEC を作成。<b>データのある既存リポでも生成前に clarify 確認を挟む</b>（自動検出だけで進めない）。</td>
+      <td><code>pipeline-setup/SKILL.md</code>、<code>task-pipeline-setup/SKILL.md</code></td>
+    </tr>
+    <tr>
+      <td class="c">3</td>
+      <td>リポジトリ内の <code>implementation-skills</code> を<b>参考に</b>してほしい</td>
+      <td><b>設計の土台</b>。notes（残す）↔ spec-extract（取り戻す）の対を living-spec の両輪に。M1=notes 拡張、M2/M5=spec-extract 拡張がちょうど両者の中間。</td>
+      <td><code>implementation-skills/.claude/skills/*</code>（原本）＋連携版同期</td>
+    </tr>
+    <tr>
+      <td class="c">4</td>
+      <td>要件・仕様は<b>変更される</b>ことを考慮</td>
+      <td><b>M1 変更管理</b>。SPEC.md は追加だけでなく<b>変更・廃止</b>を扱う。変更要件は <code>F-NN</code> を維持しつつ改訂注記＋根拠＋日付で supersede し §9 改訂履歴に残す。</td>
+      <td><code>spec-extract/SKILL.md</code>、<code>feature-pipeline/SKILL.md</code>（Phase 7）</td>
+    </tr>
+    <tr>
+      <td class="c">5</td>
+      <td>既存から再構成するときは<b>コード/ドキュメントを読むだけでなく clarify でとことんヒアリング</b>。ユーザーの抱えるものをやさしく全て聞く</td>
+      <td><b>M2 clarify 連結の仕様再構成</b>。証拠ベースの草案後、<code>[不明]/[推定]</code> を clarify プロトコルで一問ずつヒアリングし <code>[確定]</code> へ格上げ。対話時は既定ON、ヘッドレスは省略可。</td>
+      <td><code>spec-extract/SKILL.md</code>（clarify パス）</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>仕組み M1〜M5 の要約</h3>
+<div class="opt rec">
+  <h3>M1 — 生きた仕様の二経路更新 <span class="badge b-rec">#1・#4</span></h3>
+  <p><b>大きな変更</b>は feature-pipeline Phase 7 で SPEC.md を増分更新。<b>小さな/スキル外の変更</b>は <code>notes</code> 拡張で該当 <code>F-NN</code> だけ軽量更新（フル pipeline 不要）。<b>変更・廃止</b>は <code>F-NN</code> を維持しつつ supersede＋改訂履歴。<b>やさしい注意喚起</b>: ソースが変わって SPEC.md 未更新なら非ブロッキング通知（作業は止めない）。</p>
+  <p class="note"><b>既存設計を壊さない:</b> notes は元々「逸脱は spec-extract の証拠源」（<code>notes/SKILL.md</code> の Relationship to spec extraction 節）という位置づけを持つため、M1 はその自然な延長。notes の「Signal, not a changelog」方針は維持し、SPEC 同期は<b>該当 F-NN への増分だけ</b>に限定して changelog 化させない。</p>
+</div>
+<div class="opt rec">
+  <h3>M2 — clarify 連結の仕様再構成 <span class="badge b-rec">#5</span></h3>
+  <p>spec-extract は「読むだけ」で終わらせない。草案後に <code>[不明]/[推定]</code> を <b>clarify プロトコルで一問ずつ</b>・推奨回答つきでヒアリングし、ユーザーの意図を引き出して <code>[確定]</code> に格上げする。やさしく・とことん・取りこぼさない。</p>
+</div>
+<div class="opt rec">
+  <h3>M3 — 初期化＋既存リポ確認 <span class="badge b-rec">#2</span></h3>
+  <p><b>空リポ</b>: clarify で種別（ソフト開発／ドキュメント等の成果物／その他）と初期 SPEC/要件を前向きに作成する。<b>既存リポ</b>: 自動検出だけで進めず、生成前に clarify 確認を挟む。新スキルは作らず既存 setup の分岐＋相互リンクで実現。</p>
+  <p class="note"><b>入口と振り分けの受け皿:</b> 入口はユーザーが叩いた setup（<code>/pipeline-setup</code> または <code>/task-pipeline-setup</code>）。冒頭の種別ヒアリングで<b>その setup の守備範囲と食い違ったら、他方の setup へ相互リンクで誘導</b>する（コード→software-pipeline、図/文書等の成果物→task-pipeline）。<b>「その他」は汎用の task-pipeline を既定の受け皿</b>とし、どうしても当てはまらなければ clarify で最寄りの形を一緒に決める。</p>
+</div>
+<div class="opt rec">
+  <h3>M4 — 必須ロード＋合致ゲート <span class="badge b-rec">案A 中核</span></h3>
+  <p>researcher が SPEC.md を一次ロード／writer は矛盾を「未解決の質問」へ／spec-writer・brief-writer は仕様変更を明示列挙／validator・reviewer に「SPEC 整合」独立 Critical 項目。</p>
+</div>
+<div class="opt rec">
+  <h3>M5 — 入口での吸い出し必須化 <span class="badge b-rec">案A 中核</span></h3>
+  <p>SPEC.md 無しのレガシーは、<b>clarify 連結 spec-extract</b>（M2）を必須前工程にする。読むだけの推測で始めない。<span class="note">（M5 は案A中核の「吸い出し必須化」で、その入口に要望#5 由来の M2 を内包する。要望対応表では #5＝M2 に一本化し二重計上を避けている。）</span></p>
+</div>
+
+<!-- ============ 8. SCOPE ============ -->
+<h2 id="scope">8. 案A の章別・ファイル別 改修リスト（実装時）</h2>
 <p class="note">承認後に着手する具体対象。<b>赤字バッジ</b>はリポジトリ規約5（プラグインの version 更新）に関わる箇所。</p>
 
 <h3>software-pipeline <span class="badge b-bad">プラグイン → version 更新必須</span></h3>
@@ -265,8 +331,10 @@
     <tr><td><code>.claude/agents/spec-writer.md</code></td><td>brief×<code>SPEC.md</code> 突合・意図的な仕様変更の明示列挙</td></tr>
     <tr><td><code>.claude/agents/implementation-validator.md</code></td><td>「SPEC 整合」を独立 Critical 項目に昇格（<code>SPEC.md</code> を名前付き入力に）</td></tr>
     <tr><td><code>.claude/skills/feature-pipeline/SKILL.md</code></td><td>Phase 7 に「生きた仕様」の増分更新ステップ</td></tr>
-    <tr><td><code>.claude/skills/spec-extract/SKILL.md</code></td><td>入口=全体逆引き／出口=増分更新（「Phase 7 後は呼ばない」を緩和）</td></tr>
-    <tr><td><code>.claude/skills/pipeline-setup/SKILL.md</code></td><td>SPEC 無しレガシーで spec-extract を必須前工程化</td></tr>
+    <tr><td><code>.claude/skills/spec-extract/SKILL.md</code></td><td>入口=全体逆引き／出口=増分更新（「Phase 7 後は呼ばない」を緩和）＋<b>clarify 連結パス（M2）</b>＋<b>変更管理（M1: supersede・改訂履歴）</b></td></tr>
+    <tr><td><code>.claude/skills/notes/SKILL.md</code> <span class="badge b-rec">M1</span></td><td>小変更時に該当 <code>F-NN</code> だけ SPEC.md を軽量増分更新する経路を追記</td></tr>
+    <tr><td><code>.claude/skills/pipeline-setup/SKILL.md</code> <span class="badge b-rec">M3</span></td><td>SPEC 無しレガシーで spec-extract を必須前工程化＋<b>空リポ分岐</b>＋<b>既存リポでも clarify 確認</b></td></tr>
+    <tr><td><code>.claude/hooks/</code>（新規）＋ <code>settings.json</code> <span class="badge b-rec">M1</span></td><td>SPEC 未同期をやさしく通知する SessionStart/Stop フック（非ブロッキング）を追加・配線</td></tr>
     <tr><td><code>CLAUDE.md</code>（サンプル）</td><td><code>SPEC.md</code> を spec-of-record ポインタに＋合致をハードルール化</td></tr>
     <tr><td><code>README.md</code></td><td>必須吸い出し・生きた仕様・合致ゲートを記述、SDD/steering 研究を出典に</td></tr>
     <tr><td><code>.claude-plugin/plugin.json</code> ＋ ルート <code>.claude-plugin/marketplace.json</code></td><td>software-pipeline エントリの <b>version を semver 更新</b>（規約5）</td></tr>
@@ -281,7 +349,8 @@
     <tr><td><code>.claude/agents/requirements-writer.md</code></td><td>既存仕様に反する要求は「未解決の質問」へ</td></tr>
     <tr><td><code>.claude/agents/brief-writer.md</code></td><td>既存仕様/規約との整合ゲートを追加</td></tr>
     <tr><td><code>.claude/agents/deliverable-reviewer.md</code></td><td>「既存仕様/規約との整合性」を独立チェック項目に</td></tr>
-    <tr><td><code>.claude/skills/task-pipeline/SKILL.md</code> ／ <code>task-pipeline-setup/SKILL.md</code></td><td>規約・仕様キャプチャの前工程を追加</td></tr>
+    <tr><td><code>.claude/skills/task-pipeline/SKILL.md</code></td><td>規約・仕様キャプチャの前工程を追加</td></tr>
+    <tr><td><code>.claude/skills/task-pipeline-setup/SKILL.md</code> <span class="badge b-rec">M3</span></td><td>空リポ分岐＋既存リポでも clarify 確認（自動検出だけで進めない）</td></tr>
     <tr><td><code>CLAUDE.md</code> ／ <code>README.md</code></td><td>合致ゲート・前工程を記述</td></tr>
   </tbody>
 </table></div>
@@ -290,28 +359,31 @@
 <div class="files"><table>
   <thead><tr><th style="width:38%">ファイル</th><th>変更点</th></tr></thead>
   <tbody>
-    <tr><td><code>.claude/skills/spec-extract/SKILL.md</code>（原本）</td><td>「生きた仕様／増分更新」運用を追記</td></tr>
-    <tr><td><code>.claude/skills/notes/SKILL.md</code>（原本）</td><td>「記録した逸脱は SPEC.md 更新候補」を追記</td></tr>
+    <tr><td><code>.claude/skills/spec-extract/SKILL.md</code>（原本）</td><td>「生きた仕様／増分更新」運用＋<b>clarify 連結（M2）</b>＋<b>変更管理（M1）</b>を追記</td></tr>
+    <tr><td><code>.claude/skills/notes/SKILL.md</code>（原本）</td><td>「記録した逸脱は SPEC.md 更新候補」＋<b>小変更の軽量 SPEC 同期（M1）</b>を追記</td></tr>
     <tr><td><code>README.md</code></td><td>spec-of-record の維持運用を記述</td></tr>
     <tr><td><span class="note">同期</span> software-pipeline 側の連携版コピー</td><td><code>PIPELINE-INTEGRATION</code> マーカー方式で原本と同期（README の diff コマンドで一致確認）</td></tr>
   </tbody>
 </table></div>
 
 <!-- ============ 8. VERIFY ============ -->
-<h2 id="verify">8. 検証方法（実装時）</h2>
+<h2 id="verify">9. 検証方法（実装時）</h2>
 <ul>
   <li><b>原本と連携版の一致</b>: <code>diff &lt;(awk '/PIPELINE-INTEGRATION/{exit} {print}' software-pipeline/.claude/skills/spec-extract/SKILL.md) implementation-skills/.claude/skills/spec-extract/SKILL.md</code> が空。</li>
   <li><b>Agent Skills 規則</b>: 各 <code>SKILL.md</code> 本文が 500 行以内。</li>
   <li><b>version 規約</b>: software-pipeline 変更時に <code>plugin.json</code> と <code>marketplace.json</code> の version が更新済み。</li>
-  <li><b>手動シナリオ</b>: <code>SPEC.md</code> を持つ小リポジトリで <code>/feature-pipeline</code> を流し、
+  <li><b>手動シナリオ（M4）</b>: <code>SPEC.md</code> を持つ小リポジトリで <code>/feature-pipeline</code> を流し、
     (1) researcher が <code>SPEC.md</code> をロード、
     (2) SPEC に反する要求が「未解決の質問」で停止、
     (3) Phase 7 で <code>SPEC.md</code> が増分更新、
     (4) validator が SPEC 整合を独立項目で報告、を確認。</li>
+  <li><b>M1 小変更同期</b>: pipeline を通さない1ファイル修正で挙動を変えたとき、<code>notes</code> が該当 <code>F-NN</code> を更新し、未同期時にフックが非ブロッキング通知を出す。</li>
+  <li><b>M2 clarify 連結</b>: <code>/spec-extract</code> 実行時、<code>[不明]/[推定]</code> が残ると一問ずつヒアリングが走り、回答が <code>[確定]</code> に反映される。<b>ヘッドレス/バッチ時は clarify をスキップし、<code>[不明]</code> 一覧が SPEC.md §8（未解決の質問）に成果物として残る</b>ことも確認（物証主義を崩さない）。</li>
+  <li><b>M3 初期化</b>: 空ディレクトリで <code>/pipeline-setup</code>（または <code>/task-pipeline-setup</code>）を実行すると、種別ヒアリング→初期 SPEC 作成へ分岐。既存リポでも生成前に clarify 確認が入る。</li>
 </ul>
 
 <!-- ============ 9. SOURCES ============ -->
-<h2 id="sources">9. 出典</h2>
+<h2 id="sources">10. 出典</h2>
 <ul class="src">
   <li>GitHub Spec Kit ガイド — <a href="https://intuitionlabs.ai/articles/spec-driven-development-spec-kit">IntuitionLabs: Spec-Driven AI Development</a></li>
   <li>SDD ツール比較 2026 — <a href="https://www.marktechpost.com/2026/05/08/9-best-ai-tools-for-spec-driven-development-in-2026-kiro-bmad-gsd-and-more-compare/">MarkTechPost: 9 Best AI Tools for Spec-Driven Development</a></li>

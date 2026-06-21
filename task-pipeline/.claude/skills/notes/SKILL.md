@@ -161,37 +161,26 @@ numbers, error messages) beat vague description.
      原本を更新したら、この行より上をまるごと新しい原本で差し替え、この行以降は維持すること。
      一致確認: diff <(awk '/PIPELINE-INTEGRATION/{exit} {print}' このファイル) 原本 -->
 
-## パイプライン連携（software-pipeline 統合時の追加ルール）
+## パイプライン連携（task-pipeline 統合時の追加ルール）
 
-このコピーは software-pipeline（feature-pipeline）と連携して動くパイプライン連携版。
+このコピーは task-pipeline と連携して動くパイプライン連携版。
 単体利用の原本は `implementation-skills/.claude/skills/notes/` にある。
 パイプラインで使うとき、上記の原本ルールに以下が**優先して**加わる:
 
 ### ファイルの置き場所（原本の「Where the file lives」より優先）
 
-- パイプラインの機能開発では **1機能 = 1ファイル**: `docs/pipeline/<slug>/implementation-notes.md`
-- feature-pipeline のオーケストレーターやエージェント定義から記録先パスを指示された場合は
-  常にそのパスへ書く。`docs/pipeline/<slug>/` が存在する作業中は、リポジトリルートに
-  `implementation-notes.md` を新規作成しない
-- パイプラインの外の作業（単発の修正など）では原本どおりの置き場所でよい
+- `docs/task-pipeline/<slug>/implementation-notes.md` に記録する（依頼ごとのフォルダ）。
+- `deliverable-builder` が成果物作成中に判断を追記し、`/task-pipeline 再開 <slug>` が
+  冒頭の Status ブロックを最初に読む。
 
-### status.md と混ぜない
+### コード前提語の読み替え（非コード成果物向け）
 
-- `docs/pipeline/<slug>/status.md` はパイプラインの**進行管理**（フェーズ・承認・差し戻しカウンタ）
-- `implementation-notes.md` は**実装判断の記録**（Decisions / Deviations / Tradeoffs / Gotchas / Deferred）
-- 役割が違う。進行状況を notes に、判断を status に書かない
+- 「コード」→「成果物」、tests→受け入れ基準・レビュー観点、`file:line` 物証→
+  成果物ファイルのパス・見出し・図ノードID。
+- 記録対象は「ブリーフにない判断・ブリーフからの逸脱・トレードオフ・ハマりどころ・積み残し」。
 
-### 複数エージェントで共有する
+### 生きた成果物仕様との同期
 
-ビルダー3種（backend-builder / frontend-builder / test-verifier）が同じファイルに追記する。
-セッション見出しには**必ずエージェント名（または main session）を含める**:
-`## YYYY-MM-DD — backend-builder: <作業名>`。
-Status ブロックは「最後に書いた者が上書き」でよい（最新状態が勝つ）。
-
-### パイプラインのライフサイクルでの役割
-
-- **再開時**: `/feature-pipeline 再開 <slug>` は status.md と合わせてこのファイルの
-  Status ブロックを最初に読む
-- **Phase 7（最終検証）後**: Decisions / Deferred のうち他機能にも一般化できるものは
-  `docs/pipeline/LEARNINGS.md` の候補としてオーケストレーターが回収し、
-  チェックポイント3でユーザーに提示する
+リポジトリに成果物仕様 SPEC.md があり、変更がその記述する内容・構成・規約を変えた場合は、
+逸脱記録と同時に該当 `D-NN` だけを軽量に増分更新する（原本の「生きた SPEC.md」と同じ。
+`F-NN` は `D-NN` に読み替え）。
