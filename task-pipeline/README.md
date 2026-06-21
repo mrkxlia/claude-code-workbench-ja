@@ -349,7 +349,8 @@ AIが「えっ」と驚くミスをするたびに自問します——**「CLAU
 
 **Windows**: 実行環境は **Git Bash / WSL の bash が前提**（baseline は `.sh`）。純 PowerShell 環境向けに
 同等の `.ps1`（`guard-deliverable-writes.ps1` / `spec-sync-reminder.ps1`）を同梱し、`/task-pipeline-setup` が
-「`command -v bash` が使えるか」で `.sh`/`.ps1` を振り分けます。
+「`command -v bash` が使えるか」で `.sh`/`.ps1` を振り分けます。`.ps1` は **Windows PowerShell 5.1 でも動作**します
+（UTF-8 BOM 付きで配布し、`powershell -NoProfile -ExecutionPolicy Bypass -File ...` で起動。PowerShell 7 があれば `pwsh`）。
 
 <details>
 <summary>判定の仕組みと動作確認</summary>

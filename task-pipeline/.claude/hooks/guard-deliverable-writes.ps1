@@ -1,12 +1,14 @@
-# guard-deliverable-writes.ps1 — guard-deliverable-writes.sh の PowerShell 同等版（PreToolUse 専用）
+﻿# guard-deliverable-writes.ps1 — guard-deliverable-writes.sh の PowerShell 同等版（PreToolUse 専用）
 #
 # bash が無い純 Windows/PowerShell 環境向け。挙動は .sh と一致させる:
 #   1. 機密パターン（.env / *.key / *.pem / secrets.json）→ stderr に理由 + exit 2（ハードブロック）
 #   2. 許可リスト外 → permissionDecision "ask" の JSON を stdout に1行だけ出力（exit 0）
 #   3. それ以外 → 無出力 exit 0
 # 契約: stdout は ask の JSON 1行のみ（余計な出力を出さない）／UTF-8 BOM 無し／ブロックは exit 2。
-# .claude/settings.json の hooks.PreToolUse（matcher: Edit|Write）から
-#   pwsh -NoProfile -File .claude/hooks/guard-deliverable-writes.ps1 として呼ばれる想定。
+# Windows PowerShell 5.1 互換。このファイルは UTF-8 BOM 付きで保存する（BOM を外すと 5.1 で日本語が文字化けする）。
+# .claude/settings.json の hooks.PreToolUse（matcher: Edit|Write）から次の形で呼ばれる想定:
+#   powershell -NoProfile -ExecutionPolicy Bypass -File .claude/hooks/guard-deliverable-writes.ps1
+#   （PowerShell 7 がある環境では powershell の代わりに pwsh を使ってよい）
 
 $ErrorActionPreference = 'Stop'
 $utf8 = New-Object System.Text.UTF8Encoding($false)   # BOM 無し UTF-8

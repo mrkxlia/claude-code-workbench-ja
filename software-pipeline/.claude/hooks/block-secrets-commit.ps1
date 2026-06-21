@@ -1,11 +1,13 @@
-# block-secrets-commit.ps1 — block-secrets-commit.sh の PowerShell 同等版（PreToolUse 専用）
+﻿# block-secrets-commit.ps1 — block-secrets-commit.sh の PowerShell 同等版（PreToolUse 専用）
 #
 # bash が無い純 Windows/PowerShell 環境向け。PreToolUse(Bash) で git commit を検知したとき、
 # ステージに .env / *.key / *.pem / secrets.json が含まれていれば stderr に理由を出して exit 2。
 # 契約: ブロックは exit 2（throw は使わない）／stderr は UTF-8 BOM 無し。
 # 注: .git/hooks/pre-commit としての利用は .sh のまま（git は .ps1 を pre-commit に使わない）。
-# .claude/settings.json の hooks.PreToolUse（matcher: Bash）から
-#   pwsh -NoProfile -File .claude/hooks/block-secrets-commit.ps1 として呼ばれる想定。
+# Windows PowerShell 5.1 互換。このファイルは UTF-8 BOM 付きで保存する（BOM を外すと 5.1 で日本語が文字化けする）。
+# .claude/settings.json の hooks.PreToolUse（matcher: Bash）から次の形で呼ばれる想定:
+#   powershell -NoProfile -ExecutionPolicy Bypass -File .claude/hooks/block-secrets-commit.ps1
+#   （PowerShell 7 がある環境では powershell の代わりに pwsh を使ってよい）
 
 $ErrorActionPreference = 'Stop'
 $utf8 = New-Object System.Text.UTF8Encoding($false)
@@ -27,6 +29,8 @@ if (-not [string]::IsNullOrWhiteSpace($raw)) {
 # コマンドが git commit を含まないなら何もしない
 if ($command -and ($command -notmatch 'git\s+([^&|;]*\s)?commit')) { exit 0 }
 
+# git 不在なら素通り（5.1 は native コマンド不在で $LASTEXITCODE を更新せず Stop だと throw するため明示ガード）
+if (-not (Get-Command git -ErrorAction SilentlyContinue)) { exit 0 }
 # ステージされたファイルを検査（git 管理外・git 不在なら exit 0 で素通り＝.sh の `|| exit 0` 等価）
 try { $staged = & git diff --cached --name-only 2>$null } catch { exit 0 }
 if ($LASTEXITCODE -ne 0) { exit 0 }

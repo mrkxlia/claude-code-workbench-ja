@@ -296,14 +296,17 @@ Step 1-b で一時ディレクトリを使った場合は、ここで `rm -rf "$
 - **bash が使える**（Git Bash / WSL / Mac / Linux。`command -v bash` が成功）→ Step 6 のとおり `.sh` をコピーして
   `chmod +x`。settings.json の command は `bash "$CLAUDE_PROJECT_DIR"/.claude/hooks/xxx.sh`。
 - **bash が無い純 PowerShell** → 代わりに `.ps1` をコピーし（`chmod` は skip）、command は
-  `pwsh -NoProfile -File "<repo>/.claude/hooks/xxx.ps1"`（`pwsh` 不在なら `powershell`）。
+  `pwsh -NoProfile -ExecutionPolicy Bypass -File "<repo>/.claude/hooks/xxx.ps1"`。
+  **`pwsh`（PowerShell 7）が無ければ Windows 標準の `powershell`（5.1）にフォールバック**する。
   対象は `guard-deliverable-writes.ps1` と `spec-sync-reminder.ps1`。
-  `$CLAUDE_PROJECT_DIR` はそのまま使え、パス区切りは `/` で統一（PowerShell も許容）。
+  例: `"command": "powershell -NoProfile -ExecutionPolicy Bypass -File .claude/hooks/spec-sync-reminder.ps1"`。
+  `-ExecutionPolicy Bypass` は 5.1 の既定ポリシーでフックがブロックされるのを防ぐ。`.ps1` は **UTF-8 BOM 付き**で配る
+  （5.1 が日本語を文字化けさせないため）。`$CLAUDE_PROJECT_DIR` はそのまま使え、パス区切りは `/` で統一。
 
 注意:
 - settings.json は条件分岐を持てないため、**導入時の環境で確定した1つの command** だけを書く。再 setup で
   環境が変わったら 6-3 の「`.sh`/`.ps1` ペアは同一フック」ルールで二重登録を防ぐ。
-- ドライランも環境に合わせる: PowerShell 版は `pwsh -NoProfile -File .claude/hooks/xxx.ps1` に同じ JSON を stdin で渡す。
+- ドライランも環境に合わせる: PowerShell 版は `powershell -NoProfile -ExecutionPolicy Bypass -File .claude/hooks/xxx.ps1`（PS7 なら pwsh）に同じ JSON を stdin で渡す。
 
 ## セットアップ技師のルール
 

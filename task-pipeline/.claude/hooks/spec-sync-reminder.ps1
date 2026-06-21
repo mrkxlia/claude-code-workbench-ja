@@ -1,10 +1,12 @@
-# spec-sync-reminder.ps1 — spec-sync-reminder.sh の PowerShell 同等版（SessionStart / Stop）
+﻿# spec-sync-reminder.ps1 — spec-sync-reminder.sh の PowerShell 同等版（SessionStart / Stop）
 #
 # bash が無い純 Windows/PowerShell 環境向け。挙動は .sh と一致させる:
 #   SPEC.md 最終更新コミット以降にソース/成果物が変わっていれば stderr で非ブロッキング通知。
 #   git 管理外・SPEC.md 不在なら静かに何もしない。常に exit 0（作業を止めない）。
-# .claude/settings.json の hooks.SessionStart / hooks.Stop から
-#   pwsh -NoProfile -File .claude/hooks/spec-sync-reminder.ps1 として呼ばれる想定。
+# Windows PowerShell 5.1 互換。このファイルは UTF-8 BOM 付きで保存する（BOM を外すと 5.1 で日本語が文字化けする）。
+# .claude/settings.json の hooks.SessionStart / hooks.Stop から次の形で呼ばれる想定:
+#   powershell -NoProfile -ExecutionPolicy Bypass -File .claude/hooks/spec-sync-reminder.ps1
+#   （PowerShell 7 がある環境では powershell の代わりに pwsh を使ってよい）
 
 $ErrorActionPreference = 'SilentlyContinue'
 $utf8 = New-Object System.Text.UTF8Encoding($false)
@@ -16,6 +18,8 @@ function Write-Err([string]$s) {
 # stdin は使わないが、ブロッキングを避けるため読み捨てる
 [void][Console]::In.ReadToEnd()
 
+# git 不在なら素通り（5.1 は native コマンド不在で $LASTEXITCODE を更新しないため明示ガード）
+if (-not (Get-Command git -ErrorAction SilentlyContinue)) { exit 0 }
 # git 管理外なら何もしない
 & git rev-parse --is-inside-work-tree 2>$null | Out-Null
 if ($LASTEXITCODE -ne 0) { exit 0 }
