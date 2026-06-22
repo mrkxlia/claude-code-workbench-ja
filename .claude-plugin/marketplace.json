@@ -9,7 +9,7 @@
       "name": "software-pipeline",
       "source": "./software-pipeline",
       "description": "7つの専門エージェントで機能開発を流れ作業化する「ソフトウェアパイプライン」テンプレート。スキル7種（pipeline-setup / feature-pipeline / clarify / build-with-tests / notes / spec-extract / pipeline-improve）を提供する。",
-      "version": "2.1.1",
+      "version": "2.2.0",
       "category": "workflow",
       "author": {
         "name": "mrkxlia"
@@ -21,7 +21,7 @@
       "name": "task-pipeline",
       "source": "./task-pipeline",
       "description": "5つの専門エージェントでコード以外の成果物（drawio 図・ドキュメント・レポート）の作成を流れ作業化する「タスクパイプライン」テンプレート。スキル5種（task-pipeline-setup / task-pipeline / clarify / notes / spec-extract）を提供する。",
-      "version": "1.0.1",
+      "version": "1.1.0",
       "category": "workflow",
       "author": {
         "name": "mrkxlia"
