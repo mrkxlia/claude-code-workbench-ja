@@ -20,9 +20,8 @@ claude-code-workbench-ja/
 ├── LICENSE                          # MIT License
 ├── .claude-plugin/
 │   └── marketplace.json             # プラグインマーケットプレイス定義（名前: workbench-ja）
-├── WindowsSplitTerminalSample/      # Windows Terminal マルチインスタンス起動スクリプト
-│   ├── launch-6pane.ps1             #   6ペイン起動スクリプト（PowerShell）
-│   └── keybindings.md               #   ペイン操作キーバインド一覧
+├── .claude/                         # このリポジトリ自身の作業用スキル（dogfooding・規約1の例外）
+│   └── skills/                      #   create-plan / create-plan-calibrate（plan-mode 由来・非競合のみ集約）
 ├── skills-guide/                    # おすすめSkillsガイド（優先度・業務タイプ別）
 │   └── README.md
 ├── data-science/                    # データサイエンス向け CLAUDE.md + Skills テンプレート
@@ -32,6 +31,10 @@ claude-code-workbench-ja/
 ├── implementation-skills/           # 実装ノート記録 + 仕様書逆引きスキル（単体利用向け原本。連携版を software/task 両パイプラインに同梱）
 │   ├── README.md
 │   └── .claude/skills/              #   notes / spec-extract の2スキル（原本）
+├── plan-mode/                       # 変更せず実行計画だけ作る create-plan スキル（Plan/Ask モード相当）
+│   ├── README.md
+│   ├── SPEC.md                      #   create-plan の不変要件 INV / 調整 ADJ 定義
+│   └── .claude/skills/              #   create-plan / create-plan-calibrate の2スキル
 ├── software-pipeline/                # 7エージェント構成「ソフトウェアパイプライン」テンプレート（プラグイン導入可）
 │   ├── README.md
 │   ├── CLAUDE.md                    #   コピーして使う CLAUDE.md サンプル
@@ -58,7 +61,12 @@ claude-code-workbench-ja/
 │   ├── pyproject.toml               #   uv 管理・[project.scripts] tokentracker
 │   ├── tokentracker/                #   parsers(claude_code/codex/cline) / db / pricing(+pricing.toml) / queries / ingest / cli / dashboard
 │   └── tests/                       #   pytest（fixtures に実ログ匿名化の代表ケースを固定）
+├── power-automate-azure-foundry/    # Power Automate から Azure AI Foundry(GPT) を呼ぶサンプル一式
+│   └── README.md                    #   フロー定義・カスタムコネクタ・インポート手順
+├── docs/                            # リポジトリ内ドキュメント置き場
+│   └── README.md
 └── GlobalClaudeMD-sample/           # グローバルスコープ用 CLAUDE.md サンプル
+    ├── README.md
     └── CLAUDE.md
 ```
 
@@ -71,6 +79,7 @@ claude-code-workbench-ja/
 3. **リポジトリ全体の言語は日本語** — README.md・CLAUDE.md など、このリポジトリ自体のドキュメントは日本語で記述する。
 4. **マーケットプレイス定義はルートの `.claude-plugin/` に置く** — Claude Code プラグイン仕様上の必須配置であり、規約1の例外。
 5. **プラグイン配下を変更したら version を上げる** — `software-pipeline/`・`task-pipeline/`・`knowledge-share/`・`codex-bridge/` のプラグイン対象ファイル（`.claude/skills/` 配下＝プラグインが配信する skills）を変更したら、該当する `<section>/.claude-plugin/plugin.json` と `.claude-plugin/marketplace.json` の対応エントリの `version` をセマンティックバージョニングで更新する（プラグイン利用者への更新配信に必要）。エージェント定義・フック・CLAUDE.md は setup スキルが配布するため version 対象外。
+6. **ルートの `.claude/` はこのリポジトリ自身の作業用（dogfooding）** — 規約1の例外（`.claude-plugin/` と同様）。公式慣例「`.claude/` は単一プロジェクト自身のカスタマイズ用」に従い、**競合しない・非プラグインの**スキルだけを集約する（現状は plan-mode 由来の create-plan / create-plan-calibrate）。プラグイン由来スキルや競合名スキル（notes / spec-extract / clarify）は複製しない（version 二重管理・二重ロードを避けるため）。notes / spec-extract の正本は `implementation-skills/` の原本で、作業中はディレクトリスコープで自動ロードされる。
 
 ---
 

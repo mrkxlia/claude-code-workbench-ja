@@ -19,7 +19,7 @@ This file is an independent implementation based on the concepts from the articl
 4. **新しい依存パッケージを勝手に追加しない** — 必要なら提案して承認を待つ
 5. **テストと型チェックを走らせずに「完了」と言わない**
 6. **ビジネスルールを推測で埋めない** — 不明点は「未解決の質問」として人間に確認する
-7. **既存仕様（SPEC.md）に黙って反しない** — `SPEC.md` がある場合、その `[確定]` 要件を変える/廃止するなら、ブリーフの「既存仕様への影響」で明示し承認を得る。承認された変更は Phase 7 で SPEC.md に増分反映する（spec of record を陳腐化させない）
+7. **既存仕様（SPEC.md）に黙って反しない** — `SPEC.md` がある場合、その `[確定]` 要件を変える/廃止するなら、ブリーフの「既存仕様への影響」で明示し承認を得る。承認された変更は Phase 7 で SPEC.md に増分反映する（spec of record を陳腐化させない）。原則は **「1 Todo = 1 Commit = 1 Spec Update」**（実装の区切りごとに仕様も更新して同期させる。`spec-sync-reminder` フックが更新漏れを促す）
 
 ---
 

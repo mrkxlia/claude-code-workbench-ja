@@ -59,11 +59,59 @@ cp /tmp/workbench/GlobalClaudeMD-sample/CLAUDE.md ~/.claude/CLAUDE.md
 
 各セクションのカスタマイズ方法は、それぞれの README を参照してください。
 
-## 収録セクション
+> このリポジトリ自身で作業するときは、ルート直下の `.claude/`（dogfooding 用）から `/create-plan` が使えます。
 
-### [`WindowsSplitTerminalSample/`](WindowsSplitTerminalSample/)
-Windows Terminal でのマルチインスタンス起動スクリプト。
-横3列×縦2行（6ペイン）をワンコマンドで開くスクリプトと、ペイン操作のキーバインド一覧を収録しています。
+## どれをいつ使う？（スキル/プラグイン早見表）
+
+| やりたいこと | 使うもの | ひとこと |
+|--------------|----------|----------|
+| 機能をコードで end-to-end 実装したい | **software-pipeline**（`/feature-pipeline`） | 7エージェント連鎖＋3つの人間承認チェックポイント |
+| パイプラインを通すほどでない小さな実装＋テスト | software-pipeline の `/build-with-tests` | 既存パターン確認 → 実装とテスト並行 → 型チェック |
+| 図・ドキュメント等コード以外の成果物を作りたい | **task-pipeline**（`/task-pipeline`） | 5エージェント連鎖。drawio 等のユーザー導入スキルも呼べる |
+| 変更せず実行計画だけ立てたい（Plan/Ask 相当） | **plan-mode**（`/create-plan`） | 非プラグイン。`cp` 導入。コード以外の一般タスクにも使える |
+| 別 AI（OpenAI Codex）にレビュー/実装/相談を委譲したい | **codex-bridge**（`/codex-review` ほか） | Claude が Codex CLI を非対話で駆動。ユーザーは Codex を触らない |
+| セッション/リポジトリ横断で知見を蓄積・再利用したい | **knowledge-share**（`/kb`・`/kb-harvest`） | @import ＋フックで知見の自動読み込み・記録・回収 |
+| 要件・仕様を質問で詰めたい | **clarify**（software/task に同梱） | 単体利用も可（各プラグイン README の「単体利用」参照） |
+| 既存コード/成果物から仕様書を逆引きしたい | **implementation-skills**（`/spec-extract`） | 確度ラベル付き SPEC.md を生成。`/notes` で実装の経緯も記録 |
+| データ分析プロジェクトの土台がほしい | **data-science** | Polars・uv・Jupyter 前提の CLAUDE.md ＋スキル |
+| トークン/コストを可視化したい | **token-usage-tracker** | Claude Code 等のログを集計（独立 Python ツール） |
+
+> パイプラインのサブスキル（`clarify`・`build-with-tests` 等）は単体でも使えます。導入は各プラグイン README の
+> 「単体で使う（個別利用）」小節を参照してください。
+
+### 仕様駆動開発まわりの違い
+
+仕様にまつわるスキルは守備範囲が重なって見えるので、方向と役割で整理します。
+
+| ツール | 方向 | 入力 → 出力 | いつ使う／違い |
+|--------|------|-------------|----------------|
+| `spec-extract`（implementation-skills 原本／各パイプライン連携版） | **逆方向** | 既存コード・成果物 → `SPEC.md`（確度ラベル付） | 仕様書の無いレガシーを現状固定したいとき。パイプラインの**入口**。`[確定]/[推定]/[不明]` の物証主義と生きた SPEC 更新が特徴 |
+| `feature-pipeline` / `spec-writer`（software-pipeline） | **順方向** | アイデア/ストーリー → 技術ブリーフ → コード | これから作る機能を仕様化して実装まで通す。spec-extract の逆引きと対をなす前進方向 |
+| `task-pipeline` の spec-extract 連携版 | 逆方向（成果物） | 既存成果物・規約 → 成果物 SPEC | 図/ドキュメント版。コード前提語を成果物前提に読み替えた点が software 版との違い |
+| `clarify`（software/task） | 詰める | 曖昧な要望 → 確定した要件 | 仕様を書く前に穴・前提を質問で潰す。spec-extract/spec-writer の前段。software 版＝コード要件、task 版＝成果物要件で語彙が違う（骨子は同一） |
+| `create-plan`（plan-mode） | 計画 | ゴール → 実行計画ファイル（変更なし） | 仕様書ではなく**実行手順**を作る。コードに限らない一般タスク向け |
+| `notes`（implementation-skills 原本／連携版） | 記録 | 実装中の判断・逸脱 → `implementation-notes.md` | あるべき姿（SPEC.md）ではなく**実装の経緯**を残す |
+
+**他の仕様駆動開発（SDD）との関係。** spec-kit / Kiro / cc-sdd など一般的な SDD ツールは
+`requirements → design → tasks` を前提にします。本リポジトリの対応物は次のとおりです。
+
+| 一般的な SDD | 本リポジトリの相当物 |
+|--------------|----------------------|
+| requirements.md | feature-pipeline の `story.md`（受け入れ基準つきストーリー） |
+| design.md | `brief.md` ＋ `api-contract.md`（技術ブリーフ／API 契約） |
+| tasks.md | パイプラインの Phase 連鎖＋ `status.md`（進行管理） |
+| PRD / living spec | `SPEC.md`（spec of record・Phase 7 で増分更新） |
+| spec-tracker（更新漏れ警告） | `spec-sync-reminder` フック（SessionStart/Stop） |
+| spec-validator（実装と仕様の突合） | `implementation-validator` エージェント＋ `test-verifier` |
+
+本リポジトリは順方向（feature-pipeline）に加えて **`spec-extract` による逆方向（レガシー → 仕様）** を持つ点が
+spec-kit / Kiro / cc-sdd との主な違いです。運用原則として **「1 Todo = 1 Commit = 1 Spec Update」**
+（実装の区切りごとに仕様も更新して同期させる）を採り、これは既存の「Phase 7 での SPEC 増分更新」と
+`spec-sync-reminder` フックがそのまま実装になっています。**いつ SDD を使うか**の目安は、本番機能（1日以上）・
+チーム作業・厳格なアーキテクチャ・レガシー改善では採用（`feature-pipeline`）、1時間未満の修正・POC・hotfix・
+UI 試作では避けて軽量な `build-with-tests` を使う、です（参考: 下記「ライセンス・出典」の SDD 記事）。
+
+## 収録セクション
 
 ### [`skills-guide/`](skills-guide/)
 おすすめSkillsガイド（2026年6月動作確認済み）。
@@ -76,6 +124,13 @@ Polars・uv・Jupyter を前提にした CLAUDE.md と、分析業務向け10種
 ### [`implementation-skills/`](implementation-skills/)
 実装の文脈を残す・取り戻すスキル2種。
 実装しながら判断・逸脱・ハマりどころを implementation-notes.md に記録する **notes** と、既存コードから確度ラベル付きの仕様書を逆引き生成する **spec-extract** を収録しています。このディレクトリは単体利用向けの原本で、**software-pipeline・task-pipeline の両パイプラインにパイプライン連携版が統合済み**です。spec-extract は対話時に `[不明]/[推定]` を clarify で詰める「読むだけで終わらせない」運用と、一度作った SPEC.md を増分更新する「生きた仕様」運用に対応します。
+
+### [`plan-mode/`](plan-mode/)
+変更を一切加えず「実行計画」だけを作るスキル2種（Claude/Cline の Plan モード・Codex の Ask モード相当）。
+ゴールから事実を集めて別セッション/エージェントがそのまま実行できる粒度の計画ファイルを書き出す **create-plan**、
+導入先の文脈に合わせて計画の調整ポイントを較正する **create-plan-calibrate** を収録しています。コーディングに
+限らず一般タスクに使え、不変要件（INV）と調整ポイント（ADJ）を `SPEC.md` で定義しています。非プラグインのため
+`cp` でプロジェクトや `~/.claude/skills/` に入れて使います（このリポジトリ自身ではルート `.claude/` から直接利用可）。
 
 ### [`GlobalClaudeMD-sample/`](GlobalClaudeMD-sample/)
 グローバルスコープ用 CLAUDE.md サンプル（`~/.claude/CLAUDE.md`）。
@@ -129,3 +184,4 @@ Power Automate のクラウドフローから Azure AI Foundry（Azure OpenAI）
 | [`task-pipeline/`](task-pipeline/) | [How to Build a Software Factory with Claude Code（@sairahul1 氏）](https://x.com/sairahul1/status/2058832033628241931) | 記事のコンセプトをコード以外の成果物向けに汎用化した独自実装（コピーではない）— 帰属を README に記載 |
 | [`token-usage-tracker/`](token-usage-tracker/) | [ryoppippi/ccusage](https://github.com/ryoppippi/ccusage)・[junhoyeo/tokscale](https://github.com/junhoyeo/tokscale) | いずれも MIT License — 設計（JSONL パース・コスト計算・集計軸）のみ参考にした独自実装（コードのコピーではない） |
 | [`codex-bridge/`](codex-bridge/) | [eddiearc/codex-delegator](https://github.com/eddiearc/codex-delegator)・[hamelsmu/claude-review-loop](https://github.com/hamelsmu/claude-review-loop)・[OpenAI Codex CLI ドキュメント](https://developers.openai.com/codex/) | 構成・プロンプト型のコンセプトを参考にした独自実装（コードのコピーではない） |
+| 仕様駆動開発まわりの解説（本 README の早見表） | [「1 Todo=1 Commit=1 Spec Update」（Zenn / Luup Developers）](https://zenn.dev/luup_developers/articles/server-jang-20251215)・[「SPEC駆動開発ツール比較」（Qiita / kanagawa41 氏）](https://qiita.com/kanagawa41/items/ef134490b61b41675e01) | 記事のコンセプト・比較観点を参考にした独自解説（コードのコピーではない）— 帰属を本表に記載 |

@@ -3,7 +3,14 @@
 > **配置先:** `~/.claude/CLAUDE.md`
 >
 > このファイルをグローバルスコープに置くことで、すべてのプロジェクトで共通の行動原則として Claude Code に読み込まれます。
-> プロジェクト固有の設定（ビルドコマンド、テスト手順、ディレクトリ構成など）は各プロジェクトの `CLAUDE.md` に記述してください。
+>
+> **書くもの／書かないもの（ベストプラクティス）:**
+> - **書く** = プロジェクトに依存しない安定した行動規範だけ。「どこでも効くルール」に絞る。
+> - **書かない** = プロジェクト固有の設定（ビルド/テスト/リント コマンド、ディレクトリ構成、スタック）は
+>   各プロジェクトの `CLAUDE.md` へ。フォーマッタ/リンタが機械的に保証するスタイル規則も書かない（重複）。
+> - **肥大化させない** = 高シグナルを保つため本文は 80〜120 行程度を目安に。`/memory` で定期的に棚卸しし、
+>   1セッション働けば学べる程度のことは載せない。自動メモリ（Claude が自分で書く notes）と役割を分ける。
+> - このファイルは「Claude の人格設定」ではなく、CI 設定と同じく**運用・レビュー対象のインフラ**として扱う。
 
 ---
 
@@ -86,6 +93,31 @@ Do not run destructive or irreversible commands unless explicitly asked.
 
 ---
 
+## Collaboration & Scope Rules（変更範囲・依存・機密）
+
+### 8. 依存パッケージを勝手に追加しない
+
+Don't add new dependencies on your own.
+
+- 新しいライブラリ・パッケージが必要なら、勝手に入れず**提案して承認を待つ**。
+- 既存の依存・標準ライブラリで足りないかを先に検討する。
+
+### 9. 機密情報をコミット・出力しない
+
+Never commit or log secrets.
+
+- トークン・APIキー・個人情報・顧客データをコミット、ログ出力、成果物への書き込みをしない。
+- `.env`・`*.key`・`*.pem`・`secrets.*` をステージしない。
+
+### 10. 既存ファイルの編集を優先し、不要な新規作成をしない
+
+Prefer editing existing files; don't create files that weren't requested.
+
+- 目的を達成できるなら、新規ファイルを作らず既存ファイルを編集する。
+- 頼まれていないドキュメント（README・まとめ等）を勝手に新規作成しない。必要だと思ったら提案する。
+
+---
+
 ## 出典・ライセンス
 
 | 出典 | URL | 権利 |
@@ -93,6 +125,8 @@ Do not run destructive or irreversible commands unless explicitly asked.
 | andrej-karpathy-skills | https://github.com/multica-ai/andrej-karpathy-skills | MIT License (multica-ai) |
 | Andrej Karpathy 本人の観察 | https://x.com/karpathy | LLM コーディングに関する公開発言 |
 | Claude Code の安全運用ルール3選 | https://qiita.com/4q_sano/items/f313eed59628273b8026 | Copyright © 4q_sano — 参照・要約として引用 |
+| Claude Code 公式 memory ドキュメント | https://code.claude.com/docs/en/memory | 運用ガイダンス（global の役割・肥大化回避・/memory）の参考 |
+| CLAUDE.md Best Practices 2026 | https://dev.to/nishilbhave/claudemd-best-practices-the-complete-2026-guide-435j | 「書くもの/書かないもの・80〜120行・高シグナル」の参考 |
 
 ### MIT License（andrej-karpathy-skills）
 

@@ -1,4 +1,4 @@
-# task-pipeline — 5人の専門エージェントで成果物を出荷する「タスクパイプライン」テンプレート
+# task-pipeline — 5人の専門エージェントで成果物を作成する「タスクパイプライン」テンプレート
 
 [`software-pipeline/`](../software-pipeline/) のパイプラインパターンを、**コード以外のあらゆる成果物**に
 使えるよう汎用化したテンプレートです。drawio の図・設計ドキュメント・手順書・調査レポート・
@@ -67,7 +67,7 @@ flowchart LR
         f1["調査 → 要件 → ブリーフ<br/>（読み取り専用エージェント。<br/>ファイルを物理的に壊せない）"] --> f2{"🛑 人間が要件・ブリーフを承認"}
         f2 -->|"前提ミスはここで捕まる。<br/>まだ1ファイルも作られていない"| f3["成果物作成<br/>（ビルダーは出力先にしか<br/>書き込めない）"]
         f3 --> f4["レビュー<br/>（作った本人以外が検査）"]
-        f4 --> f5["✅ 納品"]
+        f4 --> f5["✅ 完成"]
     end
     single ~~~ pipeline
     style s3 fill:#ffd6d6,stroke:#cc0000
@@ -112,7 +112,7 @@ flowchart TB
     p5 -->|"❌ Critical/Important"| rework["担当ビルダーへ差し戻し（上限3回）<br/>レビュアーは直さない"]
     rework --> p5
     p5 -->|"✅ 問題なし"| c3{"🛑 チェックポイント3<br/>最終レビュー"}
-    c3 -->|承認| ship(["納品 / コミット"])
+    c3 -->|承認| ship(["完成 / コミット"])
     style c1 fill:#fff3c4,stroke:#b8860b
     style c2 fill:#fff3c4,stroke:#b8860b
     style c3 fill:#fff3c4,stroke:#b8860b
@@ -311,6 +311,24 @@ cp <このリポジトリ>/task-pipeline/.claude/settings.json .claude/settings.
 
 </details>
 
+## 個別スキルを単体で使う（clarify）
+
+パイプライン全体を導入しなくても、`clarify`（要件・構成を質問で詰める）だけを単体で使えます。
+**パーソナルスキル**（`~/.claude/skills/`）に入れると、どのリポジトリでも `/clarify` が使えます。
+
+```bash
+git clone --depth 1 https://github.com/mrkxlia/claude-code-workbench-ja /tmp/workbench
+mkdir -p ~/.claude/skills && cp -r /tmp/workbench/task-pipeline/.claude/skills/clarify ~/.claude/skills/
+```
+
+- task-pipeline 版 `clarify` は語彙が**成果物の要件・構成**向け。コードの要件・設計を詰めたいなら
+  software-pipeline 版 `clarify`（語彙がコード向け）を選ぶ。骨子（質問プロトコル）はどちらも同一なので、
+  扱う対象に合う方を1つだけ入れれば十分です。
+- `notes` / `spec-extract` を単体で使うなら、**原本**の [`implementation-skills/`](../implementation-skills/) を入れるのが推奨。
+
+> プロジェクト単位で導入したい場合は、上の「セットアップ → 手動セットアップ」のスキルコピー手順
+> （`.claude/skills/` 宛）を参照してください。ここではどこでも使えるパーソナルスキル化を案内しています。
+
 ## 試運転とチューニング
 
 ### 1. 小さな依頼で試運転する
@@ -325,7 +343,7 @@ cp <このリポジトリ>/task-pipeline/.claude/settings.json .claude/settings.
 
 - **要件承認**: 受け入れ基準が「レビューで検証できる文」になっているか確認し、「承認」または修正指示を返す
 - **ブリーフ承認**: 構成案と使用スキルを読み、ズレた構成（例: 読者に不要な詳細）をここで捕まえる
-- **最終レビュー**: レビュアーのレポートを確認し、承認後に納品・コミットへ
+- **最終レビュー**: レビュアーのレポートを確認し、承認後に完成・コミットへ
 
 中止したいときは、どのチェックポイントでも「中止」と伝えればパイプラインは止まります。
 

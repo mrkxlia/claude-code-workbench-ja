@@ -1,4 +1,4 @@
-# software-pipeline — 7人の専門エージェントで機能を出荷する「ソフトウェアパイプライン」テンプレート
+# software-pipeline — 7人の専門エージェントで機能を実装する「ソフトウェアパイプライン」テンプレート
 
 Claude Code のサブエージェント・スキル・フックを組み合わせて、機能開発を
 **調査 → ストーリー → 技術ブリーフ → バックエンド → フロントエンド → 受け入れテスト → 最終検証**
@@ -38,7 +38,7 @@ flowchart LR
         f1["調査 → ストーリー → ブリーフ<br/>（読み取り専用エージェント。<br/>コードを物理的に壊せない）"] --> f2{"🛑 人間がブリーフを承認"}
         f2 -->|"設計ミスはここで捕まる。<br/>まだ1ファイルも変更されていない"| f3["実装<br/>（各ビルダーは担当フォルダにしか<br/>書き込めない）"]
         f3 --> f4["受け入れテスト + 最終検証<br/>（作った本人以外が検査）"]
-        f4 --> f5["✅ 出荷"]
+        f4 --> f5["✅ 完成"]
     end
     single ~~~ pipeline
     style s5 fill:#ffd6d6,stroke:#cc0000
@@ -410,6 +410,28 @@ git init
 作りになっています）。後から `git init` すれば、フックを含む全機能がその時点から有効になります。
 
 </details>
+
+## 個別スキルを単体で使う（clarify など）
+
+パイプライン全体を導入しなくても、**汎用スキルだけを単体で使う**ことができます。とくに
+`clarify`（要件・仕様を質問で詰める）と `build-with-tests`（テスト並行の小さな実装）は
+パイプラインに依存せず単体で有用です。**パーソナルスキル**（`~/.claude/skills/`）に入れると、
+どのリポジトリでも `/clarify`・`/build-with-tests` が使えます。
+
+```bash
+git clone --depth 1 https://github.com/mrkxlia/claude-code-workbench-ja /tmp/workbench
+mkdir -p ~/.claude/skills
+cp -r /tmp/workbench/software-pipeline/.claude/skills/clarify ~/.claude/skills/
+cp -r /tmp/workbench/software-pipeline/.claude/skills/build-with-tests ~/.claude/skills/
+```
+
+- `clarify` / `build-with-tests` … パイプライン非依存。単体で使える。
+- `pipeline-improve` … パイプラインの運用ログ（`docs/pipeline/`）を前提にするため、単体利用には向かない。
+- `notes` / `spec-extract` … 単体で使うなら**原本**の [`implementation-skills/`](../implementation-skills/) を入れるのが推奨。
+
+> プロジェクト単位で導入したい場合は、上の「セットアップ → 方式C（手動セットアップ）」の
+> スキルコピー手順（`.claude/skills/` 宛）を参照してください。ここではどこでも使える
+> パーソナルスキル化（`~/.claude/skills/` 宛）を案内しています。
 
 ## 試運転とチューニング
 
