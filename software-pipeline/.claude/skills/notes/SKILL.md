@@ -157,3 +157,41 @@ Match the surrounding project's language. If the user writes in Japanese or the
 existing notes are in Japanese, write the notes in Japanese. Be terse: this is a
 working document, not prose. Concrete facts (file names, function names, version
 numbers, error messages) beat vague description.
+<!-- PIPELINE-INTEGRATION: この行より上は implementation-skills/.claude/skills/notes/SKILL.md の原本と同一に保つ。
+     原本を更新したら、この行より上をまるごと新しい原本で差し替え、この行以降は維持すること。
+     一致確認: diff <(awk '/PIPELINE-INTEGRATION/{exit} {print}' このファイル) 原本 -->
+
+## パイプライン連携（software-pipeline 統合時の追加ルール）
+
+このコピーは software-pipeline（feature-pipeline）と連携して動くパイプライン連携版。
+単体利用の原本は `implementation-skills/.claude/skills/notes/` にある。
+パイプラインで使うとき、上記の原本ルールに以下が**優先して**加わる:
+
+### ファイルの置き場所（原本の「Where the file lives」より優先）
+
+- パイプラインの機能開発では **1機能 = 1ファイル**: `docs/pipeline/<slug>/implementation-notes.md`
+- feature-pipeline のオーケストレーターやエージェント定義から記録先パスを指示された場合は
+  常にそのパスへ書く。`docs/pipeline/<slug>/` が存在する作業中は、リポジトリルートに
+  `implementation-notes.md` を新規作成しない
+- パイプラインの外の作業（単発の修正など）では原本どおりの置き場所でよい
+
+### status.md と混ぜない
+
+- `docs/pipeline/<slug>/status.md` はパイプラインの**進行管理**（フェーズ・承認・差し戻しカウンタ）
+- `implementation-notes.md` は**実装判断の記録**（Decisions / Deviations / Tradeoffs / Gotchas / Deferred）
+- 役割が違う。進行状況を notes に、判断を status に書かない
+
+### 複数エージェントで共有する
+
+ビルダー3種（backend-builder / frontend-builder / test-verifier）が同じファイルに追記する。
+セッション見出しには**必ずエージェント名（または main session）を含める**:
+`## YYYY-MM-DD — backend-builder: <作業名>`。
+Status ブロックは「最後に書いた者が上書き」でよい（最新状態が勝つ）。
+
+### パイプラインのライフサイクルでの役割
+
+- **再開時**: `/feature-pipeline 再開 <slug>` は status.md と合わせてこのファイルの
+  Status ブロックを最初に読む
+- **Phase 7（最終検証）後**: Decisions / Deferred のうち他機能にも一般化できるものは
+  `docs/pipeline/LEARNINGS.md` の候補としてオーケストレーターが回収し、
+  チェックポイント3でユーザーに提示する

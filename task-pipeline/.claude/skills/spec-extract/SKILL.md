@@ -209,3 +209,40 @@ English spec map them to [Verified]/[Inferred]/[Unknown] and adjust the legend
 line to match.
 Requirements are single testable sentences — "〜の場合、〜する" — not paragraphs.
 Concrete identifiers (file, function, test, error message) beat description.
+<!-- PIPELINE-INTEGRATION: この行より上は implementation-skills/.claude/skills/spec-extract/SKILL.md の原本と同一に保つ。
+     原本を更新したら、この行より上をまるごと新しい原本で差し替え、この行以降は維持すること。
+     一致確認: diff <(awk '/PIPELINE-INTEGRATION/{exit} {print}' このファイル) 原本 -->
+
+## パイプライン連携（task-pipeline 統合時の追加ルール）
+
+このコピーは task-pipeline（コード以外の成果物パイプライン）と連携して動くパイプライン連携版。
+単体利用の原本は `implementation-skills/.claude/skills/spec-extract/` にある。
+
+### 位置づけ: 成果物パイプラインの「入口」
+
+仕様書のない既存成果物・規約から「**成果物仕様（SPEC）**」を逆引きし、`source-researcher` が
+一次資料として読む。レガシー成果物群に task-pipeline を導入するときの推奨フロー:
+
+1. `/spec-extract <対象>` で既存成果物・表記規約の現状を SPEC.md に固定する
+2. 人間が SPEC.md をレビューし、`[不明]` に答えられる範囲で答える
+3. `/task-pipeline <依頼>` を開始 — source-researcher が SPEC.md を一次資料として読む
+
+### コード前提語の読み替え（非コード成果物向け）
+
+原本本文はコード前提で書かれている。task-pipeline では次のように読み替える:
+
+| 原本（コード前提） | task-pipeline 版（成果物前提） |
+|---|---|
+| tests／test name アンカー | 受け入れ基準・レビュー観点・参照素材のパス |
+| `F-NN` 機能要件 | `D-NN` 成果物要件（章・節・図要素の単位） |
+| 「挙動を変えた」 | 「成果物の内容・構成・表記規約を変えた」 |
+| コード `file:line` 物証 | 成果物ファイルのパス・見出し・図ノードID |
+| `docs/pipeline/<slug>/` | `docs/task-pipeline/<slug>/` |
+
+`[確定]/[推定]/[不明]` ラベルと「物証主義」、clarify パス、変更管理（追加/変更/廃止・改訂履歴）は
+そのまま流用する（変更管理は `F-NN` を `D-NN` に読み替える）。
+
+### 出力場所
+
+SPEC.md はリポジトリルートまたは対象成果物群の隣に置く（原本どおり）。`docs/task-pipeline/<slug>/`
+配下には置かない — SPEC.md は依頼単位ではなく成果物コードベース単位の成果物のため。

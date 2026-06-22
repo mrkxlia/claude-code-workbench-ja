@@ -4,27 +4,38 @@
 2つのスキルは対になっています。
 
 - **notes** — これから書くコードの文脈を *残す*（実装しながら implementation-notes.md を記録）
-- **spec-extract** — すでにあるコードの文脈を *取り戻す*（既存コードから SPEC.md を逆引き生成）
+- **spec-extract** — すでにあるコードの文脈を *取り戻す*（既存コードから SPEC.md を逆引き生成）。一度作った後は **既存 SPEC.md の改訂・更新**（要件/仕様を途中で変える）にも使う
 
 notes が残した implementation-notes.md は spec-extract の一次資料になり、逆引き仕様書の
 「推定」を「確定」に格上げします。
 
 ---
 
-## software-factory との関係
+## software-pipeline との関係
 
 このディレクトリは**単体利用向けの原本**です。
-[`software-factory/`](../software-factory/) には、この2スキルの**工場連携版**が統合されています
-（`software-factory/.claude/skills/notes/`・`spec-extract/`）。工場連携版では、ビルダーが
-`docs/factory/<slug>/implementation-notes.md` に判断を記録し、`/feature-factory 再開` が
-Status ブロックを読み、spec-extract がレガシーコードへの工場導入の入口になります。
+**[`software-pipeline/`](../software-pipeline/) と [`task-pipeline/`](../task-pipeline/) の両方**に、
+この2スキルの**パイプライン連携版**が統合されています
+（`<pipeline>/.claude/skills/notes/`・`spec-extract/`）。software 版はコードの実装ノート・コード仕様の逆引き、
+task 版は成果物の実装ノート・「成果物仕様」の逆引き（`F-NN`→`D-NN` 等に読み替え）として動きます。
 
-- **工場（feature-factory）と一緒に使う** → software-factory 側の工場連携版（`/factory-setup` が自動配布）
-- **単体で使う**（工場を導入しないプロジェクト・単発の実装） → このディレクトリからコピー
+- **パイプラインと一緒に使う** → 各パイプライン側のパイプライン連携版（`/…-setup` が自動配布）
+- **単体で使う**（パイプラインを導入しないプロジェクト・単発の実装） → このディレクトリからコピー
 
-工場連携版は「原本の完全コピー + 末尾の `FACTORY-INTEGRATION` マーカー以降に追加ルール」という
-構造です。**このディレクトリの原本を更新したら、工場連携版のマーカーより上を新しい原本で
-まるごと差し替えてください**（一致確認コマンドは software-factory/README.md に記載）。
+パイプライン連携版は「原本の完全コピー + 末尾の `PIPELINE-INTEGRATION` マーカー以降に追加ルール」という
+構造です。**このディレクトリの原本を更新したら、software / task 両連携版のマーカーより上を新しい原本で
+まるごと差し替えてください**（原本1つ → 連携版2つ）。一致確認は `PIPELINE-INTEGRATION` で切る awk 方式:
+
+```bash
+for s in notes spec-extract; do
+  orig=implementation-skills/.claude/skills/$s/SKILL.md
+  for link in software-pipeline task-pipeline; do
+    diff <(awk '/PIPELINE-INTEGRATION/{exit} {print}' "$link/.claude/skills/$s/SKILL.md") "$orig" \
+      && echo "OK  $s ($link)"
+  done
+done
+# 出力が空（OK 4件）なら一致。PowerShell 版は software-pipeline/README.md を参照
+```
 
 ---
 
@@ -68,6 +79,10 @@ cp -r implementation-skills/.claude/skills/spec-extract <your-project>/.claude/s
 **物証参照**: 全エントリに `file:line`・テスト名・コミットハッシュ・エラーメッセージの
 いずれかを必須で添えます。コード上で位置を特定できないメモは半人前、という設計です。
 
+**生きた SPEC.md との同期**: リポジトリに SPEC.md があり、変更がその記述する挙動を変えた場合は、
+逸脱を記録すると同時に該当 `F-NN` だけを軽量に増分更新します（フル逆引きは不要）。
+「signal, not changelog」の方針は維持し、挙動が変わった行だけ触ります。
+
 ### spec-extract（/spec-extract [対象パス]）
 
 既存のコード・テスト・ドキュメントから仕様書 `SPEC.md` を逆引き生成します。
@@ -84,6 +99,12 @@ cp -r implementation-skills/.claude/skills/spec-extract <your-project>/.claude/s
 コードとドキュメントが食い違った場合、挙動はコード優先、食い違い自体は未解決質問に回します。
 
 ハンドオフ・引き継ぎドキュメント作成、レガシーコードのリファクタ前の現状固定などに使えます。
+
+**読むだけで終わらせない（clarify パス）**: 対話セッションでは、`[不明]`・弱い `[推定]` を
+**一問ずつ・推奨回答つき**でユーザーにヒアリングして `[確定]` に格上げし、最後に
+「証拠に現れない暗黙の要望・前提・将来意図」を1問だけ確認します（ヘッドレス実行時はスキップし
+`[不明]` を成果物として残す＝物証主義）。**生きた仕様として維持**: 一度作った SPEC.md は、
+挙動が変わったら該当 `F-NN` だけを増分更新（変更は id 維持で改訂、廃止は `[廃止]` 印、改訂履歴に追記）。
 
 ---
 
