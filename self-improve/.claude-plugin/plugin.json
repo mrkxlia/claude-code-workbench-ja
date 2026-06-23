@@ -1,0 +1,15 @@
+{
+  "name": "self-improve",
+  "version": "0.1.0",
+  "description": "単発セッションの訂正・繰り返し・行き詰まりから、スキル・CLAUDE.md・.claude/rules・hook・エージェントを継続改善する git 不要の自己改善ループ。improve-scan（発見：シグナル抽出→ローカル backlog）と improve-apply（判定→品質ゲート→1件ずつ承認→適用→.bak/差分ロールバック）の2スキル、検出/通知フックを提供する。knowledge-share の kb とデータ層で連携。",
+  "author": {
+    "name": "mrkxlia",
+    "url": "https://github.com/mrkxlia"
+  },
+  "homepage": "https://github.com/mrkxlia/claude-code-workbench-ja/tree/main/self-improve",
+  "repository": "https://github.com/mrkxlia/claude-code-workbench-ja",
+  "license": "MIT",
+  "keywords": ["self-improvement", "skills", "memory", "hooks", "japanese"],
+  "skills": "./.claude/skills/",
+  "hooks": "./.claude/hooks/hooks.json"
+}

@@ -25,6 +25,10 @@ argument-hint: "[uncommitted | base <branch> | <paths>]"
 
 「Codex にレビューして」のような自然文でも発動します。
 
+> **レビュー相手を変えたいとき**: 依存なしで Claude にレビューさせるなら内蔵 `/code-review`、
+> 実装前のプランレビューや壁打ちなら [`ai-peer`](../../../../ai-peer/) の `/peer`。codex-review は
+> 相手が **Codex**（`codex` CLI）である点が違う。
+
 ## 前提
 
 `codex` CLI が導入・認証済みであること（`codex-bridge/README.md` の「前提」参照）。
