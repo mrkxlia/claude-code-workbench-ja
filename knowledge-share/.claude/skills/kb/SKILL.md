@@ -54,7 +54,25 @@ description: >-
 - 対処: <どう直したか。コピペで再現できる手順・コマンド>
 - 物証: <エラーメッセージの核心1行 / 確認に使ったコマンド>
 - タグ: #git #docker
+- 昇格: <成果物パス>   # 任意。self-improve が rule/skill/CLAUDE.md に昇格させたら記入される
 ```
+
+> `- 昇格:` 行は**任意**（無くてよい）。`self-improve` の `/improve-apply` が、この知見を
+> 恒久成果物（`.claude/rules`・skill・CLAUDE.md など）へ昇格させたときに**一度だけ追記**する。
+> 未使用の既存エントリと完全に後方互換。
+
+## self-improve との連携（昇格ライフサイクル）
+
+`knowledge-share` と `self-improve` を両方入れると「**捕捉 → 再発検知 → 恒久成果物へ昇格 →
+リンク戻し**」の閉ループになる（片方だけでも単体動作する）。kb 側の関与は次の**追加のみ**:
+
+- **昇格候補マーク**: index 行のタグ領域に `#promote`（昇格候補）/`#promoted`（昇格済み）を付けてよい。
+  既存の `#tags` と同じ位置に置く（例: `… topics/git.md #git #promote`）。
+- `/kb-harvest` が反復・ワークフロー級の知見に `#promote` を付け、`/improve-scan` に拾わせる。
+- 昇格の確定（タグの `#promote→#promoted` 化・`- 昇格:` 追記）は **self-improve 側（improve-apply）**が行う。
+
+> **`/kb search`（モード2）は読み取り専用のまま**で、再利用カウント等の書き込みはしない
+> （検索が副作用を持たない＝最小驚き原則）。再発の検知は self-improve がログから行う。
 
 ---
 

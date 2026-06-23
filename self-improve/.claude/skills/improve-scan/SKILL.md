@@ -30,12 +30,16 @@ argument-hint: "[--days N | --queue]"
 - **基本は回収キュー**: SessionEnd フック（`si-session-end.sh`）が `transcript_path` を
   `~/.claude/self-improve/<project>/queue.tsv` に積む。improve-scan は**このキューから transcript パスを
   読む**（プロジェクトキーの再導出は不要）。
+- **kb のキューも一級ソースにする（knowledge-share 連携）**: `~/.claude/knowledge/queue/pending-sessions.tsv`
+  が**あれば**、自前キューと**併せて**読む。両キューとも TSV で **2列目が `session_id`**・**4列目が
+  `transcript_path`** の同型スキーマなので、**`session_id`（2列目）で union・dedup** し、重複セッションは
+  1件として扱う。kb が無ければ自前キューだけで動く（単体フォールバック）。
 - **`--days N` のときだけ** `~/.claude/projects/*/` を期間で走査するフォールバックを使う。
-- **横断ナレッジ（あれば）**: `~/.claude/knowledge/` のエントリも入力として読み、**常用/再出現するメモを
-  「恒久成果物への昇格候補」**として backlog に挙げる（knowledge-share 未導入でも単体で動く）。
+- **横断ナレッジ（あれば）**: `~/.claude/knowledge/` のエントリも入力として読む（後述「昇格候補」）。
 
-> kb の抽出スクリプトは**呼び出さない**（プラグイン別導入でパス解決できないため）。improve-scan は
-> 自前の目的特化検出を持つ。kb とは**データ層のみ**で連携する（読むだけ／後で書き戻すのは apply）。
+> **抽出スクリプトは共有しない**: kb の `kb-extract-candidates.sh` は「エラー→解決ペア」抽出が目的で、
+> self-improve の検出対象（訂正/逸脱/スキルギャップ＋ツール呼び出し vs SKILL.md 突合）とは別物。
+> improve-scan は**自前の検出**を使う。kb と共有するのは「**どのセッションを見るか**＝キュー」だけ。
 
 ## 2系統で分類する
 
@@ -62,6 +66,20 @@ argument-hint: "[--days N | --queue]"
 - 各候補に **頻度・一貫性（HIGH/MED/LOW）・定型ステップ割合** と **WHAT/HOW/FLOW** を付ける
   （FLOW 内の WHAT/HOW は FLOW 側だけで数え、二重カウントを避ける）。
 - 各候補に **根拠（どのセッション/位置で何が起きたか）** を添える。
+
+## 昇格候補（kb 連携・あれば）
+
+`~/.claude/knowledge/` がある場合、シグナル抽出に加えて次を「昇格候補」として backlog に挙げる:
+
+- **`#promote` 付きの kb エントリ**: `~/.claude/knowledge/index.md` で `#promote` タグの付いた行
+  （kb-harvest やユーザーが「反復・ワークフロー級」と判断したもの）。
+- **ログ上で再発しているのに kb に既存エントリがあるもの**: 同じ問題が直近トランスクリプトで再び
+  起きていて、対応する kb エントリが見つかる場合。**再発回数は improve-scan がログから数える**
+  （kb 側のファイルは書き換えない）。
+
+これらは backlog に「**昇格候補: KB-… を `.claude/rules`/skill/CLAUDE.md へ昇格**（根拠: N 回再発 /
+`#promote` 付与）」として記録する。実際の昇格と kb への書き戻しは `/improve-apply` が行う。
+`#promoted`（昇格済み）や `- 昇格:` が既にあるエントリは候補にしない（再提案防止）。
 
 ## 出力先（配置を確定）
 

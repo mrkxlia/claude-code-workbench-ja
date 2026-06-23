@@ -79,6 +79,19 @@ backlog を読み、レバレッジの高い順に並べる。**CLAUDE.md と ru
 - **却下/見送りした候補は「合法的例外」として記録**し、次回 `improve-scan` で再提案しない。
 - `~/.claude/self-improve/<project>/last-apply` のタイムスタンプを更新（擬似定期実行の基準）。
 
+#### kb エントリを昇格したときの書き戻し（knowledge-share 連携）
+
+backlog の「昇格候補」（`#promote` 付き kb エントリ等）を恒久成果物へ昇格・適用したら、
+**当該 kb エントリに次の2点を書き戻す**（kb との閉ループを閉じる・再提案を防ぐ）:
+
+1. **index 行のタグを `#promote` → `#promoted` に置換**（`~/.claude/knowledge/index.md`）。
+2. **本体（`topics/<topic>.md`）の当該エントリの `- タグ:` 行の直後に `- 昇格: <成果物パス>` を1行追記**
+   （例: `- 昇格: .claude/rules/backend-retry.md`）。
+
+- knowledge-share の書式・サニタイズ規律（トークン/内部ホスト名/顧客データを書かない）に従う。
+- `~/.claude/knowledge/` が無い／対象エントリが見つからない場合は、この書き戻しはスキップする
+  （self-improve は単体でも成立する）。
+
 ## 既存の自己改善系との住み分け
 
 - **pipeline-improve（software/task-pipeline）** … パイプライン運用が前提（`docs/pipeline/` の産物を読む）。

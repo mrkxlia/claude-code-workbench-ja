@@ -18,5 +18,8 @@
 
 <!-- 形式: - [KB-YYYYMMDD-NN] <タイトル> — topics/<topic>.md #タグ -->
 <!-- 例:   - [KB-20260612-01] git rebase 中断後に HEAD が detached — topics/git.md #git -->
+<!-- 任意タグ（self-improve 連携）: #promote=昇格候補 / #promoted=昇格済み。       -->
+<!-- 反復・ワークフロー級の知見に #promote を付けると /improve-scan が拾い、         -->
+<!-- /improve-apply で .claude/rules・skill・CLAUDE.md へ昇格できる（無くても無害）。 -->
 
 （まだエントリはありません。`/kb` で最初の知見を記録してください）

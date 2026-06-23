@@ -67,7 +67,14 @@ SessionEnd フックが「エラー痕跡あり」と判断したセッション
    grep -vF "<session_id>" "$Q" > "$Q.tmp" && mv "$Q.tmp" "$Q"
    ```
 
-6. **報告**: 記録 N 件 / スキップ M 件と、その内訳を簡潔に伝える。
+6. **昇格候補フラグ（self-improve 連携・任意）**: 記録した知見のうち、**反復して出る・
+   ワークフロー級**（毎回同じ手順、特定パターンの繰り返し、ルール化すると効くもの）は、
+   index 行のタグに **`#promote`** を付ける（例: `… topics/git.md #git #promote`）。
+   `self-improve` を入れていれば `/improve-scan` がこれを「昇格候補」として拾い、`/improve-apply` で
+   `.claude/rules`・skill・CLAUDE.md へ昇格できる（昇格の確定は improve-apply 側が行う）。
+   self-improve が無い環境では単なるタグなので無害。
+
+7. **報告**: 記録 N 件 / スキップ M 件（うち `#promote` 付与 K 件）と、その内訳を簡潔に伝える。
    判断に迷ってユーザー確認に回した候補があればここで挙げる。
 
 ---

@@ -32,8 +32,8 @@
     {
       "name": "knowledge-share",
       "source": "./knowledge-share",
-      "description": "セッション/リポジトリ横断のナレッジ共有テンプレート。スキル2種（kb / kb-harvest）と SessionStart/SessionEnd フックで、解決した知見の自動読み込み・記録・回収を Claude Code の公式機能だけで実現する。",
-      "version": "1.0.0",
+      "description": "セッション/リポジトリ横断のナレッジ共有テンプレート。スキル2種（kb / kb-harvest）と SessionStart/SessionEnd フックで、解決した知見の自動読み込み・記録・回収を Claude Code の公式機能だけで実現する。self-improve と連携し #promote タグで知見を恒久成果物へ昇格できる（後方互換・任意）。",
+      "version": "1.1.0",
       "category": "productivity",
       "author": {
         "name": "mrkxlia"
@@ -68,8 +68,8 @@
     {
       "name": "self-improve",
       "source": "./self-improve",
-      "description": "単発セッションの訂正・繰り返し・行き詰まりから、スキル・CLAUDE.md・.claude/rules・hook・エージェントを継続改善する git 不要の自己改善ループ。improve-scan（発見）と improve-apply（判定→品質ゲート→1件ずつ承認→適用→ロールバック）の2スキルと、検出/通知フックを提供。knowledge-share の kb とデータ層で連携する。",
-      "version": "0.1.0",
+      "description": "単発セッションの訂正・繰り返し・行き詰まりから、スキル・CLAUDE.md・.claude/rules・hook・エージェントを継続改善する git 不要の自己改善ループ。improve-scan（発見）と improve-apply（判定→品質ゲート→1件ずつ承認→適用→ロールバック）の2スキルと、検出/通知フックを提供。knowledge-share の kb と密連携し、キュー共有と #promote 知見の恒久成果物への昇格・リンク書き戻しを行う（単体でも動作）。",
+      "version": "0.2.0",
       "category": "productivity",
       "author": {
         "name": "mrkxlia"
