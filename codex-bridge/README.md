@@ -15,6 +15,10 @@ Codex CLI を**非対話モード（`codex exec`）**で Bash 越しに駆動し
 さらに、**プラン承認で Codex 実装へ委譲する opt-in フック**（`plan-to-codex.sh`）と、
 **セッション開始時に `AGENTS.md` を再生成する常時フック**（`hooks.json`）を同梱します（後述）。
 
+> **相談相手が Codex 以外でよいなら** [`ai-peer`](../ai-peer/) セクションを使ってください。
+> 依存を増やしたくない・git なし環境なら `/peer`（内部 Claude・依存ゼロ）、別 Claude の独立見解なら
+> `/ask-claude`。codex-bridge は相手が **OpenAI Codex** のときに使います。
+
 ## なぜこの構成か
 
 - **スキル（入口）／エージェント（実行）の分業**: スキルは発動条件・入力整理・結果提示を担い、

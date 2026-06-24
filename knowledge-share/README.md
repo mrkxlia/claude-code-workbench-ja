@@ -62,7 +62,27 @@
 - 問題 / 原因 / 対処（他リポジトリで再利用できる一般化した形で）
 - 物証: エラーメッセージの核心1行・確認したコマンド
 - タグ: #git #docker
+- 昇格: <成果物パス>   # 任意。self-improve が昇格させたら記入される（無くてよい）
 ```
+
+---
+
+## self-improve との密連携（昇格ライフサイクル・任意）
+
+[`self-improve`](../self-improve/) を併せて入れると、「**捕捉（kb）→ 再発検知 → 恒久成果物へ昇格
+（self-improve）→ リンク戻し（kb）**」の閉ループになります。**両プラグインは別のまま**で、共有データ
+契約だけで連携し、**片方だけでも単体動作**します。kb 側の関与は次の**追加のみ・後方互換**です:
+
+- **昇格候補マーク**: index 行のタグに `#promote`（昇格候補）/`#promoted`（昇格済み）を付けてよい。
+  `/kb-harvest` は反復・ワークフロー級の知見に `#promote` を付け、`/improve-scan` に拾わせます。
+- **キュー共有**: `~/.claude/knowledge/queue/pending-sessions.tsv` を self-improve の `improve-scan` が
+  自前キューと `session_id` で union して読みます（同じセッションを二重処理しない）。
+- **リンク戻し**: 昇格が確定すると、self-improve 側が index タグを `#promoted` 化し、本体に
+  `- 昇格: <成果物パス>` を1行追記します（kb 自身は書き換えません）。
+- **`/kb search` は読み取り専用のまま**（検索が副作用を持たない）。再発の検知は self-improve が
+  ログから行います。
+
+self-improve を入れていない環境では `#promote`/`#promoted`/`- 昇格:` は単なる任意メタデータで無害です。
 
 ---
 
