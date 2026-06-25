@@ -11,7 +11,15 @@ import json
 
 import yaml
 
-from convert import AgentIR, SkillIR, map_body, sentinel_line
+from convert import (
+    SENTINEL_KEY,
+    SENTINEL_PREFIX,
+    AgentIR,
+    SkillIR,
+    map_body,
+    map_model,
+    sentinel_line,
+)
 
 TARGET = "kiro"
 
@@ -24,18 +32,20 @@ def skill_to_text(skill: SkillIR, known: set[str], source_rel: str) -> str:
 
 
 def agent_to_text(agent: AgentIR, known: set[str], source_rel: str) -> str:
+    # JSON はコメント不可のため、_generated キーでセンチネルを埋め込む（F1）。先頭に置く。
     d: dict = {
+        SENTINEL_KEY: f"{SENTINEL_PREFIX} {source_rel}",
         "name": agent.name,
         "description": map_body(agent.description, TARGET, known),
         "prompt": map_body(agent.instructions, TARGET, known),
     }
     if agent.tools:
         d["tools"] = [t.lower() for t in agent.tools]  # Kiro は小文字ツール名
-    if agent.model:
-        d["model"] = agent.model
+    model = map_model(agent.model, TARGET)  # 未知 tier は None（出力しない）
+    if model:
+        d["model"] = model
     body = json.dumps(d, ensure_ascii=False, indent=2)
     json.loads(body)  # 往復検証
-    # JSON はコメント不可のため、センチネルは別ファイル(.sentinel)で持つ運用。ここでは本文のみ返す。
     return body
 
 

@@ -4,7 +4,7 @@ inclusion: always
 ---
 # Global CLAUDE.md — Claude Code 共通行動原則
 
-> **配置先:** `~/.claude/CLAUDE.md`
+> **配置先:** `~/.kiro/CLAUDE.md`
 >
 > このファイルをグローバルスコープに置くことで、すべてのプロジェクトで共通の行動原則として Claude Code に読み込まれます。
 >

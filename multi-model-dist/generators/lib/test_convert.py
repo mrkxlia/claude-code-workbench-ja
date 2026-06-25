@@ -44,11 +44,19 @@ def test_body_mapping():
     check("$notes" in cx and "$spec-extract" in cx, "codex: /cmd→$mention (self+cross)")
     check("#notes" in kr and "#spec-extract" in kr, "kiro: /cmd→#name")
     check("/tmp/foo" in cx, "無関係な /path は過剰置換しない")
+    # F3: 日本語に密着した /cmd も写像され、パス段(skills/notes)は守られる
+    cjk = convert.map_body("起動は/notes。パスは skills/notes は不変。", "codex", known)
+    check("$notes" in cjk and "skills/notes" in cjk, "F3: 日本語密着 /cmd を写像・パス段は不変")
+    check(convert.residual_cc_tokens(cjk, known) == [], "F3: 残存検証も日本語密着を検出（写像後ゼロ）")
+    check(convert.residual_cc_tokens("起動は/notes", known) == ["/notes"], "F3: 未写像の日本語密着 /cmd を検出できる")
     check(convert.residual_cc_tokens(cx, known) == [], "codex 出力に残存 /cmd なし")
     check(convert.residual_cc_tokens(kr, known) == [], "kiro 出力に残存 /cmd なし")
     # .claude/ パス写像
     check(".agents/skills/" in convert.map_body(".claude/skills/x", "codex", known), "codex path map")
     check(".kiro/skills/" in convert.map_body(".claude/skills/x", "kiro", known), "kiro path map")
+    # bare .claude/（設定・図・配置先）の catch-all
+    check("/.codex/CLAUDE.md" in convert.map_body("~/.claude/CLAUDE.md", "codex", known), "codex bare .claude catch-all")
+    check(".kiro/" in convert.map_body("├── .claude/", "kiro", known) and ".claude/" not in convert.map_body("├── .claude/", "kiro", known), "kiro bare .claude catch-all")
 
 
 def test_codex_skill_and_toml():
@@ -75,8 +83,19 @@ def test_kiro_skill_agent_steering():
     check("name: notes" in kiro.skill_to_text(s, known, "x"), "kiro skill frontmatter")
 
     a = convert.AgentIR("software-pipeline", "reviewer", "レビュア", "本文", model="sonnet", tools=["Read"])
-    j = json.loads(kiro.agent_to_text(a, known, "x"))
+    txt = kiro.agent_to_text(a, known, "x")
+    j = json.loads(txt)
     check(j["name"] == "reviewer" and j["prompt"] and j["tools"] == ["read"], "kiro agent JSON 往復可・tools 小文字")
+    # F1: JSON も _generated でセンチネルを持ち、has_sentinel が認識する
+    check(convert.SENTINEL_KEY in j, "F1: kiro agent JSON に _generated センチネル")
+    tmpj = pathlib.Path("/tmp/mmd_sentinel.json"); tmpj.write_text(txt, encoding="utf-8")
+    check(convert.has_sentinel(tmpj) is True, "F1: has_sentinel が JSON センチネルを認識")
+    tmpj.write_text('{"name":"x"}', encoding="utf-8")
+    check(convert.has_sentinel(tmpj) is False, "F1: 手書き JSON（_generated 無し）は手書き扱い")
+    # F4: kiro は sonnet→model id、codex は素の tier を出さない
+    check(j["model"] == "claude-sonnet-4", "F4: kiro model 写像 sonnet→claude-sonnet-4")
+    ctoml = codex.agent_to_text(a, known, "x")
+    check("sonnet" not in ctoml.split("\n", 1)[1], "F4: codex は素の tier 'sonnet' を出力しない")
 
     g = convert.SkillIR("data-science", "visualization", "", "# 可視化\n素 Markdown", has_frontmatter=False)
     st = kiro.guidance_to_steering(g, "data-science/.claude/skills/visualization/SKILL.md")
@@ -89,6 +108,10 @@ def test_guidance_claude_md(tmp=pathlib.Path("/tmp/mmd_test")):
     (tmp / "CLAUDE.md").write_text("# Title\n@import part.md\nrest", encoding="utf-8")
     flat = convert.load_guidance_text(tmp / "CLAUDE.md")
     check("PARTIAL CONTENT" in flat and "@import" not in flat.replace("expanded @import", ""), "@import 展開（平坦化）")
+    # F5: @mention や装飾子（パスらしくない @）は import 誤認しない
+    (tmp / "CLAUDE2.md").write_text("# T\n@anthropic-ai mention\n@param x\nbody", encoding="utf-8")
+    flat2 = convert.load_guidance_text(tmp / "CLAUDE2.md")
+    check("@anthropic-ai mention" in flat2 and "@param x" in flat2, "F5: パスでない @ 行は誤展開しない")
     am = codex.agents_md_text(flat, "x/CLAUDE.md")
     check(am.startswith("<!-- " + convert.SENTINEL_PREFIX), "AGENTS.md センチネル")
     st = kiro.steering_always_text(flat, "x/CLAUDE.md")

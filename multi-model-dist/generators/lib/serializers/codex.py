@@ -17,7 +17,7 @@ try:
 except ImportError:  # フォールバック（最小シリアライザ＋tomllib 往復検証）
     _HAVE_TOMLI_W = False
 
-from convert import AgentIR, SkillIR, map_body, sentinel_line
+from convert import AgentIR, SkillIR, map_body, map_model, sentinel_line
 
 TARGET = "codex"
 
@@ -59,8 +59,9 @@ def agent_to_text(agent: AgentIR, known: set[str], source_rel: str) -> str:
         "description": map_body(agent.description, TARGET, known),
         "developer_instructions": map_body(agent.instructions, TARGET, known),
     }
-    if agent.model:
-        d["model"] = agent.model  # ※ provider model id への最終写像は MAPPING ③ に従い実機で確認
+    model = map_model(agent.model, TARGET)  # 未知 tier は None（出力しない・MAPPING ③）
+    if model:
+        d["model"] = model
     body = _toml_dump(d)
     tomllib.loads(body)  # 往復検証：壊れた TOML を生成したら即例外
     return f"# {sentinel_line(source_rel, comment='', close='').strip()}\n{body}"

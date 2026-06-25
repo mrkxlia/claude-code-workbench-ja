@@ -49,6 +49,13 @@ def _write(path: pathlib.Path, text: str, source_rel: str):
 
 
 def run(repo: pathlib.Path, targets: list[str], out: pathlib.Path) -> int:
+    # F2: 出力は <name> 単位なので、allowlist のスキル名が衝突すると無言で上書きになる。
+    # MAPPING ② の衝突回避（正本は単体版・連携版は Track B）に従い、ここで明示チェックして fail させる。
+    names = [n for _, n in (T1_SKILLS | T2P_SKILLS)]
+    dups = sorted({n for n in names if names.count(n) > 1})
+    if dups:
+        raise SystemExit(f"ERROR: Track A allowlist にスキル名衝突: {dups}（正本を1つに絞ること）")
+
     skills, agents, known = convert.collect(repo)
     by_skill = {(s.section, s.name): s for s in skills}
     by_agent = {(a.section, a.name): a for a in agents}
@@ -100,12 +107,14 @@ def run(repo: pathlib.Path, targets: list[str], out: pathlib.Path) -> int:
         if not claude_md.is_file():
             print(f"  WARN: CLAUDE.md not found: {section}", file=sys.stderr)
             continue
-        body = convert.load_guidance_text(claude_md)
+        raw = convert.load_guidance_text(claude_md)
         grel = f"{section}/CLAUDE.md"
         if "codex" in targets:
+            body = convert.map_body(raw, "codex", known)  # .claude/ パス・/cmd を写像（CC リテラルを残さない）
             emit(_write(out / "build/codex/agents-md" / f"{section}.AGENTS.md",
                         codex.agents_md_text(body, grel), grel))
         if "kiro" in targets:
+            body = convert.map_body(raw, "kiro", known)
             emit(_write(out / "build/kiro/.kiro/steering" / f"{section}-guidance.md",
                         kiro.steering_always_text(body, grel), grel))
 
