@@ -137,6 +137,9 @@ def assemble_dist(out: pathlib.Path, targets: list[str]):
     if "kiro" in targets:
         d = out / "dist/kiro-power"
         _copytree(out / "build/kiro", d)
+        # Track B（reimpl）の Kiro ネイティブ実装も Power に取り込む（例: codex-bridge Kiro 版）
+        for kiro_dir in sorted((out / "reimpl/impl/kiro").glob("*/.kiro")):
+            _copytree(kiro_dir, d / ".kiro")
         for t in (TEMPLATES / "kiro-power").glob("*"):
             (d / t.name).write_text(t.read_text(encoding="utf-8"), encoding="utf-8")
         print(f"  dist: kiro-power assembled -> {d.relative_to(out.parent)}")
