@@ -30,6 +30,11 @@ T1_SKILLS = {
 T2P_SKILLS = {("ai-peer", "peer")}          # スキル＋エージェント対
 T2P_AGENTS = {("ai-peer", "peer-engineer")}  # 対のエージェント
 
+# CLAUDE.md → AGENTS.md / steering（Track A の指示書ガイダンス。pipeline 系 CLAUDE.md は Track B なので除外）
+GUIDANCE_CLAUDE = ["GlobalClaudeMD-sample", "data-science"]
+
+TEMPLATES = HERE.parent / "templates"
+
 
 def _write(path: pathlib.Path, text: str, source_rel: str):
     """センチネル付きで書き出す。手書き（センチネル無し）の既存物は上書きしない。"""
@@ -89,9 +94,52 @@ def run(repo: pathlib.Path, targets: list[str], out: pathlib.Path) -> int:
                 emit(_write(out / "build/kiro" / kiro.steering_path(s),
                             kiro.guidance_to_steering(s, rel(s)), rel(s)))
 
+    # CLAUDE.md → AGENTS.md（Codex）/ steering inclusion:always（Kiro）
+    for section in GUIDANCE_CLAUDE:
+        claude_md = repo / section / "CLAUDE.md"
+        if not claude_md.is_file():
+            print(f"  WARN: CLAUDE.md not found: {section}", file=sys.stderr)
+            continue
+        body = convert.load_guidance_text(claude_md)
+        grel = f"{section}/CLAUDE.md"
+        if "codex" in targets:
+            emit(_write(out / "build/codex/agents-md" / f"{section}.AGENTS.md",
+                        codex.agents_md_text(body, grel), grel))
+        if "kiro" in targets:
+            emit(_write(out / "build/kiro/.kiro/steering" / f"{section}-guidance.md",
+                        kiro.steering_always_text(body, grel), grel))
+
     for k, v in log.items():
         print(f"  {k}: {v}")
+
+    assemble_dist(out, targets)
     return 0
+
+
+def _copytree(src: pathlib.Path, dst: pathlib.Path):
+    if not src.exists():
+        return
+    for f in src.rglob("*"):
+        if f.is_file():
+            rel = f.relative_to(src)
+            (dst / rel).parent.mkdir(parents=True, exist_ok=True)
+            (dst / rel).write_text(f.read_text(encoding="utf-8"), encoding="utf-8")
+
+
+def assemble_dist(out: pathlib.Path, targets: list[str]):
+    """build/ の生成物とテンプレートのマニフェストを dist/ パッケージへ組み立てる。"""
+    if "codex" in targets:
+        d = out / "dist/codex-plugin"
+        _copytree(out / "build/codex", d)
+        for t in (TEMPLATES / "codex-plugin").glob("*"):
+            (d / t.name).write_text(t.read_text(encoding="utf-8"), encoding="utf-8")
+        print(f"  dist: codex-plugin assembled -> {d.relative_to(out.parent)}")
+    if "kiro" in targets:
+        d = out / "dist/kiro-power"
+        _copytree(out / "build/kiro", d)
+        for t in (TEMPLATES / "kiro-power").glob("*"):
+            (d / t.name).write_text(t.read_text(encoding="utf-8"), encoding="utf-8")
+        print(f"  dist: kiro-power assembled -> {d.relative_to(out.parent)}")
 
 
 def main():

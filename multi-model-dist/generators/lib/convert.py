@@ -152,6 +152,35 @@ def map_body(body: str, target: str, known_skills: set[str]) -> str:
     return out
 
 
+# ---------------------------------------------------------------------------
+# CLAUDE.md → 平坦化（@import を depth-1 で展開）
+# ---------------------------------------------------------------------------
+_IMPORT_RE = re.compile(r"^@(?:import\s+)?(\S+)\s*$")
+
+
+def expand_imports(text: str, base_dir: pathlib.Path, _depth: int = 1) -> str:
+    """行頭 `@path`（または `@import path`）を相対解決して中身に展開する（depth-1）。
+
+    AGENTS.md / steering は @import 非対応のため、平坦化して橋渡しする（codex-agents 同方針）。
+    """
+    out = []
+    for line in text.splitlines():
+        m = _IMPORT_RE.match(line.strip())
+        if m and _depth > 0:
+            target = (base_dir / m.group(1)).resolve()
+            if target.is_file():
+                out.append(f"<!-- expanded @import {m.group(1)} -->")
+                out.append(expand_imports(target.read_text(encoding="utf-8"), target.parent, _depth - 1))
+                continue
+        out.append(line)
+    return "\n".join(out)
+
+
+def load_guidance_text(claude_md: pathlib.Path) -> str:
+    """CLAUDE.md を平坦化したテキストを返す（frontmatter は持たない前提）。"""
+    return expand_imports(claude_md.read_text(encoding="utf-8"), claude_md.parent)
+
+
 # 生成後に本文へ残ってはいけない CC 固有語（ゴールデン/出力検証用）
 def residual_cc_tokens(body: str, known_skills: set[str]) -> list[str]:
     found = []

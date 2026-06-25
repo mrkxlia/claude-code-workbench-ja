@@ -9,3 +9,11 @@
 - `kiro/.kiro/steering/visualization.md` — T1g（frontmatter 無しの data-science）→ steering(`inclusion: auto`)
 
 検証は `python3 generators/lib/test_convert.py`（ゴールデン/往復テスト）。
+
+## Track A 仕上げ分
+
+- `codex/agents-md/GlobalClaudeMD-sample.AGENTS.md` — CLAUDE.md→AGENTS.md（@import 平坦化・センチネル）
+- `kiro/.kiro/steering/GlobalClaudeMD-sample-guidance.md` — CLAUDE.md→steering（`inclusion: always`）
+
+配布パッケージのマニフェスト雛形は `generators/templates/{codex-plugin,kiro-power}/` にあり、
+`export.sh` が `dist/codex-plugin/`・`dist/kiro-power/` を組み立てる（`dist/` 自体は `.gitignore`）。

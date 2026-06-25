@@ -66,6 +66,11 @@ def agent_to_text(agent: AgentIR, known: set[str], source_rel: str) -> str:
     return f"# {sentinel_line(source_rel, comment='', close='').strip()}\n{body}"
 
 
+def agents_md_text(body: str, source_rel: str) -> str:
+    """CLAUDE.md（平坦化済み）→ AGENTS.md（Codex がプロジェクト指示として自動読込）。"""
+    return f"{sentinel_line(source_rel)}\n{body.rstrip()}\n"
+
+
 def skill_path(skill: SkillIR) -> str:
     return f".agents/skills/{skill.name}/SKILL.md"
 

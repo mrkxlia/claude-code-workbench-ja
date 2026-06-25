@@ -83,8 +83,20 @@ def test_kiro_skill_agent_steering():
     check("inclusion: auto" in st and "name: visualization" in st, "T1g→steering(auto)")
 
 
+def test_guidance_claude_md(tmp=pathlib.Path("/tmp/mmd_test")):
+    tmp.mkdir(parents=True, exist_ok=True)
+    (tmp / "part.md").write_text("PARTIAL CONTENT", encoding="utf-8")
+    (tmp / "CLAUDE.md").write_text("# Title\n@import part.md\nrest", encoding="utf-8")
+    flat = convert.load_guidance_text(tmp / "CLAUDE.md")
+    check("PARTIAL CONTENT" in flat and "@import" not in flat.replace("expanded @import", ""), "@import 展開（平坦化）")
+    am = codex.agents_md_text(flat, "x/CLAUDE.md")
+    check(am.startswith("<!-- " + convert.SENTINEL_PREFIX), "AGENTS.md センチネル")
+    st = kiro.steering_always_text(flat, "x/CLAUDE.md")
+    check("inclusion: always" in st, "steering inclusion: always")
+
+
 if __name__ == "__main__":
-    for fn in [test_frontmatter, test_body_mapping, test_codex_skill_and_toml, test_kiro_skill_agent_steering]:
+    for fn in [test_frontmatter, test_body_mapping, test_codex_skill_and_toml, test_kiro_skill_agent_steering, test_guidance_claude_md]:
         print(f"\n[{fn.__name__}]")
         fn()
     print()

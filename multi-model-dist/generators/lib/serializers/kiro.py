@@ -50,6 +50,12 @@ def guidance_to_steering(skill: SkillIR, source_rel: str, inclusion: str = "auto
     return f"{sentinel_line(source_rel)}\n---\n{fm}\n---\n{body}"
 
 
+def steering_always_text(body: str, source_rel: str) -> str:
+    """CLAUDE.md（平坦化済み）→ steering（inclusion: always＝常時読込のプロジェクト指示）。"""
+    fm = yaml.safe_dump({"inclusion": "always"}, allow_unicode=True, sort_keys=False).strip()
+    return f"{sentinel_line(source_rel)}\n---\n{fm}\n---\n{body.rstrip()}\n"
+
+
 def skill_path(skill: SkillIR) -> str:
     return f".kiro/skills/{skill.name}/SKILL.md"
 
