@@ -64,6 +64,11 @@ claude-code-workbench-ja/
 │   ├── bin/kb-extract-candidates.sh #   jsonl 採掘スクリプト
 │   ├── .claude-plugin/plugin.json   #   プラグインマニフェスト
 │   └── .claude/                     #   skills 2種（kb / kb-harvest）/ hooks 2種＋hooks.json / settings.json サンプル
+├── multi-model-dist/                # CC 資産を Codex/Kiro へ配布（原本不変・生成＝Track A／SPEC 再実装＝Track B）
+│   ├── README.md / MAPPING.md       #   対応表・ティア監査・配置パス確定・本文用語写像
+│   ├── generators/                  #   単一パイプライン（bin/export.sh・lib/convert.py＋serializers/・作業用 export スキル）
+│   ├── examples/                    #   生成結果ゴールデン（build/・dist/ は .gitignore）
+│   └── reimpl/                      #   Track B（SPEC 共有→各ツール再実装）※段階導入
 ├── token-usage-tracker/             # AIエージェントのトークン消費トラッカー（独立Pythonツール / uv / TDD）
 │   ├── README.md
 │   ├── pyproject.toml               #   uv 管理・[project.scripts] tokentracker
