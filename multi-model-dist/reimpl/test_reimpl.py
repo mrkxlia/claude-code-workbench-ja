@@ -103,9 +103,52 @@ def test_codex_software_pipeline():
     check("docs/pipeline/<slug>/status.md" in sk, "Codex: status.md ファイル永続化（spec ワークフロー無し）")
 
 
+TP_READONLY = {"source-researcher", "requirements-writer", "brief-writer", "deliverable-reviewer"}
+TP_BUILDERS = {"deliverable-builder"}
+TP_KIRO = HERE / "impl/kiro/task-pipeline/.kiro"
+TP_CODEX = HERE / "impl/codex/task-pipeline"
+
+
+def test_task_pipeline_kiro():
+    agents = {f.stem: json.loads(f.read_text(encoding="utf-8")) for f in (TP_KIRO / "agents").glob("*.json")}
+    check(set(agents) == TP_READONLY | TP_BUILDERS, "Kiro task-pipeline agents が5体")
+    for name, d in agents.items():
+        for key in ("name", "description", "prompt", "tools"):
+            check(key in d, f"{name}: 必須キー {key}")
+        tools = {t.lower() for t in d.get("tools", [])}
+        if name in TP_READONLY:
+            check(tools.isdisjoint(WRITE_TOOLS), f"{name}: read-only（書き込みツール無し）")
+        else:
+            check("write" in tools, f"{name}: builder は書き込みツールあり")
+    check("出力ディレクトリ" in agents["deliverable-builder"]["prompt"], "deliverable-builder: 出力ディレクトリ限定の明記")
+    sk = (TP_KIRO / "skills/task-pipeline/SKILL.md").read_text(encoding="utf-8")
+    for kw in ("requirements.md", "design.md", "tasks.md"):
+        check(kw in sk, f"Kiro task skill: spec ワークフロー写像 {kw}")
+    st = (TP_KIRO / "steering/task-pipeline-rules.md").read_text(encoding="utf-8")
+    check("inclusion: always" in st, "task-pipeline steering inclusion: always")
+    spec = (SPEC / "task-pipeline.md").read_text(encoding="utf-8")
+    for sec in ("CP1", "CP2", "CP3", "上限3回", "並列", "越境禁止", "出力ディレクトリ"):
+        check(sec in spec, f"task-pipeline SPEC 必須節: {sec}")
+
+
+def test_task_pipeline_codex():
+    import tomllib
+    agents = {f.stem: tomllib.loads(f.read_text(encoding="utf-8")) for f in (TP_CODEX / ".codex/agents").glob("*.toml")}
+    check(set(agents) == TP_READONLY | TP_BUILDERS, "Codex task-pipeline agents が5体")
+    for name, d in agents.items():
+        for key in ("name", "description", "developer_instructions", "sandbox_mode"):
+            check(key in d, f"{name}: 必須キー {key}")
+        expected = "read-only" if name in TP_READONLY else "workspace-write"
+        check(d.get("sandbox_mode") == expected, f"{name}: sandbox_mode={expected}")
+        check("model" not in d, f"{name}: 素の tier model を出力しない")
+    sk = (TP_CODEX / ".agents/skills/task-pipeline/SKILL.md").read_text(encoding="utf-8")
+    check(sk.startswith("---") and "name: task-pipeline" in sk, "Codex task-pipeline skill frontmatter")
+
+
 if __name__ == "__main__":
     for fn in (test_agents, test_skills, test_software_pipeline_agents,
-               test_software_pipeline_skill_steering_spec, test_codex_software_pipeline):
+               test_software_pipeline_skill_steering_spec, test_codex_software_pipeline,
+               test_task_pipeline_kiro, test_task_pipeline_codex):
         print(f"\n[{fn.__name__}]")
         fn()
     print()
