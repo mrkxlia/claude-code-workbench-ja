@@ -1,0 +1,14 @@
+{
+  "_generated": "hand-written Track B (T2h). 対象パスの受け渡し・block/ask 手段は Kiro バージョン依存のため [要確認]。SPEC: reimpl/SPEC/hooks.md",
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "guard-deliverable-writes",
+      "trigger": "PreToolUse",
+      "matcher": "write|edit|fsWrite",
+      "action": { "type": "command", "command": "bash .kiro/hooks/guard-deliverable-writes.sh \"${KIRO_HOOK_FILE_PATH:-$1}\"" },
+      "timeout": 15,
+      "enabled": true
+    }
+  ]
+}

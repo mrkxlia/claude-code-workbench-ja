@@ -37,8 +37,9 @@
 
 - 人間承認 CP: Plan モードレビュー → 「要点＋全文提示で停止」に置換。
 - 連鎖の起動: Task ツール → Kiro subagent 機構。
-- 出力ディレクトリ外ガード: 原本の PreToolUse フックは T2h のため本実装に含めない（フック増分で別途 `.kiro/hooks/*.json` 化）。
-  builder の出力ディレクトリ限定は prompt と steering のルールで表現する。
+- **ガード/通知フック（T2h）**: `.kiro/hooks/` に同梱済み — `guard-deliverable-writes`（機密はブロック・出力ディレクトリ外は確認）・
+  `spec-sync-reminder`（SessionStart 通知）。Kiro の hook **入力契約・block/ask 手段はバージョン依存（[要確認]）**で、
+  再現できない場合は通知へ degrade する（SPEC `reimpl/SPEC/hooks.md`）。builder の出力ディレクトリ限定は prompt と steering でも表現する。
 
 ## 検証
 

@@ -9,6 +9,7 @@
 import json
 import pathlib
 import re
+import subprocess
 import sys
 
 HERE = pathlib.Path(__file__).resolve().parent
@@ -145,10 +146,30 @@ def test_task_pipeline_codex():
     check(sk.startswith("---") and "name: task-pipeline" in sk, "Codex task-pipeline skill frontmatter")
 
 
+def test_hooks_t2h():
+    spec = (SPEC / "hooks.md").read_text(encoding="utf-8")
+    for kw in ("block-secrets-commit", "guard-builder-writes", "guard-deliverable-writes",
+               "spec-sync-reminder", "要確認", "Codex"):
+        check(kw in spec, f"hooks SPEC: {kw}")
+    hook_files = sorted((HERE / "impl/kiro").glob("*/.kiro/hooks/*.json"))
+    check(len(hook_files) >= 4, "Kiro hooks JSON が複数（software＋task）")
+    for f in hook_files:
+        d = json.loads(f.read_text(encoding="utf-8"))  # JSON 妥当
+        check("version" in d and isinstance(d.get("hooks"), list) and d["hooks"], f"{f.name}: version＋hooks[]")
+        for h in d["hooks"]:
+            for key in ("name", "trigger", "action"):
+                check(key in h, f"{f.name}:{h.get('name','?')}: 必須キー {key}")
+            check(h["action"].get("type") == "command" and "command" in h["action"], f"{f.name}: action command")
+    # 検査本体スクリプトの bash 構文が通る
+    for sh in sorted((HERE / "impl/kiro").glob("*/.kiro/hooks/*.sh")):
+        rc = subprocess.run(["bash", "-n", str(sh)]).returncode
+        check(rc == 0, f"{sh.name}: bash 構文 OK")
+
+
 if __name__ == "__main__":
     for fn in (test_agents, test_skills, test_software_pipeline_agents,
                test_software_pipeline_skill_steering_spec, test_codex_software_pipeline,
-               test_task_pipeline_kiro, test_task_pipeline_codex):
+               test_task_pipeline_kiro, test_task_pipeline_codex, test_hooks_t2h):
         print(f"\n[{fn.__name__}]")
         fn()
     print()
