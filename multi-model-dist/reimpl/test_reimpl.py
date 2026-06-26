@@ -83,8 +83,29 @@ def test_software_pipeline_skill_steering_spec():
         check(sec in spec, f"SPEC 必須節: {sec}")
 
 
+SP_CODEX = HERE / "impl/codex/software-pipeline"
+
+
+def test_codex_software_pipeline():
+    import tomllib
+    agents = {}
+    for f in (SP_CODEX / ".codex/agents").glob("*.toml"):
+        agents[f.stem] = tomllib.loads(f.read_text(encoding="utf-8"))  # TOML 往復
+    check(set(agents) == READONLY | BUILDERS, "Codex software-pipeline agents が7体")
+    for name, d in agents.items():
+        for key in ("name", "description", "developer_instructions", "sandbox_mode"):
+            check(key in d, f"{name}: 必須キー {key}")
+        expected = "read-only" if name in READONLY else "workspace-write"
+        check(d.get("sandbox_mode") == expected, f"{name}: sandbox_mode={expected}")
+        check("model" not in d, f"{name}: 素の tier model を出力しない（omit）")
+    sk = (SP_CODEX / ".agents/skills/feature-pipeline/SKILL.md").read_text(encoding="utf-8")
+    check(sk.startswith("---") and "name: feature-pipeline" in sk, "Codex feature-pipeline skill frontmatter")
+    check("docs/pipeline/<slug>/status.md" in sk, "Codex: status.md ファイル永続化（spec ワークフロー無し）")
+
+
 if __name__ == "__main__":
-    for fn in (test_agents, test_skills, test_software_pipeline_agents, test_software_pipeline_skill_steering_spec):
+    for fn in (test_agents, test_skills, test_software_pipeline_agents,
+               test_software_pipeline_skill_steering_spec, test_codex_software_pipeline):
         print(f"\n[{fn.__name__}]")
         fn()
     print()

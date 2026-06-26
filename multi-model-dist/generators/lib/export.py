@@ -140,6 +140,10 @@ def assemble_dist(out: pathlib.Path, targets: list[str]):
     if "codex" in targets:
         d = out / "dist/codex-plugin"
         _copytree(out / "build/codex", d)
+        # Track B（reimpl）の Codex ネイティブ実装も取り込む（例: software-pipeline）
+        for impl in sorted((out / "reimpl/impl/codex").glob("*")):
+            for sub in (".agents", ".codex"):
+                _copytree(impl / sub, d / sub)
         for t in (TEMPLATES / "codex-plugin").glob("*"):
             (d / t.name).write_text(t.read_text(encoding="utf-8"), encoding="utf-8")
         print(f"  dist: codex-plugin assembled -> {d.relative_to(out.parent)}")
