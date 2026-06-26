@@ -46,8 +46,45 @@ def test_skills():
         check("description:" in head, f"{f.parent.name}: description")
 
 
+SP = HERE / "impl/kiro/software-pipeline/.kiro"
+SPEC = HERE / "SPEC"
+READONLY = {"codebase-researcher", "story-writer", "spec-writer", "implementation-validator"}
+BUILDERS = {"backend-builder", "frontend-builder", "test-verifier"}
+WRITE_TOOLS = {"write", "edit", "execute_bash", "fswrite"}
+
+
+def test_software_pipeline_agents():
+    agents = {f.stem: json.loads(f.read_text(encoding="utf-8")) for f in (SP / "agents").glob("*.json")}
+    check(set(agents) == READONLY | BUILDERS, "software-pipeline agents が7体（全役割）")
+    for name, d in agents.items():
+        for key in ("name", "description", "prompt", "tools"):
+            check(key in d, f"{name}: 必須キー {key}")
+        tools = {t.lower() for t in d.get("tools", [])}
+        if name in READONLY:
+            # read-only エージェントは書き込み系ツールを持たない
+            check(tools.isdisjoint(WRITE_TOOLS), f"{name}: read-only（書き込みツール無し）")
+        else:
+            check("write" in tools or "edit" in tools, f"{name}: builder は書き込みツールあり")
+        # 越境禁止の意図が prompt に表れている（builder/verifier）
+    check("触れ" in agents["backend-builder"]["prompt"] or "だけ" in agents["backend-builder"]["prompt"],
+          "backend-builder: 越境禁止の明記")
+    check("プロダクトコード" in agents["test-verifier"]["prompt"], "test-verifier: プロダクトコード不変の明記")
+
+
+def test_software_pipeline_skill_steering_spec():
+    sk = (SP / "skills/feature-pipeline/SKILL.md").read_text(encoding="utf-8")
+    check(sk.startswith("---") and "name: feature-pipeline" in sk, "feature-pipeline skill frontmatter")
+    for kw in ("requirements.md", "design.md", "tasks.md"):
+        check(kw in sk, f"skill: spec ワークフロー写像 {kw}")
+    st = (SP / "steering/pipeline-rules.md").read_text(encoding="utf-8")
+    check("inclusion: always" in st, "steering inclusion: always")
+    spec = (SPEC / "software-pipeline.md").read_text(encoding="utf-8")
+    for sec in ("CP1", "CP2", "CP3", "上限3回", "並列", "越境禁止"):
+        check(sec in spec, f"SPEC 必須節: {sec}")
+
+
 if __name__ == "__main__":
-    for fn in (test_agents, test_skills):
+    for fn in (test_agents, test_skills, test_software_pipeline_agents, test_software_pipeline_skill_steering_spec):
         print(f"\n[{fn.__name__}]")
         fn()
     print()
