@@ -1,0 +1,13 @@
+{
+  "_note": "Kiro Power マニフェスト（テンプレート）。Power の正式パッケージ形式は doc/changelog ベースで変わりうるため、実環境の最新仕様に合わせて調整すること（計画のオープン事項を参照）。MCP+steering+hooks+skills+agents をまとめて配布する意図を示す雛形。",
+  "name": "workbench-ja-kiro",
+  "description": "claude-code-workbench-ja の tool-agnostic 資産を Kiro 向けに配布する Power",
+  "version": "0.1.0",
+  "contents": {
+    "skills": ".kiro/skills",
+    "agents": ".kiro/agents",
+    "steering": ".kiro/steering",
+    "hooks": ".kiro/hooks",
+    "mcpServers": []
+  }
+}

@@ -1,0 +1,19 @@
+# Codex plugin マニフェスト（テンプレート）
+#
+# ⚠ 注意: Codex plugin の正式なマニフェスト・スキーマはバージョンで変わりうる（公式 /codex/plugins/build 参照）。
+# このファイルは「Skills/MCP をバンドルし repo marketplace で配布する」意図を示す雛形であり、
+# 実環境の最新仕様に合わせて調整すること（MAPPING.md / 計画のオープン事項を参照）。
+
+name = "workbench-ja-codex"
+description = "claude-code-workbench-ja の tool-agnostic スキル/サブエージェントを Codex 向けに配布するプラグイン"
+version = "0.1.0"
+
+# バンドル対象（assemble 時に build/codex から取り込まれる）
+[bundle]
+skills = ".agents/skills"      # Codex Agent Skills
+agents = ".codex/agents"       # サブエージェント（TOML）
+agents_md = "AGENTS.md"        # プロジェクト指示（任意）
+
+# repo marketplace 配布のメタ（実形式は公式仕様に合わせる）
+[marketplace]
+source = "repo"
