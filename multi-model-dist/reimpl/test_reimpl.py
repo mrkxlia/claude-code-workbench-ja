@@ -166,10 +166,35 @@ def test_hooks_t2h():
         check(rc == 0, f"{sh.name}: bash 構文 OK")
 
 
+def test_knowledge_self_improve():
+    spec = (SPEC / "self-improve-and-knowledge-share.md").read_text(encoding="utf-8")
+    for kw in ("kb", "kb-harvest", "improve-scan", "improve-apply", "要確認", "degrade", "inclusion: always"):
+        check(kw in spec, f"ks/si SPEC: {kw}")
+    # Kiro: kb + kb-harvest + steering(always) + improve-scan + improve-apply + hooks
+    ks = HERE / "impl/kiro/knowledge-share/.kiro"
+    si = HERE / "impl/kiro/self-improve/.kiro"
+    for p in (ks / "skills/kb/SKILL.md", ks / "skills/kb-harvest/SKILL.md",
+              si / "skills/improve-scan/SKILL.md", si / "skills/improve-apply/SKILL.md"):
+        t = p.read_text(encoding="utf-8")
+        check(t.startswith("---") and re.search(r"^name:\s*\S+", t, re.M) is not None, f"{p.parent.name}: skill frontmatter")
+    st = (ks / "steering/kb-index.md").read_text(encoding="utf-8")
+    check("inclusion: always" in st, "kb-index steering: auto-load(inclusion: always)")
+    for hk in list((ks / "hooks").glob("*.json")) + list((si / "hooks").glob("*.json")):
+        d = json.loads(hk.read_text(encoding="utf-8"))
+        check("version" in d and d.get("hooks"), f"{hk.name}: hooks JSON 妥当")
+    # improve-apply は手動のみ
+    ia = (si / "skills/improve-apply/SKILL.md").read_text(encoding="utf-8")
+    check("disable-model-invocation: true" in ia, "improve-apply: 手動のみ(disable-model-invocation)")
+    # Codex: kb のみ（degrade 明記）
+    ckb = (HERE / "impl/codex/knowledge-share/.agents/skills/kb/SKILL.md").read_text(encoding="utf-8")
+    check("name: kb" in ckb and "非対応" in ckb, "Codex kb: degrade(harvest/scan/apply 非対応)明記")
+
+
 if __name__ == "__main__":
     for fn in (test_agents, test_skills, test_software_pipeline_agents,
                test_software_pipeline_skill_steering_spec, test_codex_software_pipeline,
-               test_task_pipeline_kiro, test_task_pipeline_codex, test_hooks_t2h):
+               test_task_pipeline_kiro, test_task_pipeline_codex, test_hooks_t2h,
+               test_knowledge_self_improve):
         print(f"\n[{fn.__name__}]")
         fn()
     print()
