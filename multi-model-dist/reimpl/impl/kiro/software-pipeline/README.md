@@ -43,8 +43,10 @@
 
 - **人間承認 CP**: CC の Plan モードレビュー → Kiro では「成果物の要点＋全文を提示し明示承認まで停止」に置換（意味論は同一）。
 - **連鎖の起動**: Task ツール → Kiro subagent 機構。
-- **共有ファイル衝突ガード**: 原本の PreToolUse フックは T2h（意味論写像が要る）のため**本実装には含めない**。
-  フック増分で別途 `.kiro/hooks/*.json` 化する。並列時は「①共有先行逐次」で共有IFを先に固定して衝突を避ける。
+- **ガード/通知フック（T2h）**: `.kiro/hooks/` に同梱済み — `block-secrets-commit`（機密コミット中止）・
+  `guard-shared-writes`（並列時の共有ファイル衝突確認）・`spec-sync-reminder`（SessionStart 通知）。
+  ただし Kiro の hook **入力契約・ブロック/ask 手段はバージョン依存（[要確認]）**で、再現できない場合は通知へ degrade する
+  （SPEC `reimpl/SPEC/hooks.md` H1/H3）。並列時はオーケストレーターの「①共有先行逐次」でも衝突を避ける。
 - 担当範囲（BE/FE/テスト）の越境禁止は各エージェントの prompt と steering で表現する（パスの自動強制ではなくルール）。
 
 ## 検証

@@ -1,0 +1,13 @@
+{
+  "_generated": "hand-written Track B. Kiro セッションログ形式・hook 入力契約は [要確認]（SPEC K2/K3）。確認後に有効化する想定で enabled:false。",
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "kb-session-end",
+      "trigger": "SessionEnd",
+      "action": { "type": "command", "command": "bash .kiro/hooks/kb-session-end.sh" },
+      "timeout": 15,
+      "enabled": false
+    }
+  ]
+}

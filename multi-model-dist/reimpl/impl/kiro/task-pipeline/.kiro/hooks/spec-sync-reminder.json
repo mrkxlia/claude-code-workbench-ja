@@ -1,0 +1,13 @@
+{
+  "_generated": "hand-written Track B (T2h). 非ブロッキング通知。SPEC: reimpl/SPEC/hooks.md",
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "spec-sync-reminder",
+      "trigger": "SessionStart",
+      "action": { "type": "command", "command": "bash .kiro/hooks/spec-sync-reminder.sh" },
+      "timeout": 15,
+      "enabled": true
+    }
+  ]
+}
