@@ -211,7 +211,10 @@ task-pipeline/
     │   ├── notes/SKILL.md                    # 実装ノート記録（implementation-skills 原本の連携版）
     │   └── spec-extract/SKILL.md             # 既存成果物から成果物仕様を逆引き（implementation-skills 原本の連携版）
     ├── hooks/
-    │   └── guard-deliverable-writes.sh      # 出力ディレクトリ外への書き込みを確認するフック
+    │   ├── guard-deliverable-writes.sh      # 出力ディレクトリ外への書き込みを確認するフック
+    │   ├── guard-deliverable-writes.ps1     #   （Windows / PowerShell 版）
+    │   ├── spec-sync-reminder.sh            # SessionStart/Stop で SPEC.md の未同期を知らせる通知フック
+    │   └── spec-sync-reminder.ps1           #   （Windows / PowerShell 版）
     └── settings.json                        # 上記フックを配線する設定サンプル
 ```
 

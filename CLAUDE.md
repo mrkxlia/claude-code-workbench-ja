@@ -39,7 +39,7 @@ claude-code-workbench-ja/
 │   ├── README.md
 │   ├── CLAUDE.md                    #   コピーして使う CLAUDE.md サンプル
 │   ├── .claude-plugin/plugin.json   #   プラグインマニフェスト
-│   └── .claude/                     #   agents 7種 / skills 7種（clarify / notes / spec-extract パイプライン連携版・pipeline-improve 含む）/ hooks 2種（block-secrets-commit・並列共有衝突を確認する guard-builder-writes）/ settings.json
+│   └── .claude/                     #   agents 7種 / skills 7種（clarify / notes / spec-extract パイプライン連携版・pipeline-improve 含む）/ hooks 3種（block-secrets-commit・並列共有衝突を確認する guard-builder-writes・spec-sync-reminder）/ settings.json
 ├── task-pipeline/                    # 汎用5エージェント構成「タスクパイプライン」テンプレート（コード以外の成果物向け・プラグイン導入可）
 │   ├── README.md
 │   ├── CLAUDE.md                    #   コピーして使う CLAUDE.md サンプル
@@ -72,12 +72,13 @@ claude-code-workbench-ja/
 ├── token-usage-tracker/             # AIエージェントのトークン消費トラッカー（独立Pythonツール / uv / TDD）
 │   ├── README.md
 │   ├── pyproject.toml               #   uv 管理・[project.scripts] tokentracker
-│   ├── tokentracker/                #   parsers(claude_code/codex/cline) / db / pricing(+pricing.toml) / queries / ingest / cli / dashboard
+│   ├── tokentracker/                #   parsers(claude_code/codex/cline) / models / db / pricing(+pricing.toml) / queries / ingest / cli / dashboard
 │   └── tests/                       #   pytest（fixtures に実ログ匿名化の代表ケースを固定）
 ├── power-automate-azure-foundry/    # Power Automate から Azure AI Foundry(GPT) を呼ぶサンプル一式
 │   └── README.md                    #   フロー定義・カスタムコネクタ・インポート手順
 ├── docs/                            # リポジトリ内ドキュメント置き場
-│   └── README.md
+│   ├── README.md
+│   └── pipeline-spec-alignment-proposal.html  #   パイプラインと仕様整合の提案資料
 └── GlobalClaudeMD-sample/           # グローバルスコープ用 CLAUDE.md サンプル
     ├── README.md
     └── CLAUDE.md
