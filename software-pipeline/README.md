@@ -251,7 +251,11 @@ software-pipeline/
     │   └── pipeline-setup/SKILL.md           # パイプライン一式を対象リポジトリへ自動導入するスキル
     ├── hooks/
     │   ├── block-secrets-commit.sh          # 機密ファイルのコミットをブロックするフック
-    │   └── guard-builder-writes.sh          # 並列実装中の共有ファイル衝突を ask で確認するフック
+    │   ├── block-secrets-commit.ps1         #   （Windows / PowerShell 版）
+    │   ├── guard-builder-writes.sh          # 並列実装中の共有ファイル衝突を ask で確認するフック
+    │   ├── guard-builder-writes.ps1         #   （Windows / PowerShell 版）
+    │   ├── spec-sync-reminder.sh            # SessionStart/Stop で SPEC.md の未同期を知らせる通知フック
+    │   └── spec-sync-reminder.ps1           #   （Windows / PowerShell 版）
     └── settings.json                        # 上記フックを配線する設定サンプル
 ```
 

@@ -14,6 +14,14 @@ CLAUDE.md とスキルファイルのテンプレートです。
 - **`.claude/skills/<name>/SKILL.md`** — スラッシュコマンド `/skill-name` で呼び出すスキルファイルの配置場所
 - スキルはユーザーが `/python-project-ops` のように明示的に呼び出して使います
 
+> **設計メモ: このセクションのスキルは意図的に YAML frontmatter（`name` / `description`）を持ちません。**
+> 各スキルは CLAUDE.md の「利用可能なスキル」対応表から**手動スラッシュコマンドで呼び出す参照ドキュメント型**であり、
+> description によるモデルの自動発動は使いません（frontmatter が無い場合、スキル名はディレクトリ名から補完されます）。
+> また [multi-model-dist](../multi-model-dist/) はこの「frontmatter 無し」を T1g ガイダンス（Kiro steering /
+> AGENTS.md 素材への変換対象）の判定条件として利用しているため、frontmatter を追加する場合は
+> multi-model-dist 側（`generators/lib/export.py`・MAPPING.md・golden ファイル）の追随修正が必要です。
+> 自動発動させたい場合は、コピー先の各 SKILL.md にトリガー条件つき frontmatter を自分で追加してください。
+
 ## ファイル構成
 
 ```

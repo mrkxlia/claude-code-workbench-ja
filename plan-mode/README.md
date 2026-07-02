@@ -82,4 +82,3 @@ cp path/to/plan-mode/SPEC.md ./.claude/skills/create-plan/SPEC.md
 - 計画は実行可能な粒度（ステップ ID・対象・アクション・検証・依存）で書く（INV-5）。
 - スクリプトは計画ファイル内のコードブロックとしてのみ記述し、独立ファイル作成・実行はしない（INV-7）。
 - 計画を書き出したら停止し、自分は実装に移らない（INV-6）。
-</content>
