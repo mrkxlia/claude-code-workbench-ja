@@ -79,6 +79,10 @@ claude-code-workbench-ja/
 ├── docs/                            # リポジトリ内ドキュメント置き場
 │   ├── README.md
 │   └── pipeline-spec-alignment-proposal.html  #   パイプラインと仕様整合の提案資料
+├── sonnet-setup/                    # Sonnet/Haiku 運用向け CLAUDE.md テンプレート（7ルール＋effort 設定・非プラグイン）
+│   ├── README.md
+│   ├── CLAUDE.md                    #   コピペ用テンプレート本体（7つの行動ルール）
+│   └── settings.json                #   effortLevel サンプル
 └── GlobalClaudeMD-sample/           # グローバルスコープ用 CLAUDE.md サンプル
     ├── README.md
     └── CLAUDE.md
