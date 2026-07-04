@@ -63,6 +63,9 @@ cp /tmp/workbench/data-science/CLAUDE.md ./CLAUDE.md && cp -r /tmp/workbench/dat
 
 # GlobalClaudeMD-sample — グローバル CLAUDE.md として配置
 cp /tmp/workbench/GlobalClaudeMD-sample/CLAUDE.md ~/.claude/CLAUDE.md
+
+# sonnet-setup — Sonnet/Haiku 運用ルールをグローバル CLAUDE.md に追記
+cat /tmp/workbench/sonnet-setup/CLAUDE.md >> ~/.claude/CLAUDE.md
 ```
 
 各セクションのカスタマイズ方法は、それぞれの README を参照してください。
@@ -84,6 +87,7 @@ cp /tmp/workbench/GlobalClaudeMD-sample/CLAUDE.md ~/.claude/CLAUDE.md
 | 要件・仕様を質問で詰めたい | **clarify**（software/task に同梱） | 単体利用も可（各プラグイン README の「単体利用」参照） |
 | 既存コード/成果物から仕様書を逆引きしたい | **implementation-skills**（`/spec-extract`） | 確度ラベル付き SPEC.md を生成。`/notes` で実装の経緯も記録 |
 | データ分析プロジェクトの土台がほしい | **data-science** | Polars・uv・Jupyter 前提の CLAUDE.md ＋スキル |
+| Sonnet/Haiku しか使えない環境で精度を底上げしたい | **sonnet-setup** | 上位モデルの「振る舞い」を CLAUDE.md に常設化（7ルール＋effort 設定） |
 | トークン/コストを可視化したい | **token-usage-tracker** | Claude Code 等のログを集計（独立 Python ツール） |
 | CC 資産を Codex / Kiro でも使いたい | **multi-model-dist** | 原本を変えず生成（Track A）＋SPEC 再実装（Track B）。`/export` で書き出し |
 
@@ -146,6 +150,10 @@ Polars・uv・Jupyter を前提にした CLAUDE.md と、分析業務向け10種
 ### [`GlobalClaudeMD-sample/`](GlobalClaudeMD-sample/)
 グローバルスコープ用 CLAUDE.md サンプル（`~/.claude/CLAUDE.md`）。
 Think Before Coding・Simplicity First・Surgical Changes など、すべてのプロジェクトに共通する行動原則を定義したファイルです。
+
+### [`sonnet-setup/`](sonnet-setup/)
+Sonnet/Haiku しか使えない環境向けの CLAUDE.md テンプレート＋effort 設定サンプル。
+完了条件の事前定義・検証つき完了報告・確信度の明示など、上位モデルの「振る舞い」を常設化する7つの行動ルールを収録しています。プロンプト側の型は既存 OSS（severity1/claude-code-prompt-improver）を README で紹介しています。
 
 ### [`software-pipeline/`](software-pipeline/)
 7つの専門エージェントで機能開発を流れ作業化する「ソフトウェアパイプライン」テンプレート。
@@ -218,6 +226,7 @@ Power Automate のクラウドフローから Azure AI Foundry（Azure OpenAI）
 |-----------|--------|----------------|
 | [`GlobalClaudeMD-sample/`](GlobalClaudeMD-sample/) | [multica-ai/andrej-karpathy-skills](https://github.com/multica-ai/andrej-karpathy-skills) | MIT License — 由来部分の帰属と MIT 全文をファイル内に記載 |
 | [`GlobalClaudeMD-sample/`](GlobalClaudeMD-sample/) | [Qiita 記事（4q_sano 氏）](https://qiita.com/4q_sano/items/f313eed59628273b8026) | 著作権は 4q_sano 氏に帰属 — 著作権法第32条に基づく引用・要約 |
+| [`sonnet-setup/`](sonnet-setup/) | X 記事「Sonnet 5をFable 5にする方法」（[@armadillo_ai 氏](https://x.com/armadillo_ai)） | 記事の7原則を参照・要約・翻案した独自整形（コピーではない）— 帰属を README とファイル内に記載 |
 | [`data-science/`](data-science/) | [Zenn 記事](https://zenn.dev/green_tea/articles/d310e5cf809190)・[atsushi-green/ds-ai-coding-skills](https://github.com/atsushi-green/ds-ai-coding-skills) | 記事のコンセプトに基づく独自実装（コピーではない）— 帰属を README に記載 |
 | [`skills-guide/`](skills-guide/) | [anthropics/skills](https://github.com/anthropics/skills)・[obra/superpowers](https://github.com/obra/superpowers)・[mattpocock/skills](https://github.com/mattpocock/skills) | リンクと独自解説のみ収録。各スキル本体は各リポジトリのライセンス（anthropics/skills は Apache 2.0 + 一部 source-available）に従う |
 | [`software-pipeline/`](software-pipeline/) | [How to Build a Software Factory with Claude Code（@sairahul1 氏）](https://x.com/sairahul1/status/2058832033628241931) | 記事のコンセプトに基づく独自実装（コピーではない）— 帰属を README に記載 |
