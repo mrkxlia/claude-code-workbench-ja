@@ -1,0 +1,14 @@
+{
+  "name": "sonnet-setup",
+  "version": "1.0.0",
+  "description": "Sonnet 5 / Opus 4.8 運用テンプレート。最初のターンで完全なタスク仕様を組み立てる task-brief、backlog.md 駆動の定型ループ backlog-loop、PR作成→マージ→後片付けまで通す pr-merge の3スキルに加え、モデル/effort 選定ガイド（MODEL-GUIDE.md）・CLAUDE.md テンプレート（9ルール）・私用/会社プロファイル別 settings サンプルを収録する。",
+  "author": {
+    "name": "mrkxlia",
+    "url": "https://github.com/mrkxlia"
+  },
+  "homepage": "https://github.com/mrkxlia/claude-code-workbench-ja/tree/main/sonnet-setup",
+  "repository": "https://github.com/mrkxlia/claude-code-workbench-ja",
+  "license": "MIT",
+  "keywords": ["sonnet", "opus", "model-selection", "effort", "workflow", "japanese"],
+  "skills": "./.claude/skills/"
+}

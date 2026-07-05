@@ -93,7 +93,7 @@
 | `argument-hint` | （無し） | （無し） | 捨てる／必要なら description へ畳む |
 | `tools: A, B` | agent: sandbox/権限へ（直接1:1なし） | agent: `tools: [A,B]` / `allowedTools` | カンマ列→配列、CC ツール名は各ツール語彙へ |
 | `model: inherit` | （無し） | （無し） | 捨てる／既定に任せる |
-| `model: sonnet\|opus` | （素の tier は出力しない） | `claude-sonnet-4`／`claude-opus-4` | Kiro は写像表 `_MODEL_MAP` で id へ。Codex は確証ある id が無いため **omit**（壊れた model を出さない）。未知 tier は両者 omit |
+| `model: sonnet\|opus` | （素の tier は出力しない） | `claude-sonnet-5`／`claude-opus-4-8` | Kiro は写像表 `_MODEL_MAP` で id へ。Codex は確証ある id が無いため **omit**（壊れた model を出さない）。未知 tier は両者 omit |
 | `color` | （無し） | （無し） | 捨てる |
 | ADJ（ツール許可・シェル前提・create-plan SPEC.md） | `sandbox_mode` 等 | `tools`/`allowedTools` | ADJ→各ツールの許可機構へ。create-plan は `plan-mode/SPEC.md` を**参照**（複製しない） |
 

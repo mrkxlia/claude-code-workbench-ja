@@ -7,6 +7,9 @@ description: >-
   可能にする。「改善候補を適用して」「backlog をレビューして反映して」「self-improve apply」
   「improve-apply」といった依頼や、SessionStart の通知（未処理 N 件／前回適用から X 日）を見たときに発動する。
   承認なしには1ファイルも変更しない。新規スキル作成・CLAUDE.md/rules/hook の新規追加と既存修正の両方を扱う。
+  対象は improve-scan が貯める改善提案の backlog（`~/.claude/self-improve/<project>/improvement-backlog.md`）
+  のみ。プロジェクトのタスク backlog.md（例: docs/backlog.md）は対象外 — そちらは
+  sonnet-setup の backlog-loop に任せる。
 argument-hint: ""
 ---
 

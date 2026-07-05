@@ -8,6 +8,8 @@ description: >-
   分類し、各候補に根拠を添える。「改善の種を集めて」「最近のセッションを振り返って改善候補を出して」
   「self-improve スキャン」「improve-scan」といった依頼や、SessionStart の通知（未処理 N 件）を見たとき、
   /improve-scan [--days N] での手動起動で発動する。ファイルは編集せず候補を backlog に貯めるだけ。
+  ここでの backlog は improve-scan 自身が書き出す改善提案キューを指し、プロジェクトのタスク
+  backlog.md（例: docs/backlog.md）とは別物 — そちらは sonnet-setup の backlog-loop に任せる。
 argument-hint: "[--days N | --queue]"
 ---
 

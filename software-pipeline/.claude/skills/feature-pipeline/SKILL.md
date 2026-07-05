@@ -8,6 +8,8 @@ description: >-
   「この機能を作って」「〜を実装して」のような機能開発の依頼や、
   /feature-pipeline <機能の説明> での手動起動で発動する。
   中断したパイプラインは /feature-pipeline 再開 <slug> で status.md から再開できる。
+  backlog.md への明示的な言及がある依頼（「backlog.md に基づき実装して」等）は
+  sonnet-setup の backlog-loop に任せ、本スキルでは扱わない。
 argument-hint: <機能の説明>
 ---
 

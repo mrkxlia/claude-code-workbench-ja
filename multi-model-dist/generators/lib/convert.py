@@ -154,7 +154,7 @@ def collect(repo_root: pathlib.Path):
 # provider id は環境/バージョン依存のため、確証のある対応のみ持ち、未知の素の tier 名は
 # 出力しない（壊れた model を出すより omit する）。`inherit` は呼び出し側で None 済み。
 _MODEL_MAP = {
-    "kiro": {"sonnet": "claude-sonnet-4", "opus": "claude-opus-4", "haiku": "claude-haiku-4"},
+    "kiro": {"sonnet": "claude-sonnet-5", "opus": "claude-opus-4-8", "haiku": "claude-haiku-4-5"},
     "codex": {},  # Codex は自前モデル。tier→provider id の確証が無いため既定に委ねる
 }
 
