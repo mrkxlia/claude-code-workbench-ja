@@ -93,7 +93,7 @@ def test_kiro_skill_agent_steering():
     tmpj.write_text('{"name":"x"}', encoding="utf-8")
     check(convert.has_sentinel(tmpj) is False, "F1: 手書き JSON（_generated 無し）は手書き扱い")
     # F4: kiro は sonnet→model id、codex は素の tier を出さない
-    check(j["model"] == "claude-sonnet-4", "F4: kiro model 写像 sonnet→claude-sonnet-4")
+    check(j["model"] == "claude-sonnet-5", "F4: kiro model 写像 sonnet→claude-sonnet-5")
     ctoml = codex.agent_to_text(a, known, "x")
     check("sonnet" not in ctoml.split("\n", 1)[1], "F4: codex は素の tier 'sonnet' を出力しない")
 

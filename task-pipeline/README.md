@@ -98,6 +98,10 @@ flowchart LR
 調査・検証系は sonnet が既定です。各エージェント定義の frontmatter の `model:` を書き換えれば変更できます
 （opus を使わない環境では `brief-writer` を `inherit` に）。
 
+> **注意**: `task-pipeline-setup` は導入時に opus の可用性を確認し、使えない環境では
+> `brief-writer.md` の `model: opus` を自動的に `inherit` に書き換える。手動でパイプライン
+> ファイルだけをコピーした場合は、この書き換えは行われないため自分で変更すること。
+
 ## フェーズの流れ — 5工程と3つのチェックポイント
 
 ```mermaid

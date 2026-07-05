@@ -100,6 +100,10 @@ flowchart TB
 調査・検証系は sonnet が既定です。各エージェント定義の frontmatter の `model:` を書き換えれば変更できます
 （opus を使わない環境では `spec-writer` を `inherit` に）。
 
+> **注意**: `pipeline-setup` は導入時に opus の可用性を確認し、使えない環境では
+> `spec-writer.md` の `model: opus` を自動的に `inherit` に書き換える。手動でパイプライン
+> ファイルだけをコピーした場合は、この書き換えは行われないため自分で変更すること。
+
 ## 成果物と関係性 — `docs/pipeline/<slug>/` を中心としたデータの流れ
 
 各エージェントは前工程の**ファイル**だけを入力に動きます（会話履歴は受け渡さない）。

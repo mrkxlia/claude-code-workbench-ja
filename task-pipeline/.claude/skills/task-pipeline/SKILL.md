@@ -8,6 +8,8 @@ description: >-
   「この図を描いて」「〜のドキュメントを作って」「〜をまとめて」のような成果物作成の依頼や、
   /task-pipeline <依頼の説明> での手動起動で発動する。
   中断したパイプラインは /task-pipeline 再開 <slug> で status.md から再開できる。
+  backlog.md への明示的な言及がある依頼（「backlog.md に基づき進めて」等）は
+  sonnet-setup の backlog-loop に任せ、本スキルでは扱わない。
 argument-hint: <依頼の説明>
 ---
 
