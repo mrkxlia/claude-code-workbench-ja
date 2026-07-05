@@ -2,6 +2,80 @@
 
 Claude Code をより快適に使うためのスクリプト、テンプレート、ベストプラクティスをまとめたリポジトリです。
 
+## はじめに: どこから始める？
+
+対象プロジェクトが**新規**か**既存**かで、最初に入れるものが変わります。
+
+```mermaid
+flowchart TD
+    Start["Claude Code をプロジェクトで使い始める"] --> Q{"リポジトリの状態は？"}
+    Q -->|"新規・まだコードが無い"| New["新規リポジトリ"]
+    Q -->|"既存・コードや成果物がすでにある"| Existing["既存リポジトリ"]
+
+    New --> N1["1. 個人の運用ルールを整える<br/>sonnet-setup を導入"]
+    N1 --> N2{"何を作る？"}
+    N2 -->|"コードで機能開発"| N3["software-pipeline の<br/>pipeline-setup を実行"]
+    N2 -->|"図・ドキュメント等"| N4["task-pipeline の<br/>task-pipeline-setup を実行"]
+    N2 -->|"データ分析"| N5["data-science の<br/>CLAUDE.md と skills をコピー"]
+    N3 --> N6["knowledge-share・self-improve は<br/>いつでも追加導入可"]
+    N4 --> N6
+    N5 --> N6
+
+    Existing --> E1["1. 現状を仕様化する（推奨）<br/>spec-extract で SPEC.md を生成"]
+    E1 --> E2["2. 必要ならパイプラインを導入<br/>pipeline-setup / task-pipeline-setup"]
+    E2 --> E3["個人の運用ルール sonnet-setup は<br/>新規/既存どちらでも導入可"]
+```
+
+### 新規リポジトリ（これから作るプロジェクト）
+
+まだ守るべき既存の型が無いので、最初から良い型で始められます。
+
+1. **個人の運用ルールを先に整える**（Claude Code のユーザー設定に一度入れれば全プロジェクトで効く）— `sonnet-setup` を導入（9ルール＋`task-brief`／`backlog-loop`／`pr-merge`）。
+2. **プロジェクトの土台を選ぶ**（対象リポジトリに導入。何を作るかで変わる）
+   - コードで機能開発が中心 → `software-pipeline` の `pipeline-setup` を実行（エージェント7種・CLAUDE.md・フックを対象リポジトリに自動導入）
+   - 図・ドキュメント・レポートが中心 → `task-pipeline` の `task-pipeline-setup` を実行
+   - データ分析プロジェクト → `data-science` の CLAUDE.md とスキル一式をコピー
+3. 知見の蓄積（`knowledge-share`）や自己改善ループ（`self-improve`）は、上記と独立して**いつ追加してもよい**。
+
+### 既存リポジトリ（すでにコード・成果物がある）
+
+いきなりパイプラインを回すと、既存の暗黙の規約と衝突しかねません。まず現状を仕様として固定してから入れるのがおすすめです。
+
+1. **現状を仕様化する（推奨）** — `implementation-skills`（または各パイプライン連携版）の `spec-extract` で、既存コード・成果物から確度ラベル付きの `SPEC.md` を逆引き生成する。
+2. **その後にパイプラインを導入する場合** — `pipeline-setup` / `task-pipeline-setup` を実行する。対象リポジトリのスタック・git の有無・OS を自動検出し、既存の CLAUDE.md や `.claude/settings.json` は上書きせずマージを提案する設計なので、すでに手を入れたリポジトリでも安全に走らせられる。
+3. `sonnet-setup` は個人設定なので、新規・既存を問わずいつ導入してもよい。
+
+## 自動で動くもの／明示的に動かすもの
+
+同じ「プラグインを入れる」でも、効果の出方は3種類あります。使い分けに迷ったら下の図と表を参照してください。
+
+```mermaid
+flowchart TD
+    A["何かしたい"] --> B{"言わなくても<br/>勝手に効いてほしい？"}
+    B -->|"Yes"| C["🔁 フック（完全自動）<br/>導入するだけで発火<br/>例: 知見の自動読込・機密コミット防止"]
+    B -->|"No、頼んだときだけ動いてほしい"| D{"どんな操作？"}
+    D -->|"導入・較正など一度きりの操作"| E["🎯 明示専用スキル<br/>/コマンド名で名指しする<br/>例: pipeline-setup"]
+    D -->|"それ以外の通常の作業依頼"| F["💬 自然文トリガー<br/>「〜して」と頼むだけ<br/>Claude が自動的に選ぶ"]
+```
+
+| 種別 | 動き方 | 呼び出し方 | 入れると何が嬉しいか | 代表例 |
+|---|---|---|---|---|
+| 🔁 フック（完全自動） | プラグイン導入直後から、SessionStart/SessionEnd/PreToolUse 等のイベントで**頼まなくても毎回発火**する | 不要（無効化しない限り常時ON） | 「言い忘れ」「やり忘れ」を構造的に防げる。導入するだけで効果が始まる | 知見の自動読込・回収、改善候補の検出・通知、機密コミット防止、仕様更新漏れの通知（下表） |
+| 💬 スキル（自然文トリガー） | 自然文の依頼を Claude が判断し、**自動的に適切なスキルを選ぶ**（`/スキル名` での明示起動も可） | 「〜して」と頼む、または `/スキル名` | 手順や合言葉を覚えていなくても、思った通りに頼めば正しい型が起動する | `task-brief`・`backlog-loop`・`pr-merge`・`feature-pipeline`・`task-pipeline`・`clarify`・`notes`・`spec-extract`・`kb`・`peer`・`ask-claude`・`codex-review` など大半のスキル |
+| 🎯 明示専用スキル | 自然文では発火せず、**`/スキル名` で名指ししたときだけ**動く（`disable-model-invocation: true`） | `/スキル名` のみ | 導入・較正など一度きり／影響の大きい操作を誤発動させない | `pipeline-setup`・`task-pipeline-setup`・`pipeline-improve`・`create-plan-calibrate` |
+
+### 🔁 自動フック一覧（導入するだけで効果が始まるもの）
+
+| プラグイン | フック | 発火タイミング | 効果 |
+|---|---|---|---|
+| knowledge-share | kb-session-start / kb-session-end | セッション開始／終了 | 知見インデックスの自動読込、未回収の知見の検出・通知 |
+| self-improve | si-session-start / si-session-end | セッション開始／終了 | 改善候補の検出、未適用 backlog の通知（適用自体は `/improve-apply` で手動） |
+| codex-bridge | gen-agents-md | セッション開始 | CLAUDE.md 等から AGENTS.md を自動生成・同期（Codex にも同じルールを効かせる） |
+| software-pipeline | block-secrets-commit / guard-builder-writes / spec-sync-reminder | コミット前／Edit・Write 前／セッション開始・Stop | 機密のコミット防止、担当外ファイルへの書き込み防止、仕様更新漏れの通知 |
+| task-pipeline | guard-deliverable-writes / spec-sync-reminder | Edit・Write 前／セッション開始・Stop | 出力先外への書き込み防止、仕様更新漏れの通知 |
+
+> フックは一覧の5プラグインのみが持ちます。他のプラグイン（sonnet-setup・ai-peer 等）はスキルのみで完結し、常駐フックはありません。
+
 ## 導入方法（クイックスタート）
 
 ### 方法1: プラグインで導入する（最も簡単）
