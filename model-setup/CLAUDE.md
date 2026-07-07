@@ -1,7 +1,9 @@
-# Sonnet 運用ルール — 上位モデルの「振る舞い」を常設化する
+# モデル運用ルール — 上位モデルの「振る舞い」を常設化する
 
 <!-- 出典: ルール1-7 は X 記事「Sonnet 5をFable 5にする方法」(@armadillo_ai 氏) の7原則を参照・翻案。
-     ルール8-9 は Claude 公式 Sonnet 5 prompting guide (2026-07) に基づく。詳細と導入手順は sonnet-setup/README.md -->
+     ルール8-9 は Claude 公式 Sonnet 5 prompting guide (2026-07) に基づく。詳細と導入手順は model-setup/README.md
+     ルール1〜9 は Opus / Sonnet 共通の基盤。この後ろにプロファイル別の追補
+     （CLAUDE.private.md = Opus+Sonnet / CLAUDE.company.md = Sonnet 単独）のどちらか一方を追記して使う。 -->
 
 ## 1. 完了条件を先に定義する（必ず）
 

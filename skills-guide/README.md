@@ -10,8 +10,8 @@
 
 ### 私用 PC（Opus 4.8 + Sonnet 5・git あり・Codex 不使用）
 
-- settings: `sonnet-setup/settings.private.json`（`opusplan` + `xhigh`）
-- workbench-ja のプラグイン: `sonnet-setup`・`self-improve`・`knowledge-share`
+- settings: `model-setup/settings.private.json`（`opusplan` + `xhigh`）
+- workbench-ja のプラグイン: `model-setup`・`self-improve`・`knowledge-share`
   （`software-pipeline`・`task-pipeline`・`ai-peer` は必要に応じて）
 - `plan-mode`・`implementation-skills` はファイルコピーで導入（非プラグイン）
 - 公式プラグイン: `commit-commands`・`pr-review-toolkit`・`skill-creator`・`claude-md-management`
@@ -22,11 +22,15 @@
 git・マーケットプレイスが使えない前提。zip 等でリポジトリを持ち込み、ファイルコピーのみで完結させる:
 
 ```bash
-# sonnet-setup: スキル2種（pr-merge は git 専用のため対象外）+ CLAUDE.md + settings
-cp -r sonnet-setup/.claude/skills/task-brief ~/.claude/skills/
-cp -r sonnet-setup/.claude/skills/backlog-loop ~/.claude/skills/
-cat sonnet-setup/CLAUDE.md >> ~/.claude/CLAUDE.md
-# ~/.claude/settings.json に sonnet-setup/settings.company.json をマージ
+# model-setup: スキル5種（pr-merge は git 専用のため対象外）+ エージェント3種 + CLAUDE.md（共通＋会社追補）+ settings
+cp -r model-setup/.claude/skills/task-brief ~/.claude/skills/
+cp -r model-setup/.claude/skills/backlog-loop ~/.claude/skills/
+cp -r model-setup/.claude/skills/fan-out ~/.claude/skills/
+cp -r model-setup/.claude/skills/long-run ~/.claude/skills/
+cp -r model-setup/.claude/skills/verify-fresh ~/.claude/skills/
+mkdir -p ~/.claude/agents && cp -r model-setup/.claude/agents/* ~/.claude/agents/
+cat model-setup/CLAUDE.md model-setup/CLAUDE.company.md >> ~/.claude/CLAUDE.md
+# ~/.claude/settings.json に model-setup/settings.company.json をマージ
 
 # codex-bridge: 会社でのみ Codex CLI が使えるため、単一モデル環境のレビュー/セカンドオピニオン役として導入
 cp -r codex-bridge/.claude/skills/* ~/.claude/skills/

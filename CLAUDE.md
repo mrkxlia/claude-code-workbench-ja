@@ -79,14 +79,16 @@ claude-code-workbench-ja/
 ├── docs/                            # リポジトリ内ドキュメント置き場
 │   ├── README.md
 │   └── pipeline-spec-alignment-proposal.html  #   パイプラインと仕様整合の提案資料
-├── sonnet-setup/                    # Sonnet 5 / Opus 4.8 運用テンプレート（9ルール＋モデル/effortガイド＋スキル3種、プラグイン導入可）
+├── model-setup/                     # モデル運用テンプレート（旧名 sonnet-setup。Opus 4.8 + Sonnet 5 / Sonnet 単独の2プロファイル、9ルール＋追補＋スキル6種＋エージェント3種、プラグイン導入可）
 │   ├── README.md
-│   ├── CLAUDE.md                    #   コピペ用テンプレート本体（9つの行動ルール）
-│   ├── MODEL-GUIDE.md               #   モデル仕様・effort選定・私用/会社プロファイルガイド
+│   ├── CLAUDE.md                    #   コピペ用テンプレート本体（9つの行動ルール・共通基盤）
+│   ├── CLAUDE.private.md            #   プロファイル追補（Opus+Sonnet・私用PC）ルール10〜14
+│   ├── CLAUDE.company.md            #   プロファイル追補（Sonnet単独・会社PC）ルール10〜15
+│   ├── MODEL-GUIDE.md               #   モデル仕様・effort選定・プロファイル・Fable 5 パリティマップ
 │   ├── settings.private.json        #   私用PC向け設定サンプル（opusplan + xhigh）
 │   ├── settings.company.json        #   会社PC向け設定サンプル（sonnet + xhigh）
 │   ├── .claude-plugin/plugin.json   #   プラグインマニフェスト
-│   └── .claude/                     #   skills 3種（task-brief / backlog-loop / pr-merge）
+│   └── .claude/                     #   skills 6種（task-brief / backlog-loop / pr-merge / fan-out / long-run / verify-fresh）/ agents 3種（task-worker / fresh-verifier / bulk-scanner）
 └── GlobalClaudeMD-sample/           # グローバルスコープ用 CLAUDE.md サンプル
     ├── README.md
     └── CLAUDE.md
@@ -100,7 +102,7 @@ claude-code-workbench-ja/
 2. **各ディレクトリには README.md を置く** — セクションの目的・使い方・ファイル構成を説明する README.md を必ず用意する。
 3. **リポジトリ全体の言語は日本語** — README.md・CLAUDE.md など、このリポジトリ自体のドキュメントは日本語で記述する。
 4. **マーケットプレイス定義はルートの `.claude-plugin/` に置く** — Claude Code プラグイン仕様上の必須配置であり、規約1の例外。
-5. **プラグイン配下を変更したら version を上げる** — `software-pipeline/`・`task-pipeline/`・`knowledge-share/`・`codex-bridge/`・`ai-peer/`・`self-improve/`・`sonnet-setup/` のプラグイン対象ファイル（`.claude/skills/` 配下＝プラグインが配信する skills）を変更したら、該当する `<section>/.claude-plugin/plugin.json` と `.claude-plugin/marketplace.json` の対応エントリの `version` をセマンティックバージョニングで更新する（プラグイン利用者への更新配信に必要）。エージェント定義・フック・CLAUDE.md は setup スキルが配布するため version 対象外。
+5. **プラグイン配下を変更したら version を上げる** — `software-pipeline/`・`task-pipeline/`・`knowledge-share/`・`codex-bridge/`・`ai-peer/`・`self-improve/`・`model-setup/` のプラグイン対象ファイル（`.claude/skills/` 配下＝プラグインが配信する skills）を変更したら、該当する `<section>/.claude-plugin/plugin.json` と `.claude-plugin/marketplace.json` の対応エントリの `version` をセマンティックバージョニングで更新する（プラグイン利用者への更新配信に必要）。エージェント定義・フック・CLAUDE.md は setup スキルが配布するため version 対象外。
 6. **ルートの `.claude/` はこのリポジトリ自身の作業用（dogfooding）** — 規約1の例外（`.claude-plugin/` と同様）。公式慣例「`.claude/` は単一プロジェクト自身のカスタマイズ用」に従い、**競合しない・非プラグインの**スキルだけを集約する（現状は plan-mode 由来の create-plan / create-plan-calibrate）。プラグイン由来スキルや競合名スキル（notes / spec-extract / clarify）は複製しない（version 二重管理・二重ロードを避けるため）。notes / spec-extract の正本は `implementation-skills/` の原本で、作業中はディレクトリスコープで自動ロードされる。root `.claude/skills/create-plan*` は `plan-mode/.claude/skills/create-plan*` が正本であり、一方向（plan-mode → root）にのみコピーする。plan-mode 側を直接編集し、root 側だけを更新して差分が生じる状態を作らない。
 
 ---
