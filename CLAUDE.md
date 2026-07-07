@@ -79,14 +79,16 @@ claude-code-workbench-ja/
 ├── docs/                            # リポジトリ内ドキュメント置き場
 │   ├── README.md
 │   └── pipeline-spec-alignment-proposal.html  #   パイプラインと仕様整合の提案資料
-├── model-setup/                    # Sonnet 5 / Opus 4.8 運用テンプレート（9ルール＋モデル/effortガイド＋スキル3種、プラグイン導入可）
+├── model-setup/                     # モデル運用テンプレート（旧名 sonnet-setup。Opus 4.8 + Sonnet 5 / Sonnet 単独の2プロファイル、9ルール＋追補＋スキル6種＋エージェント3種、プラグイン導入可）
 │   ├── README.md
-│   ├── CLAUDE.md                    #   コピペ用テンプレート本体（9つの行動ルール）
-│   ├── MODEL-GUIDE.md               #   モデル仕様・effort選定・私用/会社プロファイルガイド
+│   ├── CLAUDE.md                    #   コピペ用テンプレート本体（9つの行動ルール・共通基盤）
+│   ├── CLAUDE.private.md            #   プロファイル追補（Opus+Sonnet・私用PC）ルール10〜14
+│   ├── CLAUDE.company.md            #   プロファイル追補（Sonnet単独・会社PC）ルール10〜15
+│   ├── MODEL-GUIDE.md               #   モデル仕様・effort選定・プロファイル・Fable 5 パリティマップ
 │   ├── settings.private.json        #   私用PC向け設定サンプル（opusplan + xhigh）
 │   ├── settings.company.json        #   会社PC向け設定サンプル（sonnet + xhigh）
 │   ├── .claude-plugin/plugin.json   #   プラグインマニフェスト
-│   └── .claude/                     #   skills 3種（task-brief / backlog-loop / pr-merge）
+│   └── .claude/                     #   skills 6種（task-brief / backlog-loop / pr-merge / fan-out / long-run / verify-fresh）/ agents 3種（task-worker / fresh-verifier / bulk-scanner）
 └── GlobalClaudeMD-sample/           # グローバルスコープ用 CLAUDE.md サンプル
     ├── README.md
     └── CLAUDE.md

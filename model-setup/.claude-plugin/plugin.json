@@ -1,7 +1,7 @@
 {
   "name": "model-setup",
-  "version": "1.0.0",
-  "description": "Sonnet 5 / Opus 4.8 運用テンプレート。最初のターンで完全なタスク仕様を組み立てる task-brief、backlog.md 駆動の定型ループ backlog-loop、PR作成→マージ→後片付けまで通す pr-merge の3スキルに加え、モデル/effort 選定ガイド（MODEL-GUIDE.md）・CLAUDE.md テンプレート（9ルール）・私用/会社プロファイル別 settings サンプルを収録する。",
+  "version": "2.0.0",
+  "description": "モデル運用テンプレート（Opus 4.8 + Sonnet 5 / Sonnet 単独。旧名 sonnet-setup）。上位モデル（Fable 5 級）の振る舞いをプロファイル別に再現する。スキル6種（task-brief / backlog-loop / pr-merge / fan-out / long-run / verify-fresh）に加え、サブエージェント3種（task-worker / fresh-verifier / bulk-scanner・ファイルコピー配布）・プロファイル別 CLAUDE 追補2種（private / company）・モデル/effort 選定ガイド（MODEL-GUIDE.md・Fable 5 パリティマップ付き）・CLAUDE.md テンプレート（9ルール）・settings サンプルを収録する。",
   "author": {
     "name": "mrkxlia",
     "url": "https://github.com/mrkxlia"
@@ -9,6 +9,6 @@
   "homepage": "https://github.com/mrkxlia/claude-code-workbench-ja/tree/main/model-setup",
   "repository": "https://github.com/mrkxlia/claude-code-workbench-ja",
   "license": "MIT",
-  "keywords": ["sonnet", "opus", "model-selection", "effort", "workflow", "japanese"],
+  "keywords": ["sonnet", "opus", "model-selection", "effort", "workflow", "fable-parity", "subagents", "model-routing", "japanese"],
   "skills": "./.claude/skills/"
 }

@@ -22,10 +22,14 @@
 git・マーケットプレイスが使えない前提。zip 等でリポジトリを持ち込み、ファイルコピーのみで完結させる:
 
 ```bash
-# model-setup: スキル2種（pr-merge は git 専用のため対象外）+ CLAUDE.md + settings
+# model-setup: スキル5種（pr-merge は git 専用のため対象外）+ エージェント3種 + CLAUDE.md（共通＋会社追補）+ settings
 cp -r model-setup/.claude/skills/task-brief ~/.claude/skills/
 cp -r model-setup/.claude/skills/backlog-loop ~/.claude/skills/
-cat model-setup/CLAUDE.md >> ~/.claude/CLAUDE.md
+cp -r model-setup/.claude/skills/fan-out ~/.claude/skills/
+cp -r model-setup/.claude/skills/long-run ~/.claude/skills/
+cp -r model-setup/.claude/skills/verify-fresh ~/.claude/skills/
+mkdir -p ~/.claude/agents && cp -r model-setup/.claude/agents/* ~/.claude/agents/
+cat model-setup/CLAUDE.md model-setup/CLAUDE.company.md >> ~/.claude/CLAUDE.md
 # ~/.claude/settings.json に model-setup/settings.company.json をマージ
 
 # codex-bridge: 会社でのみ Codex CLI が使えるため、単一モデル環境のレビュー/セカンドオピニオン役として導入

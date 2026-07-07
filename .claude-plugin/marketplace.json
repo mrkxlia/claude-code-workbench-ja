@@ -80,14 +80,14 @@
     {
       "name": "model-setup",
       "source": "./model-setup",
-      "description": "Sonnet 5 / Opus 4.8 運用テンプレート。スキル3種（task-brief / backlog-loop / pr-merge）と、モデル・effort 選定ガイド、CLAUDE.md テンプレート（9ルール）、私用/会社プロファイル別 settings サンプルを提供する。",
-      "version": "1.0.0",
+      "description": "モデル運用テンプレート（Opus 4.8 + Sonnet 5 / Sonnet 単独。旧名 sonnet-setup）。上位モデル（Fable 5 級）の振る舞いをプロファイル別に再現する。スキル6種（task-brief / backlog-loop / pr-merge / fan-out / long-run / verify-fresh）と、サブエージェント3種・プロファイル別 CLAUDE 追補2種・モデル/effort 選定ガイド（Fable 5 パリティマップ付き）・settings サンプルを提供する。",
+      "version": "2.0.0",
       "category": "productivity",
       "author": {
         "name": "mrkxlia"
       },
       "license": "MIT",
-      "keywords": ["sonnet", "opus", "model-selection", "effort", "japanese"]
+      "keywords": ["sonnet", "opus", "model-selection", "effort", "fable-parity", "subagents", "japanese"]
     }
   ]
 }
