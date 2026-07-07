@@ -1,4 +1,4 @@
-# sonnet-setup — Sonnet 5 / Opus 4.8 運用テンプレート
+# model-setup — Sonnet 5 / Opus 4.8 運用テンプレート
 
 会社の環境などコストの制約で Sonnet（あるいは Sonnet + Haiku）しか使えないときに、上位モデルの
 「振る舞い」—— 成功条件を先に決める・検証してから完了を名乗る・不確かさを隠さない —— を
@@ -52,13 +52,13 @@ SKILL.md 内に明記してあります。
 
 ```bash
 claude plugin marketplace add mrkxlia/claude-code-workbench-ja
-claude plugin install sonnet-setup@workbench-ja
+claude plugin install model-setup@workbench-ja
 ```
 
 更新するときは:
 
 ```bash
-claude plugin marketplace update workbench-ja && claude plugin update sonnet-setup
+claude plugin marketplace update workbench-ja && claude plugin update model-setup
 ```
 
 ### B. ファイルコピーで入れる（会社 PC = git なし想定）
@@ -67,11 +67,11 @@ claude plugin marketplace update workbench-ja && claude plugin update sonnet-set
 
 ```bash
 # スキルを配置（pr-merge は git 専用なので、git が無い環境では省いてよい）
-cp -r sonnet-setup/.claude/skills/task-brief ~/.claude/skills/
-cp -r sonnet-setup/.claude/skills/backlog-loop ~/.claude/skills/
+cp -r model-setup/.claude/skills/task-brief ~/.claude/skills/
+cp -r model-setup/.claude/skills/backlog-loop ~/.claude/skills/
 
 # CLAUDE.md に追記（既存ファイルがあれば末尾へ）
-cat sonnet-setup/CLAUDE.md >> ~/.claude/CLAUDE.md
+cat model-setup/CLAUDE.md >> ~/.claude/CLAUDE.md
 
 # settings をマージ（会社 PC 用プロファイル）
 # ~/.claude/settings.json に settings.company.json の内容を統合する

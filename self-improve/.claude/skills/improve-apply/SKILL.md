@@ -9,7 +9,7 @@ description: >-
   承認なしには1ファイルも変更しない。新規スキル作成・CLAUDE.md/rules/hook の新規追加と既存修正の両方を扱う。
   対象は improve-scan が貯める改善提案の backlog（`~/.claude/self-improve/<project>/improvement-backlog.md`）
   のみ。プロジェクトのタスク backlog.md（例: docs/backlog.md）は対象外 — そちらは
-  sonnet-setup の backlog-loop に任せる。
+  model-setup の backlog-loop に任せる。
 argument-hint: ""
 ---
 
