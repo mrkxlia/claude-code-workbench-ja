@@ -88,6 +88,18 @@
       },
       "license": "MIT",
       "keywords": ["sonnet", "opus", "model-selection", "effort", "fable-parity", "subagents", "japanese"]
+    },
+    {
+      "name": "agent-review-panel",
+      "source": "./agent-review-panel",
+      "description": "コード・計画・ドキュメントを複数ペルソナのサブエージェント（既定3名）にブラインド並列レビューさせ、相互批判→応答・譲歩→統合まで行う敵対的パネルレビュースキル1種（review-panel）とサブエージェント4種。deep 指定で引用検証と裁定者による最終裁定を追加。codex 指定で外部パネリスト（OpenAI Codex・任意）を混成できる。基本は依存ゼロで動く。",
+      "version": "0.1.0",
+      "category": "workflow",
+      "author": {
+        "name": "mrkxlia"
+      },
+      "license": "MIT",
+      "keywords": ["review", "panel", "adversarial", "multi-agent", "subagents", "japanese"]
     }
   ]
 }
