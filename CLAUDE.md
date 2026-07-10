@@ -53,6 +53,10 @@ claude-code-workbench-ja/
 │   ├── README.md
 │   ├── .claude-plugin/plugin.json   #   プラグインマニフェスト
 │   └── .claude/                     #   skills 2種（peer=内部・依存ゼロ / ask-claude=claude CLI）/ agents 2種（peer-engineer / claude-advisor）
+├── agent-review-panel/              # 複数ペルソナの敵対的パネルレビュー（プラグイン導入可）
+│   ├── README.md
+│   ├── .claude-plugin/plugin.json   #   プラグインマニフェスト
+│   └── .claude/                     #   skills 1種（review-panel＋personas.md / report-template.md）/ agents 4種（panel-reviewer / panel-codex / panel-verifier / panel-judge）
 ├── self-improve/                    # git 不要の自己改善ループ（発見→承認制で適用）（プラグイン導入可）
 │   ├── README.md
 │   ├── .claude-plugin/plugin.json   #   プラグインマニフェスト
@@ -102,7 +106,7 @@ claude-code-workbench-ja/
 2. **各ディレクトリには README.md を置く** — セクションの目的・使い方・ファイル構成を説明する README.md を必ず用意する。
 3. **リポジトリ全体の言語は日本語** — README.md・CLAUDE.md など、このリポジトリ自体のドキュメントは日本語で記述する。
 4. **マーケットプレイス定義はルートの `.claude-plugin/` に置く** — Claude Code プラグイン仕様上の必須配置であり、規約1の例外。
-5. **プラグイン配下を変更したら version を上げる** — `software-pipeline/`・`task-pipeline/`・`knowledge-share/`・`codex-bridge/`・`ai-peer/`・`self-improve/`・`model-setup/` のプラグイン対象ファイル（`.claude/skills/` 配下＝プラグインが配信する skills）を変更したら、該当する `<section>/.claude-plugin/plugin.json` と `.claude-plugin/marketplace.json` の対応エントリの `version` をセマンティックバージョニングで更新する（プラグイン利用者への更新配信に必要）。エージェント定義・フック・CLAUDE.md は setup スキルが配布するため version 対象外。
+5. **プラグイン配下を変更したら version を上げる** — `software-pipeline/`・`task-pipeline/`・`knowledge-share/`・`codex-bridge/`・`ai-peer/`・`agent-review-panel/`・`self-improve/`・`model-setup/` のプラグイン対象ファイル（`.claude/skills/` 配下＝プラグインが配信する skills）を変更したら、該当する `<section>/.claude-plugin/plugin.json` と `.claude-plugin/marketplace.json` の対応エントリの `version` をセマンティックバージョニングで更新する（プラグイン利用者への更新配信に必要）。エージェント定義・フック・CLAUDE.md は setup スキルが配布するため version 対象外。
 6. **ルートの `.claude/` はこのリポジトリ自身の作業用（dogfooding）** — 規約1の例外（`.claude-plugin/` と同様）。公式慣例「`.claude/` は単一プロジェクト自身のカスタマイズ用」に従い、**競合しない・非プラグインの**スキルだけを集約する（現状は plan-mode 由来の create-plan / create-plan-calibrate）。プラグイン由来スキルや競合名スキル（notes / spec-extract / clarify）は複製しない（version 二重管理・二重ロードを避けるため）。notes / spec-extract の正本は `implementation-skills/` の原本で、作業中はディレクトリスコープで自動ロードされる。root `.claude/skills/create-plan*` は `plan-mode/.claude/skills/create-plan*` が正本であり、一方向（plan-mode → root）にのみコピーする。plan-mode 側を直接編集し、root 側だけを更新して差分が生じる状態を作らない。
 
 ---
