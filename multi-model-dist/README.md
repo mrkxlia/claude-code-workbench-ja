@@ -42,15 +42,19 @@ multi-model-dist/
 ├── generators/          Track A（生成・単一パイプライン）
 │   ├── .claude/skills/export/SKILL.md   作業用スキル /export（このリポジトリ内ローカル・非配信）
 │   ├── bin/export.sh                    走査・センチネル・冪等判定（共通1本）
+│   ├── templates/                       配布パッケージの雛形（codex-plugin/MANIFEST.toml・kiro-power/power.json）
 │   └── lib/
 │       ├── convert.py                   原本→正規化IR→各ツール出力
-│       └── serializers/{codex.py,kiro.py}
-├── build/               IR 由来の共有アーティファクト（生成物の素材・再生成可能）
+│       ├── export.py                    export.sh から呼ぶエントリポイント
+│       ├── serializers/{codex.py,kiro.py}
+│       └── test_convert.py              変換のテスト
+├── build/               IR 由来の共有アーティファクト（生成時に作成・.gitignore 済みでリポジトリには無い）
 ├── reimpl/              Track B（SPEC 基準の再実装）
 │   ├── SPEC/            機能ごとの共有仕様
-│   └── impl/            各ツールのネイティブ実装（skill 本体は共有）
+│   ├── impl/            各ツールのネイティブ実装（skill 本体は共有）
+│   └── test_reimpl.py   再実装の整合テスト
 ├── examples/            生成結果ゴールデン（検証用）
-└── dist/                配布パッケージ
+└── dist/                配布パッケージ（生成時に作成・.gitignore 済みでリポジトリには無い）
     ├── codex-plugin/    Codex plugin（Skills/MCP＋マニフェスト）
     └── kiro-power/      Kiro Power（steering＋hooks＋skills＋agents）
 ```

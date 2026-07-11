@@ -318,7 +318,7 @@ mkdir -p ~/.claude/skills && cp -r /tmp/workbench/software-pipeline/.claude/skil
 
 スキルが `package.json` / `pyproject.toml` / `go.mod` などからスタックと
 test / lint / typecheck コマンドを検出し、ディレクトリ構成からバックエンド／フロントエンドの
-境界を推定して、CLAUDE.md・エージェント7種（「担当範囲」も自動差し替え）・スキル5種・フック・
+境界を推定して、CLAUDE.md・エージェント7種（「担当範囲」も自動差し替え）・スキル6種・フック・
 settings.json をまとめて導入します。手動セットアップで一番ズレやすかった
 **「CLAUDE.md の境界とビルダーの担当範囲の不一致」が、同じ検出結果から両方を生成することで
 構造的に起きなくなる**のがポイントです。
