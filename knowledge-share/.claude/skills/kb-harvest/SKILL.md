@@ -63,8 +63,10 @@ SessionEnd フックが「エラー痕跡あり」と判断したセッション
    `queue/pending-sessions.tsv` から削除する（`--queue` 実行時のみ）。
 
    ```bash
+   # session_id は TSV の2列目（データ契約）。部分一致 grep だと別行の cwd や
+   # transcript_path に偶然含まれる未処理行まで消すため、必ず2列目で厳密一致させる
    Q="$HOME/.claude/knowledge/queue/pending-sessions.tsv"
-   grep -vF "<session_id>" "$Q" > "$Q.tmp" && mv "$Q.tmp" "$Q"
+   awk -F'\t' -v sid="<session_id>" '$2 != sid' "$Q" > "$Q.tmp" && mv "$Q.tmp" "$Q"
    ```
 
 6. **昇格候補フラグ（self-improve 連携・任意）**: 記録した知見のうち、**反復して出る・

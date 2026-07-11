@@ -35,8 +35,9 @@ NOTIFIED=0
 
 # --- 1. 回収キューの通知（発見の促し）----------------------------------------
 if [ -s "$QUEUE" ]; then
-  QCOUNT=$(grep -cve '^[[:space:]]*$' "$QUEUE" 2>/dev/null || echo 0)
-  if [ "$QCOUNT" -gt 0 ] 2>/dev/null; then
+  # grep -c は 0 件でも "0" を出力して exit 1 になるため || true で受ける（|| echo 0 だと二重値）
+  QCOUNT=$(grep -cve '^[[:space:]]*$' "$QUEUE" 2>/dev/null || true)
+  if [ "${QCOUNT:-0}" -gt 0 ] 2>/dev/null; then
     echo "🔧 改善の種がありそうなセッションが ${QCOUNT} 件あります。"
     echo "   /improve-scan で backlog に改善候補を貯められます。"
     NOTIFIED=1
@@ -46,8 +47,8 @@ fi
 # --- 2. backlog の未処理候補＋経過日数の通知（擬似定期実行）-------------------
 # backlog の候補は "- [ ] ..." 形式（improve-scan が書く）。未チェック分を数える。
 if [ -f "$BACKLOG" ]; then
-  PENDING=$(grep -cE '^- \[ \]' "$BACKLOG" 2>/dev/null || echo 0)
-  if [ "$PENDING" -gt 0 ] 2>/dev/null; then
+  PENDING=$(grep -cE '^- \[ \]' "$BACKLOG" 2>/dev/null || true)
+  if [ "${PENDING:-0}" -gt 0 ] 2>/dev/null; then
     # 経過日数を算出（last-apply が無ければ「未適用」とみなして必ず促す）
     DUE=1
     if [ -f "$LAST_APPLY" ]; then

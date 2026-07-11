@@ -27,8 +27,11 @@ mkdir -p "$CLAUDE_DIR/skills" "$CLAUDE_DIR/hooks"
 mkdir -p "$KB_DIR/topics" "$KB_DIR/queue" "$KB_DIR/bin"
 
 # --- 2. スキル / フック / 採掘スクリプトをコピー ------------------------------
-cp -R "$SRC_DIR/.claude/skills/kb"         "$CLAUDE_DIR/skills/"
-cp -R "$SRC_DIR/.claude/skills/kb-harvest" "$CLAUDE_DIR/skills/"
+# cp -R src dest/ はコピー先に同名ディレクトリがあると dest/kb/kb と入れ子を作るため、
+# コピー先を作ってから「中身」をコピーする（再実行しても入れ子にならない＝冪等）
+mkdir -p "$CLAUDE_DIR/skills/kb" "$CLAUDE_DIR/skills/kb-harvest"
+cp -R "$SRC_DIR/.claude/skills/kb/."         "$CLAUDE_DIR/skills/kb/"
+cp -R "$SRC_DIR/.claude/skills/kb-harvest/." "$CLAUDE_DIR/skills/kb-harvest/"
 cp "$SRC_DIR/.claude/hooks/kb-session-start.sh" "$CLAUDE_DIR/hooks/"
 cp "$SRC_DIR/.claude/hooks/kb-session-end.sh"   "$CLAUDE_DIR/hooks/"
 cp "$SRC_DIR/bin/kb-extract-candidates.sh"      "$KB_DIR/bin/"

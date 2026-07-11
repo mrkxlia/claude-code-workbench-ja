@@ -58,8 +58,10 @@ if [ -n "$SESSION_ID" ] && [ -f "$QUEUE" ] && grep -qF "	$SESSION_ID	" "$QUEUE" 
 fi
 
 # ガード③: 改善の種（訂正/繰り返し/エラー）の痕跡が無ければ捨てる
-HITS=$(grep -icE 'そうじゃな|やり直し|やりなおし|違います|間違っ|じゃなくて|not what i|revert|undo|Traceback|fatal:|npm ERR!|permission denied|command not found|Error:|Exception|panic:' "$TRANSCRIPT" 2>/dev/null || echo 0)
-[ "$HITS" -gt 0 ] 2>/dev/null || exit 0
+# grep -c は 0 件でも "0" を出力して exit 1 になるため、|| echo 0 だと "0\n0" の
+# 二重値になる。|| true で受け、空（読み取り失敗）は ${HITS:-0} で 0 に倒す
+HITS=$(grep -icE 'そうじゃな|やり直し|やりなおし|違います|間違っ|じゃなくて|not what i|revert|undo|Traceback|fatal:|npm ERR!|permission denied|command not found|Error:|Exception|panic:' "$TRANSCRIPT" 2>/dev/null || true)
+[ "${HITS:-0}" -gt 0 ] 2>/dev/null || exit 0
 
 # --- キューに1行追記（TSV: 日時 / session_id / cwd / transcript_path / ヒット数） --
 mkdir -p "$SI_DIR" 2>/dev/null || exit 0
