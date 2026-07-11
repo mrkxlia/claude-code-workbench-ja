@@ -144,7 +144,7 @@ mkdir -p ~/.claude/skills && cp -r /tmp/workbench/task-pipeline/.claude/skills/t
 # implementation-skills — notes / spec-extract をプロジェクト（または ~/.claude/skills/）へ
 mkdir -p .claude/skills && cp -r /tmp/workbench/implementation-skills/.claude/skills/* .claude/skills/
 
-# codex-bridge — Codex 依頼スキル3種＋エージェント3種をプロジェクトへ
+# codex-bridge — Codex 依頼スキル4種＋エージェント3種をプロジェクトへ
 mkdir -p .claude/skills .claude/agents && cp -r /tmp/workbench/codex-bridge/.claude/skills/* .claude/skills/ && cp -r /tmp/workbench/codex-bridge/.claude/agents/* .claude/agents/
 
 # data-science — CLAUDE.md とスキル一式をプロジェクトへ

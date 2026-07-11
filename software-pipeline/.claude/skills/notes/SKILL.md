@@ -159,39 +159,54 @@ working document, not prose. Concrete facts (file names, function names, version
 numbers, error messages) beat vague description.
 <!-- PIPELINE-INTEGRATION: この行より上は implementation-skills/.claude/skills/notes/SKILL.md の原本と同一に保つ。
      原本を更新したら、この行より上をまるごと新しい原本で差し替え、この行以降は維持すること。
-     一致確認: diff <(awk '/PIPELINE-INTEGRATION/{exit} {print}' このファイル) 原本 -->
+     この行以降は統合連携版（software-pipeline / task-pipeline 共通）であり、両プラグインのコピーを
+     常にファイル全体でバイト同一に保つこと（片方だけ編集しない）。
+     一致確認: diff <(awk '/PIPELINE-INTEGRATION/{exit} {print}' このファイル) 原本
+     全体一致確認: diff software-pipeline/.claude/skills/notes/SKILL.md task-pipeline/.claude/skills/notes/SKILL.md -->
 
-## パイプライン連携（software-pipeline 統合時の追加ルール）
+## パイプライン連携（software-pipeline / task-pipeline 統合連携版）
 
-このコピーは software-pipeline（feature-pipeline）と連携して動くパイプライン連携版。
-単体利用の原本は `implementation-skills/.claude/skills/notes/` にある。
-パイプラインで使うとき、上記の原本ルールに以下が**優先して**加わる:
+このコピーは software-pipeline（feature-pipeline）と task-pipeline の**両方で同一内容**の
+統合連携版。単体利用の原本は `implementation-skills/.claude/skills/notes/` にある。
+パイプラインで使うとき、上記の原本ルールに以下が**優先して**加わる。
 
-### ファイルの置き場所（原本の「Where the file lives」より優先）
+### モード判定（成果物がプログラムかそれ以外か）
 
-- パイプラインの機能開発では **1機能 = 1ファイル**: `docs/pipeline/<slug>/implementation-notes.md`
-- feature-pipeline のオーケストレーターやエージェント定義から記録先パスを指示された場合は
-  常にそのパスへ書く。`docs/pipeline/<slug>/` が存在する作業中は、リポジトリルートに
-  `implementation-notes.md` を新規作成しない
-- パイプラインの外の作業（単発の修正など）では原本どおりの置き場所でよい
+次の優先順で**コードモード**か**成果物モード**かを決める:
 
-### status.md と混ぜない
+1. オーケストレーター・エージェント定義から記録先パスやモードの指示があればそれに従う
+2. `docs/pipeline/<slug>/` が進行中 → コードモード、`docs/task-pipeline/<slug>/` が進行中 → 成果物モード
+3. どちらも無ければ、作っているものの種類で判定する: プログラム（ソースコード・テスト・API）なら
+   コードモード、それ以外（図・ドキュメント・レポート等）なら成果物モード
 
-- `docs/pipeline/<slug>/status.md` はパイプラインの**進行管理**（フェーズ・承認・差し戻しカウンタ）
-- `implementation-notes.md` は**実装判断の記録**（Decisions / Deviations / Tradeoffs / Gotchas / Deferred）
-- 役割が違う。進行状況を notes に、判断を status に書かない
+パイプライン外の単体作業では、この節は適用されず原本どおりに振る舞う。
 
-### 複数エージェントで共有する
+### モード別の読み替え表
 
-ビルダー3種（backend-builder / frontend-builder / test-verifier）が同じファイルに追記する。
-セッション見出しには**必ずエージェント名（または main session）を含める**:
-`## YYYY-MM-DD — backend-builder: <作業名>`。
-Status ブロックは「最後に書いた者が上書き」でよい（最新状態が勝つ）。
+| 項目 | コードモード（feature-pipeline） | 成果物モード（task-pipeline） |
+|---|---|---|
+| 記録先（1件=1ファイル） | `docs/pipeline/<slug>/implementation-notes.md` | `docs/task-pipeline/<slug>/implementation-notes.md` |
+| 書き手 | ビルダー3種（backend-builder / frontend-builder / test-verifier）が共有 | deliverable-builder |
+| 再開時に Status を読む | `/feature-pipeline 再開 <slug>` | `/task-pipeline 再開 <slug>` |
+| 物証アンカー | `file:line`・テスト名 | 成果物ファイルのパス・見出し・図ノードID |
+| 語彙 | 原本どおり | 「コード」→「成果物」、tests → 受け入れ基準・レビュー観点 |
 
-### パイプラインのライフサイクルでの役割
+### 共通ルール（両モード）
 
-- **再開時**: `/feature-pipeline 再開 <slug>` は status.md と合わせてこのファイルの
-  Status ブロックを最初に読む
-- **Phase 7（最終検証）後**: Decisions / Deferred のうち他機能にも一般化できるものは
-  `docs/pipeline/LEARNINGS.md` の候補としてオーケストレーターが回収し、
-  チェックポイント3でユーザーに提示する
+- パイプラインの `docs/.../<slug>/` が存在する作業中は、リポジトリルートに
+  `implementation-notes.md` を新規作成しない（指示されたパスへ書く）
+- **status.md と混ぜない**: `docs/.../<slug>/status.md` は**進行管理**（フェーズ・承認・差し戻し
+  カウンタ）、`implementation-notes.md` は**実装判断の記録**（Decisions / Deviations / Tradeoffs /
+  Gotchas / Deferred）。進行状況を notes に、判断を status に書かない
+- 複数エージェントが同じファイルに追記する場合、セッション見出しに**必ずエージェント名
+  （または main session）を含める**: `## YYYY-MM-DD — backend-builder: <作業名>`。
+  Status ブロックは「最後に書いた者が上書き」でよい（最新状態が勝つ）
+- **生きた SPEC.md との同期**: リポジトリに SPEC.md があり、変更がその記述する挙動・内容・構成を
+  変えた場合は、逸脱記録と同時に該当要件行だけを軽量に増分更新する（要件IDはコードモード `F-NN`、
+  成果物モード `D-NN`）
+
+### 最終フェーズでの回収（コードモードのみ）
+
+Phase 7（最終検証）後、Decisions / Deferred のうち他機能にも一般化できるものは
+`docs/pipeline/LEARNINGS.md` の候補としてオーケストレーターが回収し、
+チェックポイント3でユーザーに提示する。

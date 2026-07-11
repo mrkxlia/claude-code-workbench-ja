@@ -1,3 +1,9 @@
+---
+name: python-style
+description: >-
+  Python コードの作成・編集・レビュー時に参照するスタイルガイド。Python を書く・直す・レビューするすべての場面で発動する。
+---
+
 # python-style
 
 Pythonコードの作成・編集・レビュー時に参照するスタイルガイドです。

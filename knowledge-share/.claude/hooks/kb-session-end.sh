@@ -45,8 +45,10 @@ if [ -n "$SESSION_ID" ] && [ -f "$QUEUE" ] && grep -qF "	$SESSION_ID	" "$QUEUE" 
 fi
 
 # ガード③: エラー痕跡が無ければ捨てる（採掘する価値のあるセッションだけ積む）
-HITS=$(grep -cE 'Traceback|fatal:|npm ERR!|permission denied|command not found|Error:|Exception|panic:|segmentation fault' "$TRANSCRIPT" 2>/dev/null || echo 0)
-[ "$HITS" -gt 0 ] 2>/dev/null || exit 0
+# grep -c は 0 件でも "0" を出力して exit 1 になるため、|| echo 0 だと "0\n0" の
+# 二重値になる。|| true で受け、空（読み取り失敗）は ${HITS:-0} で 0 に倒す
+HITS=$(grep -cE 'Traceback|fatal:|npm ERR!|permission denied|command not found|Error:|Exception|panic:|segmentation fault' "$TRANSCRIPT" 2>/dev/null || true)
+[ "${HITS:-0}" -gt 0 ] 2>/dev/null || exit 0
 
 # --- キューに1行追記（TSV: 日時 / session_id / cwd / transcript_path / ヒット数） --
 mkdir -p "$KB_DIR/queue" 2>/dev/null || exit 0

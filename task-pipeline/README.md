@@ -418,19 +418,22 @@ echo '{"tool_name":"Write","tool_input":{"file_path":"src/main.py"}}' \
 ## スキル名と名前空間
 
 task-pipeline と software-pipeline は **`clarify` / `notes` / `spec-extract` という同名スキルを両方が持ちます**。
-プラグインとして導入した場合は**プラグイン名前空間で区別**されます（例: `/task-pipeline:clarify` と
-`/software-pipeline:clarify`）。プロジェクトに直接コピーした場合は短い名（`/clarify` 等）で呼べます。
-スキル名の棚卸し表（維持／名前空間で解決の判定）は
-[software-pipeline/README.md の「スキル名の棚卸し」](../software-pipeline/README.md#スキル名の棚卸し名前空間で区別後方互換維持)に
+この3つは**統合連携版**で、**両プラグインのファイルがバイト同一**です。連携セクションが
+「成果物がプログラムかそれ以外か」でコードモード / 成果物モードを自動判定するため、
+プラグイン名前空間（`/task-pipeline:clarify` / `/software-pipeline:clarify`）のどちらで解決されても
+挙動は同じです。プロジェクトに直接コピーした場合は短い名（`/clarify` 等）で呼べます。
+スキル名の棚卸し表は
+[software-pipeline/README.md の「スキル名の棚卸し」](../software-pipeline/README.md#スキル名の棚卸し統合連携版後方互換維持)に
 まとめてあります。後方互換のため**改名は行いません**（オーケストレータ名は `docs/task-pipeline/<slug>/` の
 保存先や `/task-pipeline 再開 <slug>` と結合しているため）。
 
 ### 原本との同期（notes / spec-extract）
 
-このセクションの notes / spec-extract は [`implementation-skills/`](../implementation-skills/) の**原本の連携版**です
-（`PIPELINE-INTEGRATION` マーカーより上が原本と同一）。原本を更新したら、software-pipeline と task-pipeline の
-**両連携版**でマーカーより上を差し替えます。一致確認コマンドは
-[software-pipeline/README.md の同期ルール](../software-pipeline/README.md)に awk / PowerShell 版があります。
+このセクションの notes / spec-extract は [`implementation-skills/`](../implementation-skills/) の**原本＋
+統合連携セクション**です（`PIPELINE-INTEGRATION` マーカーより上が原本と同一）。原本を更新したら、
+software-pipeline と task-pipeline の**両連携版**でマーカーより上を差し替え、連携セクションを編集する
+ときは必ず両方へ同じ内容をコピーします（**両版は常に全文一致**）。一致確認コマンド（awk / PowerShell 版・
+全文 diff）は [software-pipeline/README.md の同期ルール](../software-pipeline/README.md)にあります。
 
 ## 参考リンク
 

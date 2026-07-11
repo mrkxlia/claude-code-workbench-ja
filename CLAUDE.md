@@ -59,6 +59,7 @@ claude-code-workbench-ja/
 │   └── .claude/                     #   skills 1種（review-panel＋personas.md / report-template.md）/ agents 4種（panel-reviewer / panel-codex / panel-verifier / panel-judge）
 ├── self-improve/                    # git 不要の自己改善ループ（発見→承認制で適用）（プラグイン導入可）
 │   ├── README.md
+│   ├── RESEARCH.md                  #   関連研究・他実装の調査ノート（論文・OSS 比較）
 │   ├── .claude-plugin/plugin.json   #   プラグインマニフェスト
 │   └── .claude/                     #   skills 2種（improve-scan / improve-apply）/ hooks 2種＋hooks.json（検出/通知）/ settings.json サンプル
 ├── knowledge-share/                 # セッション/リポジトリ横断ナレッジ共有テンプレート（プラグイン導入可）
@@ -79,7 +80,11 @@ claude-code-workbench-ja/
 │   ├── tokentracker/                #   parsers(claude_code/codex/cline) / models / db / pricing(+pricing.toml) / queries / ingest / cli / dashboard
 │   └── tests/                       #   pytest（fixtures に実ログ匿名化の代表ケースを固定）
 ├── power-automate-azure-foundry/    # Power Automate から Azure AI Foundry(GPT) を呼ぶサンプル一式
-│   └── README.md                    #   フロー定義・カスタムコネクタ・インポート手順
+│   ├── README.md                    #   概要・インポート手順
+│   ├── custom-connector/            #   カスタムコネクタ定義
+│   ├── flows/                       #   フロー定義
+│   ├── packages/                    #   インポート用 zip パッケージ
+│   └── powerapps/                   #   Power Apps サンプル
 ├── docs/                            # リポジトリ内ドキュメント置き場
 │   ├── README.md
 │   └── pipeline-spec-alignment-proposal.html  #   パイプラインと仕様整合の提案資料

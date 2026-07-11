@@ -24,8 +24,8 @@ if [ ! -t 0 ]; then
   if command -v jq >/dev/null 2>&1; then
     COMMAND=$(printf '%s' "$INPUT" | jq -r '.tool_input.command // empty' 2>/dev/null)
   else
-    # jq がない環境向けの簡易フォールバック
-    COMMAND=$(printf '%s' "$INPUT" | grep -o '"command"[[:space:]]*:[[:space:]]*"[^"]*"' | head -n1)
+    # jq がない環境向けの簡易フォールバック（他フックと同じく値だけを抽出する）
+    COMMAND=$(printf '%s' "$INPUT" | grep -o '"command"[[:space:]]*:[[:space:]]*"[^"]*"' | head -n1 | sed 's/.*:[[:space:]]*"\(.*\)"/\1/')
   fi
 fi
 
