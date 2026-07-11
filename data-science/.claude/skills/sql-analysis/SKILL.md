@@ -1,3 +1,9 @@
+---
+name: sql-analysis
+description: >-
+  SELECT・CTE・JOIN・集計・ウィンドウ関数を含む SQL クエリの作成・レビュー・修正時に参照するスキル。「SQL を書いて」「クエリを直して」「この SQL をレビューして」といった依頼で発動する。
+---
+
 # sql-analysis
 
 SELECT、CTE、JOIN、集計、ウィンドウ関数を含む SQL クエリの作成・レビュー・修正時に参照するスキルです。

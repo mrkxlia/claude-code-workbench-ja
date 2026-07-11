@@ -1,3 +1,9 @@
+---
+name: dataframe-polars
+description: >-
+  DataFrame の読み込み・フィルタリング・集計・結合・変換・整形など、表形式データの操作全般で参照するスキル。Polars/pandas のコードを書く・直すときや、CSV・Parquet の加工依頼で発動する。
+---
+
 # dataframe-polars
 
 DataFrame の読み込み・フィルタリング・集計・結合・変換・整形など、

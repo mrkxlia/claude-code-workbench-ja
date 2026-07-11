@@ -1,3 +1,9 @@
+---
+name: notebook-workflow
+description: >-
+  Jupyter Notebook の作成・編集・実行・レビュー時に参照するスキル。ipynb を扱う依頼や「ノートブックで進めて」「セルを追加して」といった依頼で発動する。
+---
+
 # notebook-workflow
 
 Jupyter Notebook の作成・編集・実行・レビュー時に参照するスキルです。
