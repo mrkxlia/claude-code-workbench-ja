@@ -18,10 +18,11 @@ claude-code-workbench-ja/
 ├── README.md                        # リポジトリ全体の概要（日本語）
 ├── CLAUDE.md                        # このファイル
 ├── LICENSE                          # MIT License
+├── .gitattributes                   # git 属性定義
 ├── .claude-plugin/
 │   └── marketplace.json             # プラグインマーケットプレイス定義（名前: workbench-ja）
 ├── .claude/                         # このリポジトリ自身の作業用スキル（dogfooding・規約1の例外）
-│   └── skills/                      #   create-plan / create-plan-calibrate（plan-mode 由来・非競合のみ集約）
+│   └── skills/                      #   create-plan（SPEC.md 同梱）/ create-plan-calibrate（plan-mode 由来・非競合のみ集約）
 ├── skills-guide/                    # おすすめSkillsガイド（優先度・業務タイプ別）
 │   └── README.md
 ├── data-science/                    # データサイエンス向け CLAUDE.md + Skills テンプレート
@@ -33,8 +34,7 @@ claude-code-workbench-ja/
 │   └── .claude/skills/              #   notes / spec-extract の2スキル（原本）
 ├── plan-mode/                       # 変更せず実行計画だけ作る create-plan スキル（Plan/Ask モード相当）
 │   ├── README.md
-│   ├── SPEC.md                      #   create-plan の不変要件 INV / 調整 ADJ 定義
-│   └── .claude/skills/              #   create-plan / create-plan-calibrate の2スキル
+│   └── .claude/skills/              #   create-plan（不変要件 INV / 調整 ADJ を定義する SPEC.md 同梱）/ create-plan-calibrate の2スキル
 ├── software-pipeline/                # 7エージェント構成「ソフトウェアパイプライン」テンプレート（プラグイン導入可）
 │   ├── README.md
 │   ├── CLAUDE.md                    #   コピーして使う CLAUDE.md サンプル
@@ -112,7 +112,8 @@ claude-code-workbench-ja/
 3. **リポジトリ全体の言語は日本語** — README.md・CLAUDE.md など、このリポジトリ自体のドキュメントは日本語で記述する。
 4. **マーケットプレイス定義はルートの `.claude-plugin/` に置く** — Claude Code プラグイン仕様上の必須配置であり、規約1の例外。
 5. **プラグイン配下を変更したら version を上げる** — `software-pipeline/`・`task-pipeline/`・`knowledge-share/`・`codex-bridge/`・`ai-peer/`・`agent-review-panel/`・`self-improve/`・`model-setup/` のプラグイン対象ファイル（`.claude/skills/` 配下＝プラグインが配信する skills）を変更したら、該当する `<section>/.claude-plugin/plugin.json` と `.claude-plugin/marketplace.json` の対応エントリの `version` をセマンティックバージョニングで更新する（プラグイン利用者への更新配信に必要）。エージェント定義・フック・CLAUDE.md は setup スキルが配布するため version 対象外。
-6. **ルートの `.claude/` はこのリポジトリ自身の作業用（dogfooding）** — 規約1の例外（`.claude-plugin/` と同様）。公式慣例「`.claude/` は単一プロジェクト自身のカスタマイズ用」に従い、**競合しない・非プラグインの**スキルだけを集約する（現状は plan-mode 由来の create-plan / create-plan-calibrate）。プラグイン由来スキルや競合名スキル（notes / spec-extract / clarify）は複製しない（version 二重管理・二重ロードを避けるため）。notes / spec-extract の正本は `implementation-skills/` の原本で、作業中はディレクトリスコープで自動ロードされる。root `.claude/skills/create-plan*` は `plan-mode/.claude/skills/create-plan*` が正本であり、一方向（plan-mode → root）にのみコピーする。plan-mode 側を直接編集し、root 側だけを更新して差分が生じる状態を作らない。
+6. **ルートの `.claude/` はこのリポジトリ自身の作業用（dogfooding）** — 規約1の例外（`.claude-plugin/` と同様）。公式慣例「`.claude/` は単一プロジェクト自身のカスタマイズ用」に従い、**競合しない・非プラグインの**スキルだけを集約する（現状は plan-mode 由来の create-plan / create-plan-calibrate）。プラグイン由来スキルや競合名スキル（notes / spec-extract / clarify）は複製しない（version 二重管理・二重ロードを避けるため）。notes / spec-extract の正本は `implementation-skills/` の原本で、作業中はディレクトリスコープで自動ロードされる。root `.claude/skills/create-plan*` は `plan-mode/.claude/skills/create-plan*` が正本であり、一方向（plan-mode → root）にのみコピーする（`create-plan/` は SKILL.md と同梱 SPEC.md の両方をミラーする）。plan-mode 側を直接編集し、root 側だけを更新して差分が生じる状態を作らない。
+7. **プラグインのフック定義ファイルは2形式の配置を許容する** — `.claude/hooks.json`（codex-bridge・self-improve）と `.claude/hooks/hooks.json`（knowledge-share。フックスクリプトと同じディレクトリに同梱）のどちらも正規の配置で、`plugin.json` の `hooks` フィールドが実パスを指していれば Claude Code は認識する。配置を無理に統一しない。
 
 ---
 

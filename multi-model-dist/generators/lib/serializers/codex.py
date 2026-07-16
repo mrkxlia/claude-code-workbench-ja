@@ -11,12 +11,6 @@ import tomllib
 
 import yaml
 
-try:
-    import tomli_w
-    _HAVE_TOMLI_W = True
-except ImportError:  # フォールバック（最小シリアライザ＋tomllib 往復検証）
-    _HAVE_TOMLI_W = False
-
 from convert import AgentIR, SkillIR, map_body, map_model, sentinel_line
 
 TARGET = "codex"
@@ -34,9 +28,9 @@ def skill_to_text(skill: SkillIR, known: set[str], source_rel: str) -> str:
 
 
 def _toml_dump(d: dict) -> str:
-    if _HAVE_TOMLI_W:
-        return tomli_w.dumps(d)
-    # 最小フォールバック（複数行は基本文字列で・最後に tomllib で往復検証する）
+    # 内蔵の最小シリアライザ（複数行は基本文字列で・最後に tomllib で往復検証する）。
+    # 外部ライブラリ（tomli_w 等）は使わない: 環境によって出力が変わるとゴールデンの
+    # バイト一致検証と冪等性が壊れるため、決定的な単一実装に固定する。
     lines = []
     for k, v in d.items():
         if isinstance(v, bool):

@@ -61,3 +61,6 @@ Track B の共有仕様。**原本 `codex-bridge/.claude/{skills,agents}` を一
 - **Claude Code（原本）**: `codex-bridge/.claude/{skills,agents}`（参照元）。
 - **Kiro**: `../impl/kiro/codex-bridge/`（本 SPEC からの再実装）。`.kiro/agents/*.json`＋`.kiro/skills/*/SKILL.md`。Kiro Power 同梱。
 - **Codex 自身**: 対象外（Codex から Codex を駆動する意味がない）。
+- **codex-agents スキル**（原本4種のうちの1つ・AGENTS.md ジェネレータ）: 各ツール実装では**意図的に非対応**。
+  AGENTS.md は Codex 固有機構であり、その生成ロジックは Track A（`gen-agents-md` → AGENTS.md 生成）に流用済みのため
+  （MAPPING ① フック表参照）。impl に codex-ask / codex-implement / codex-review の3スキルしか無いのは仕様どおり。

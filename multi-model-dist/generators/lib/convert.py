@@ -1,7 +1,7 @@
 """原本(.claude/**)を正規化IRにパースし、ターゲット別シリアライザへ渡すコア。
 
 設計（MAPPING.md に従う）:
-- frontmatter/構造化変換は PyYAML / tomli_w / json に委譲（bash 文字列連結はしない）。
+- frontmatter/構造化変換は PyYAML / json / 内蔵 TOML シリアライザ（tomllib 往復検証付き・決定的出力）に委譲（bash 文字列連結はしない）。
 - 走査は各セクション配下の <section>/.claude/** のみ。ルート直下 .claude/ と .claude-plugin/ は除外。
 - 生成物にはセンチネルを付け、手書き（センチネル無し）の生成先は上書きしない。
 - 本文の用語写像（/cmd→$mention/#name、Task、.claude/ パス）はターゲット別に適用する。

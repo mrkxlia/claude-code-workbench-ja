@@ -26,6 +26,9 @@ TARGET = "kiro"
 
 def skill_to_text(skill: SkillIR, known: set[str], source_rel: str) -> str:
     meta = {"name": skill.name, "description": map_body(skill.description, TARGET, known)}
+    # disable-model-invocation は Agent Skills 標準フィールドなのでそのまま保持（MAPPING ③。Codex と違い反転しない）
+    if skill.manual_only:
+        meta["disable-model-invocation"] = True
     fm = yaml.safe_dump(meta, allow_unicode=True, sort_keys=False).strip()
     body = map_body(skill.body, TARGET, known).lstrip("\n")
     return f"{sentinel_line(source_rel)}\n---\n{fm}\n---\n{body}"
@@ -49,17 +52,6 @@ def agent_to_text(agent: AgentIR, known: set[str], source_rel: str) -> str:
     return body
 
 
-def guidance_to_steering(skill: SkillIR, source_rel: str, inclusion: str = "auto") -> str:
-    """frontmatter 無しの参照ドキュメント(T1g)を steering 化。"""
-    meta = {"inclusion": inclusion}
-    if inclusion == "auto":
-        meta["name"] = skill.name
-        meta["description"] = skill.description or f"{skill.name} guidance"
-    fm = yaml.safe_dump(meta, allow_unicode=True, sort_keys=False).strip()
-    body = skill.body.lstrip("\n")
-    return f"{sentinel_line(source_rel)}\n---\n{fm}\n---\n{body}"
-
-
 def steering_always_text(body: str, source_rel: str) -> str:
     """CLAUDE.md（平坦化済み）→ steering（inclusion: always＝常時読込のプロジェクト指示）。"""
     fm = yaml.safe_dump({"inclusion": "always"}, allow_unicode=True, sort_keys=False).strip()
@@ -72,7 +64,3 @@ def skill_path(skill: SkillIR) -> str:
 
 def agent_path(agent: AgentIR) -> str:
     return f".kiro/agents/{agent.name}.json"
-
-
-def steering_path(skill: SkillIR) -> str:
-    return f".kiro/steering/{skill.name}.md"

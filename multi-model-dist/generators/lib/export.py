@@ -26,12 +26,47 @@ T1_SKILLS = {
     ("implementation-skills", "spec-extract"),
     ("plan-mode", "create-plan"),
     ("plan-mode", "create-plan-calibrate"),
+    # data-science 参照ドキュメント10種（全て frontmatter 有り＝通常スキルとして生成。MAPPING ①）
+    ("data-science", "analysis-reporting"),
+    ("data-science", "dataframe-polars"),
+    ("data-science", "notebook-workflow"),
+    ("data-science", "path-and-io"),
+    ("data-science", "python-project-ops"),
+    ("data-science", "python-style"),
+    ("data-science", "safe-data-handling"),
+    ("data-science", "sql-analysis"),
+    ("data-science", "statistical-ml-review"),
+    ("data-science", "visualization"),
+    # model-setup の tool-agnostic なプロトコルスキル（fan-out / verify-fresh は T2p）
+    ("model-setup", "task-brief"),
+    ("model-setup", "backlog-loop"),
+    ("model-setup", "pr-merge"),
+    ("model-setup", "long-run"),
 }
-T2P_SKILLS = {("ai-peer", "peer")}          # スキル＋エージェント対
-T2P_AGENTS = {("ai-peer", "peer-engineer")}  # 対のエージェント
+T2P_SKILLS = {                                # スキル＋エージェント対
+    ("ai-peer", "peer"),
+    ("model-setup", "fan-out"),
+    ("model-setup", "verify-fresh"),
+    ("agent-review-panel", "review-panel"),
+}
+T2P_AGENTS = {                                # 対のエージェント
+    ("ai-peer", "peer-engineer"),
+    ("model-setup", "task-worker"),
+    ("model-setup", "fresh-verifier"),
+    ("model-setup", "bulk-scanner"),
+    ("agent-review-panel", "panel-reviewer"),
+    ("agent-review-panel", "panel-codex"),
+    ("agent-review-panel", "panel-verifier"),
+    ("agent-review-panel", "panel-judge"),
+}
 
 # CLAUDE.md → AGENTS.md / steering（Track A の指示書ガイダンス。pipeline 系 CLAUDE.md は Track B なので除外）
-GUIDANCE_CLAUDE = ["GlobalClaudeMD-sample", "data-science"]
+# 値はターゲットの allowlist。model-setup は Claude モデル運用ルールのため Kiro のみ（MAPPING ①ガイダンス表）。
+GUIDANCE_CLAUDE = {
+    "GlobalClaudeMD-sample": ("codex", "kiro"),
+    "data-science": ("codex", "kiro"),
+    "model-setup": ("kiro",),
+}
 
 TEMPLATES = HERE.parent / "templates"
 
@@ -46,6 +81,34 @@ def _write(path: pathlib.Path, text: str, source_rel: str):
         return "unchanged"
     path.write_text(new, encoding="utf-8")
     return "written"
+
+
+def _check_residual(texts: list[str], known: set[str], where: str):
+    """写像後の本文に CC 固有トークンが残っていないか検証する（MAPPING ④ のゴールデン検証を生成時にも実施）。"""
+    bad = sorted({t for text in texts for t in convert.residual_cc_tokens(text, known)})
+    if bad:
+        raise SystemExit(f"ERROR: 生成物に CC 固有トークンが残存: {where}: {bad}")
+
+
+def _emit_sidecars(skill_dir: pathlib.Path, out_skill_dir: pathlib.Path, target: str,
+                   known: set[str], section: str, name: str, emit):
+    """スキルディレクトリの SKILL.md 以外（personas.md・SPEC.md 等）を出力先へ複製する（MAPPING ②）。
+
+    `.md` は prose としてセンチネル＋用語写像を適用し、その他の拡張子は verbatim 複製する。
+    """
+    for f in sorted(skill_dir.iterdir()):
+        if not f.is_file() or f.name == "SKILL.md":
+            continue
+        rel = f"{section}/.claude/skills/{name}/{f.name}"
+        dst = out_skill_dir / f.name
+        if f.suffix == ".md":
+            body = convert.map_body(f.read_text(encoding="utf-8"), target, known)
+            _check_residual([body], known, rel)
+            emit(_write(dst, f"{convert.sentinel_line(rel)}\n{body}", rel))
+        else:
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            dst.write_bytes(f.read_bytes())
+            emit("written")
 
 
 def run(repo: pathlib.Path, targets: list[str], out: pathlib.Path) -> int:
@@ -67,18 +130,25 @@ def run(repo: pathlib.Path, targets: list[str], out: pathlib.Path) -> int:
     def emit(status):
         log[status] = log.get(status, 0) + 1
 
-    # T1 + T2p スキル
+    # T1 + T2p スキル（＋サイドカー複製）
     for key in sorted(T1_SKILLS | T2P_SKILLS):
         s = by_skill.get(key)
         if not s:
             print(f"  WARN: skill not found: {key}", file=sys.stderr)
             continue
-        if "codex" in targets:
-            emit(_write(out / "build/codex" / codex.skill_path(s),
-                        codex.skill_to_text(s, known, rel(s)), rel(s)))
-        if "kiro" in targets:
-            emit(_write(out / "build/kiro" / kiro.skill_path(s),
-                        kiro.skill_to_text(s, known, rel(s)), rel(s)))
+        if not s.has_frontmatter:
+            # 監査誤り（旧 T1g の再発）をここで止める: allowlist のスキルは frontmatter 必須
+            raise SystemExit(f"ERROR: allowlist のスキルに frontmatter がありません: {key}")
+        skill_dir = repo / s.section / ".claude/skills" / s.name
+        for target, ser in (("codex", codex), ("kiro", kiro)):
+            if target not in targets:
+                continue
+            _check_residual(
+                [convert.map_body(s.description, target, known), convert.map_body(s.body, target, known)],
+                known, rel(s))
+            out_path = out / f"build/{target}" / ser.skill_path(s)
+            emit(_write(out_path, ser.skill_to_text(s, known, rel(s)), rel(s)))
+            _emit_sidecars(skill_dir, out_path.parent, target, known, s.section, s.name, emit)
 
     # T2p エージェント
     for key in sorted(T2P_AGENTS):
@@ -87,34 +157,31 @@ def run(repo: pathlib.Path, targets: list[str], out: pathlib.Path) -> int:
             print(f"  WARN: agent not found: {key}", file=sys.stderr)
             continue
         arel = f"{a.section}/.claude/agents/{a.name}.md"
-        if "codex" in targets:
-            emit(_write(out / "build/codex" / codex.agent_path(a),
-                        codex.agent_to_text(a, known, arel), arel))
-        if "kiro" in targets:
-            emit(_write(out / "build/kiro" / kiro.agent_path(a),
-                        kiro.agent_to_text(a, known, arel), arel))
+        for target, ser in (("codex", codex), ("kiro", kiro)):
+            if target not in targets:
+                continue
+            _check_residual(
+                [convert.map_body(a.description, target, known), convert.map_body(a.instructions, target, known)],
+                known, arel)
+            emit(_write(out / f"build/{target}" / ser.agent_path(a),
+                        ser.agent_to_text(a, known, arel), arel))
 
-    # T1g: data-science（frontmatter 無し）→ steering / AGENTS 素材
-    for s in skills:
-        if s.section == "data-science" and not s.has_frontmatter:
-            if "kiro" in targets:
-                emit(_write(out / "build/kiro" / kiro.steering_path(s),
-                            kiro.guidance_to_steering(s, rel(s)), rel(s)))
-
-    # CLAUDE.md → AGENTS.md（Codex）/ steering inclusion:always（Kiro）
-    for section in GUIDANCE_CLAUDE:
+    # CLAUDE.md → AGENTS.md（Codex）/ steering inclusion:always（Kiro）。対象ターゲットは GUIDANCE_CLAUDE の値。
+    for section, gtargets in GUIDANCE_CLAUDE.items():
         claude_md = repo / section / "CLAUDE.md"
         if not claude_md.is_file():
             print(f"  WARN: CLAUDE.md not found: {section}", file=sys.stderr)
             continue
         raw = convert.load_guidance_text(claude_md)
         grel = f"{section}/CLAUDE.md"
-        if "codex" in targets:
+        if "codex" in targets and "codex" in gtargets:
             body = convert.map_body(raw, "codex", known)  # .claude/ パス・/cmd を写像（CC リテラルを残さない）
+            _check_residual([body], known, grel)
             emit(_write(out / "build/codex/agents-md" / f"{section}.AGENTS.md",
                         codex.agents_md_text(body, grel), grel))
-        if "kiro" in targets:
+        if "kiro" in targets and "kiro" in gtargets:
             body = convert.map_body(raw, "kiro", known)
+            _check_residual([body], known, grel)
             emit(_write(out / "build/kiro/.kiro/steering" / f"{section}-guidance.md",
                         kiro.steering_always_text(body, grel), grel))
 

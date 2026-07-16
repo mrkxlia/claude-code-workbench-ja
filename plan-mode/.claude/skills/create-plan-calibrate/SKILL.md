@@ -32,8 +32,8 @@ disable-model-invocation: true
 
 ## Step 0: 対象ファイルの確認
 
-- `create-plan/SKILL.md` と `SPEC.md` の所在を確認する（通常は同じ `plan-mode/` 配下、または導入先の
-  `.claude/skills/create-plan/SKILL.md` と隣接の `SPEC.md`）。
+- `create-plan/SKILL.md` と `SPEC.md` の所在を確認する（`SPEC.md` は `create-plan/SKILL.md` と
+  同じスキルディレクトリに同梱されている）。
 - `SPEC.md` を読み、INV-1〜INV-7 と ADJ-1〜ADJ-7 を把握する。
 - `create-plan/SKILL.md` を Grep して、残っている `<<ADJ-` 目印を一覧化する。
 

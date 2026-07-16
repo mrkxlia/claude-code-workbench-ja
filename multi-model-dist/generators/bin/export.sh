@@ -22,7 +22,7 @@ while [ $# -gt 0 ]; do
 done
 
 if ! command -v python3 >/dev/null 2>&1; then
-  echo "python3 が必要です（PyYAML / tomli_w も。README 参照）。" >&2
+  echo "python3 が必要です（PyYAML も。README 参照）。" >&2
   exit 1
 fi
 
