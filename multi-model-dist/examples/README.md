@@ -4,11 +4,15 @@
 （`build/`・`dist/` 自体は再生成物なので `.gitignore` 済み）。
 
 - `codex/.agents/skills/notes/SKILL.md` — Codex Agent Skill（`/notes`→`$notes` 写像・センチネル）
+- `codex/.agents/skills/review-panel/personas.md` — サイドカー複製（SKILL.md 以外の同梱ファイル・用語写像＋センチネル）
 - `codex/.codex/agents/peer-engineer.toml` — Codex サブエージェント（TOML・`tomllib` で往復検証可）
 - `kiro/.kiro/agents/peer-engineer.json` — Kiro CLI サブエージェント（JSON）
-- `kiro/.kiro/steering/visualization.md` — T1g（frontmatter 無しの data-science）→ steering(`inclusion: auto`)
+- `kiro/.kiro/skills/visualization/SKILL.md` — data-science スキル（T1・frontmatter 有り→通常スキル生成）
+- `kiro/.kiro/skills/create-plan-calibrate/SKILL.md` — manual_only（`disable-model-invocation: true` を標準フィールドのまま保持）
 
 検証は `python3 generators/lib/test_convert.py`（ゴールデン/往復テスト）。
+`test_goldens_match_build` が **examples/ 配下の全ファイルを最新の生成物とバイト比較**するため、
+原本やジェネレータを変えたら export を再実行してゴールデンも更新すること（stale なゴールデンはテストで落ちる）。
 
 ## Track A 仕上げ分
 

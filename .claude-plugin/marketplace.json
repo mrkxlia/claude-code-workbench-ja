@@ -9,7 +9,7 @@
       "name": "software-pipeline",
       "source": "./software-pipeline",
       "description": "7つの専門エージェントで機能開発を流れ作業化する「ソフトウェアパイプライン」テンプレート。スキル7種（pipeline-setup / feature-pipeline / clarify / build-with-tests / notes / spec-extract / pipeline-improve）を提供する。clarify / notes / spec-extract は task-pipeline と同一内容の統合連携版（モード自動判定）。",
-      "version": "2.4.0",
+      "version": "2.4.1",
       "category": "workflow",
       "author": {
         "name": "mrkxlia"
@@ -21,7 +21,7 @@
       "name": "task-pipeline",
       "source": "./task-pipeline",
       "description": "5つの専門エージェントでコード以外の成果物（drawio 図・ドキュメント・レポート）の作成を流れ作業化する「タスクパイプライン」テンプレート。スキル5種（task-pipeline-setup / task-pipeline / clarify / notes / spec-extract）を提供する。clarify / notes / spec-extract は software-pipeline と同一内容の統合連携版（モード自動判定）。",
-      "version": "1.3.0",
+      "version": "1.3.1",
       "category": "workflow",
       "author": {
         "name": "mrkxlia"
@@ -57,7 +57,7 @@
       "name": "ai-peer",
       "source": "./ai-peer",
       "description": "セカンドオピニオン／ピア相談を依頼するスキル2種とサブエージェント2種。peer は内部 Claude サブエージェントで完結し外部CLI・git・ネット不要（実装前のプランレビュー・ブレスト・第二の視点）。ask-claude は別の Claude を CLI（claude -p）で非対話・読み取り専用に起動し独立見解を要約する。Codex への相談は codex-bridge を参照。",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "category": "workflow",
       "author": {
         "name": "mrkxlia"

@@ -11,6 +11,10 @@ description: >-
 argument-hint: <詰めたい要件・プラン・設計・成果物の方針>
 ---
 
+<!-- SYNC: この clarify は software-pipeline / task-pipeline の両方に同一内容で同梱している
+     （正本＝software-pipeline）。変更するときは両方のコピーを同期してバイト同一を維持し、
+     規約5に従い両プラグインの version を上げること。 -->
+
 # clarify — 要件・仕様・構成を一問ずつ詰める徹底質問スキル
 
 プラン・要件・設計・成果物の構成・意思決定のあらゆる側面について、共通の理解に達するまで
