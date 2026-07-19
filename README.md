@@ -186,7 +186,7 @@ mkdir -p ~/.claude/agents && cp -r /tmp/workbench/model-setup/.claude/agents/* ~
 | データ分析プロジェクトの土台がほしい | **data-science** | Polars・uv・Jupyter 前提の CLAUDE.md ＋スキル |
 | Opus+Sonnet や Sonnet 単独で上位モデル（Fable 5 級）並みの振る舞いに近づけたい | **model-setup** | 9ルール＋プロファイル別追補を CLAUDE.md に常設化、並列委譲・fresh 検証・自律完走のスキル/エージェント、モデル/effortガイド |
 | backlog.md 駆動で計画→実施→PR→マージまで定型ループで回したい | model-setup（`/backlog-loop`・`/pr-merge`） | Step承認ゲート付き。git なし環境は変更ファイル一覧提示で完了 |
-| トークン/コストを可視化したい | **token-usage-tracker** | Claude Code 等のログを集計（独立 Python ツール） |
+| トークン/コストを可視化したい | **[token-usage-tracker](https://github.com/mrkxlia/token-usage-tracker)**（別リポジトリ） | Claude Code 等のログを集計（独立 Python ツール） |
 | CC 資産を Codex / Kiro でも使いたい | **multi-model-dist** | 原本を変えず生成（Track A）＋SPEC 再実装（Track B）。`/export` で書き出し |
 
 > パイプラインのサブスキル（`clarify`・`build-with-tests` 等）は単体でも使えます。導入は各プラグイン README の
@@ -328,11 +328,15 @@ Track A は implementation-skills・plan-mode・ai-peer に加え **data-science
 委譲し、センチネル・冪等・本文用語写像（`/cmd`→`$mention`/`#name`）・ゴールデン/往復検証を備えます。移植容易度のティア監査・配置パス・フィールド/本文写像は [`MAPPING.md`](multi-model-dist/MAPPING.md) を正本とします。
 実装方法論は [obra/superpowers](https://github.com/obra/superpowers)（subagent-driven development）を参考にしています。
 
-### [`token-usage-tracker/`](token-usage-tracker/)
-AIコーディングエージェントのトークン消費トラッカー（独立 Python ツール）。
-Claude Code・Codex・Cline がローカルに残すログを解析し、**リポジトリ／タスク／モデル／ツール別**にトークン・コストを集計・可視化します。Azure AI Foundry 経由でも追加連携なしで集計でき、CLI 集計表とローカル Web ダッシュボード（Streamlit）を提供します。パッケージ管理は uv、開発は TDD。現状 Claude Code に対応済み（Codex / Cline は今後）。設計の参考に ccusage / tokscale を参照しています（コードのコピーはなし）。
+## 別リポジトリに分割したもの
 
-### [`power-automate-azure-foundry/`](power-automate-azure-foundry/)
+Claude Code のテーマから外れる独立ツール・サンプルは、このリポジトリではなく専用リポジトリで管理しています。
+
+### [token-usage-tracker](https://github.com/mrkxlia/token-usage-tracker)
+AIコーディングエージェントのトークン消費トラッカー（独立 Python ツール）。
+Claude Code・Codex・Cline がローカルに残すログを解析し、**リポジトリ／タスク／モデル／ツール別**にトークン・コストを集計・可視化します。CLI 集計表とローカル Web ダッシュボード（Streamlit）を提供します。パッケージ管理は uv、開発は TDD。設計の参考に ccusage / tokscale を参照しています（コードのコピーはなし）。
+
+### [power-automate-azure-foundry](https://github.com/mrkxlia/power-automate-azure-foundry)
 Power Automate のクラウドフローから Azure AI Foundry（Azure OpenAI）の GPT を呼び出すサンプル一式。
 **テキストのみ**と**画像＋テキスト（Vision）**の2パターンのフロー定義、インポート用の**レガシーパッケージ zip** と **Dataverse ソリューション zip**、**カスタムコネクタ**定義を収録し、最終形として「PowerApps でカメラ撮影 → Automate 経由で GPT に送って OCR」まで通せます。認証は API Key。鍵を安全に扱う3方式（HTTP ヘッダー直書き／カスタムコネクタ／環境変数）の比較、DLP ポリシー下で開けるべきコネクタ、Secure Inputs/Outputs などのセキュリティ解説付き。
 
@@ -351,7 +355,6 @@ Power Automate のクラウドフローから Azure AI Foundry（Azure OpenAI）
 | [`skills-guide/`](skills-guide/) | [anthropics/skills](https://github.com/anthropics/skills)・[obra/superpowers](https://github.com/obra/superpowers)・[mattpocock/skills](https://github.com/mattpocock/skills) | リンクと独自解説のみ収録。各スキル本体は各リポジトリのライセンス（anthropics/skills は Apache 2.0 + 一部 source-available）に従う |
 | [`software-pipeline/`](software-pipeline/) | [How to Build a Software Factory with Claude Code（@sairahul1 氏）](https://x.com/sairahul1/status/2058832033628241931) | 記事のコンセプトに基づく独自実装（コピーではない）— 帰属を README に記載 |
 | [`task-pipeline/`](task-pipeline/) | [How to Build a Software Factory with Claude Code（@sairahul1 氏）](https://x.com/sairahul1/status/2058832033628241931) | 記事のコンセプトをコード以外の成果物向けに汎用化した独自実装（コピーではない）— 帰属を README に記載 |
-| [`token-usage-tracker/`](token-usage-tracker/) | [ryoppippi/ccusage](https://github.com/ryoppippi/ccusage)・[junhoyeo/tokscale](https://github.com/junhoyeo/tokscale) | いずれも MIT License — 設計（JSONL パース・コスト計算・集計軸）のみ参考にした独自実装（コードのコピーではない） |
 | [`codex-bridge/`](codex-bridge/) | [eddiearc/codex-delegator](https://github.com/eddiearc/codex-delegator)・[hamelsmu/claude-review-loop](https://github.com/hamelsmu/claude-review-loop)・[OpenAI Codex CLI ドキュメント](https://developers.openai.com/codex/) | 構成・プロンプト型のコンセプトを参考にした独自実装（コードのコピーではない） |
 | [`ai-peer/`](ai-peer/) | [hiroro-work/claude-plugins](https://github.com/hiroro-work/claude-plugins) | `peer`（内部サブエージェント完結）・`ask-*`（他 AI に第二意見を聞く）のコンセプトを参考にした独自実装（コードのコピーではない） |
 | [`agent-review-panel/`](agent-review-panel/) | [wan-huiyan/agent-review-panel](https://github.com/wan-huiyan/agent-review-panel)・[makinux/adversarial-panel](https://github.com/makinux/adversarial-panel) | 多フェーズ・パネル構成（並列独立レビュー→討論→検証→裁定）／4ラウンド敵対プロトコル（ブラインド回答→相互批判→譲歩→統合）のコンセプトを参考にした独自実装（コードのコピーではない）— 帰属を README に記載 |
