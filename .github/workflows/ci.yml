@@ -1,0 +1,104 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  required-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: 依存関係のインストール（PyYAML）
+        run: pip install pyyaml
+
+      - name: skill-sync --check（重複派生ファイルが原本と同期済みか）
+        run: python3 tools/skill-sync/sync.py --check
+
+      - name: multi-model-dist ゴールデン/往復テスト
+        run: python3 tools/multi-model-dist/generators/lib/test_convert.py
+
+      - name: multi-model-dist reimpl テスト
+        run: python3 tools/multi-model-dist/reimpl/test_reimpl.py
+
+      - name: JSON 構文検証（marketplace.json・plugin.json・hooks.json 等）
+        run: |
+          python3 - <<'PY'
+          import json
+          import pathlib
+          import sys
+
+          EXCLUDE_DIRS = {"node_modules", "build", "dist", ".git"}
+          bad = []
+          for p in pathlib.Path(".").rglob("*.json"):
+              if any(part in EXCLUDE_DIRS for part in p.parts):
+                  continue
+              try:
+                  json.loads(p.read_text(encoding="utf-8"))
+              except Exception as e:
+                  bad.append(f"{p}: {e}")
+          if bad:
+              print("\n".join(bad))
+              sys.exit(1)
+          print(f"OK: JSON {sum(1 for _ in pathlib.Path('.').rglob('*.json'))} 件")
+          PY
+
+      - name: SKILL.md 検査（description+when_to_use<=1536字・本文<=500行・frontmatter妥当性）
+        run: |
+          python3 - <<'PY'
+          import pathlib
+          import sys
+
+          import yaml
+
+          EXCLUDE_PARTS = {"examples", "reimpl", "build", "dist"}
+          bad = []
+          checked = 0
+          for p in sorted(pathlib.Path(".").glob("**/skills/*/SKILL.md")):
+              if EXCLUDE_PARTS & set(p.parts):
+                  continue
+              checked += 1
+              text = p.read_text(encoding="utf-8")
+              if not text.startswith("---\n"):
+                  bad.append(f"{p}: frontmatter が先頭にない")
+                  continue
+              end = text.find("\n---", 4)
+              if end == -1:
+                  bad.append(f"{p}: frontmatter の終端 '---' が見つからない")
+                  continue
+              try:
+                  meta = yaml.safe_load(text[4:end]) or {}
+              except Exception as e:
+                  bad.append(f"{p}: frontmatter パース失敗: {e}")
+                  continue
+              desc_len = len(str(meta.get("description", ""))) + len(str(meta.get("when_to_use", "")))
+              if desc_len > 1536:
+                  bad.append(f"{p}: description+when_to_use が1536字超（{desc_len}字）")
+              nlines = len(text.splitlines())
+              if nlines > 500:
+                  bad.append(f"{p}: 本文が500行超（{nlines}行）")
+          if bad:
+              print("\n".join(bad))
+              sys.exit(1)
+          print(f"OK: SKILL.md {checked} 件")
+          PY
+
+  plugin-validate:
+    # claude CLI が使える環境でのみ意味を持つ任意チェック。CI ランナーに未導入でも
+    # required-checks はブロックしない（ローカルでの `claude plugin validate` 実行を必須完了条件とする）。
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - name: claude CLI のインストールを試行
+        run: npm install -g @anthropic-ai/claude-code
+      - name: 8プラグイン + marketplace を検証
+        run: |
+          for p in plugins/*/; do
+            claude plugin validate "$p"
+          done
+          claude plugin validate .

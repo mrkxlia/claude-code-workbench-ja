@@ -11,6 +11,7 @@ description: >-
   このスキルは決して実装・変更には移らず、計画ファイルを書き出したら停止する。
 argument-hint: <達成したいゴール>
 ---
+<!-- SYNCED by tools/skill-sync — DO NOT EDIT. source: templates/plan-mode/.claude/skills/create-plan/SKILL.md -->
 
 # create-plan — 変更せずに「実行計画」を作る
 

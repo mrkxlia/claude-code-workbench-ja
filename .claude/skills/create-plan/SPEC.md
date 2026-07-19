@@ -1,3 +1,4 @@
+<!-- SYNCED by tools/skill-sync — DO NOT EDIT. source: templates/plan-mode/.claude/skills/create-plan/SPEC.md -->
 # SPEC.md — `create-plan` スキルの要件定義（単一の真実源）
 
 このファイルは `create-plan`（調査・計画スキル）が満たすべき要件を定義する**契約**です。

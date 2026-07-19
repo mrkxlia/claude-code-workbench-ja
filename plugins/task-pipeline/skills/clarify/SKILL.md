@@ -10,6 +10,7 @@ description: >-
   詰めるために使う。
 argument-hint: <詰めたい要件・プラン・設計・成果物の方針>
 ---
+<!-- SYNCED by tools/skill-sync — DO NOT EDIT. source: plugins/software-pipeline/skills/clarify/SKILL.md -->
 
 <!-- SYNC: この clarify は software-pipeline / task-pipeline の両方に同一内容で同梱している
      （正本＝software-pipeline）。変更するときは両方のコピーを同期してバイト同一を維持し、

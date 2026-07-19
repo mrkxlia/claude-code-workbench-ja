@@ -9,6 +9,7 @@ description: >-
   /create-plan-calibrate での手動起動でのみ実行する。
 disable-model-invocation: true
 ---
+<!-- SYNCED by tools/skill-sync — DO NOT EDIT. source: templates/plan-mode/.claude/skills/create-plan-calibrate/SKILL.md -->
 
 # create-plan-calibrate — create-plan を対象エージェントに合わせて較正する
 

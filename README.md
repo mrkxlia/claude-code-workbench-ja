@@ -334,6 +334,13 @@ Track A は implementation-skills・plan-mode・ai-peer に加え **data-science
 委譲し、センチネル・冪等・本文用語写像（`/cmd`→`$mention`/`#name`）・ゴールデン/往復検証を備えます。移植容易度のティア監査・配置パス・フィールド/本文写像は [`MAPPING.md`](tools/multi-model-dist/MAPPING.md) を正本とします。
 実装方法論は [obra/superpowers](https://github.com/obra/superpowers)（subagent-driven development）を参考にしています。
 
+#### [`tools/skill-sync/`](tools/skill-sync/)
+リポジトリ内で重複管理しているスキル/フック（`notes`・`spec-extract` のパイプライン連携版、
+`clarify` の task-pipeline 側コピー、`create-plan`・`create-plan-calibrate` のルート `.claude/`
+ミラー、`spec-sync-reminder.{sh,ps1}` の task-pipeline 側コピー）を、原本から `sync.py` が機械生成します。
+`--check` は CI（`.github/workflows/ci.yml`）で派生の stale 化を検出する非破壊モードです。
+「手動 diff で一致を確認する」という以前の運用規約を、生成 + 機械検証に置き換えています。
+
 ### docs/ — リポジトリ内ドキュメント
 
 #### [`docs/skills-guide/`](docs/skills-guide/)
