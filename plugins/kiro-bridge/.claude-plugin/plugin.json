@@ -1,0 +1,13 @@
+{
+  "name": "kiro-bridge",
+  "version": "0.1.0",
+  "description": "コードレビュー・相談を Kiro に依頼するスキル2種（kiro-review / kiro-ask）とサブエージェント2種。ユーザー自身は Kiro を操作せず、Claude Code が kiro-cli を非対話モード（--no-interactive・--trust-tools=read）で駆動する。read-only 専用（kiro-cli には Codex 相当のサンドボックス隔離が無いため実装委譲スキルは持たない）。",
+  "author": {
+    "name": "mrkxlia",
+    "url": "https://github.com/mrkxlia"
+  },
+  "homepage": "https://github.com/mrkxlia/claude-code-workbench-ja/tree/main/plugins/kiro-bridge",
+  "repository": "https://github.com/mrkxlia/claude-code-workbench-ja",
+  "license": "MIT",
+  "keywords": ["kiro", "review", "subagents", "delegation", "japanese"]
+}

@@ -85,13 +85,24 @@
     {
       "name": "agent-review-panel",
       "source": "./plugins/agent-review-panel",
-      "description": "コード・計画・ドキュメントを複数ペルソナのサブエージェント（既定3名）にブラインド並列レビューさせ、相互批判→応答・譲歩→統合まで行う敵対的パネルレビュースキル1種（review-panel）とサブエージェント4種。deep 指定で引用検証と裁定者による最終裁定を追加。codex 指定で外部パネリスト（OpenAI Codex・任意）を混成できる。基本は依存ゼロで動く。",
+      "description": "コード・計画・ドキュメントを複数ペルソナのサブエージェント（既定3名）にブラインド並列レビューさせ、相互批判→応答・譲歩→統合まで行う敵対的パネルレビュースキル1種（review-panel）とサブエージェント5種。deep 指定で引用検証と裁定者による最終裁定を追加。codex 指定・kiro 指定で外部パネリスト（OpenAI Codex／Kiro・任意・同時指定も可）を混成できる。基本は依存ゼロで動く。",
       "category": "workflow",
       "author": {
         "name": "mrkxlia"
       },
       "license": "MIT",
       "keywords": ["review", "panel", "adversarial", "multi-agent", "subagents", "japanese"]
+    },
+    {
+      "name": "kiro-bridge",
+      "source": "./plugins/kiro-bridge",
+      "description": "コードレビュー・相談を Kiro に依頼するスキル2種（kiro-review / kiro-ask）とサブエージェント2種。ユーザー自身は Kiro を操作せず、Claude Code が kiro-cli を非対話モード（--no-interactive・--trust-tools=read）で駆動する。read-only 専用（kiro-cli には Codex 相当のサンドボックス隔離が無いため実装委譲スキルは持たない）。",
+      "category": "workflow",
+      "author": {
+        "name": "mrkxlia"
+      },
+      "license": "MIT",
+      "keywords": ["kiro", "review", "subagents", "delegation", "japanese"]
     }
   ]
 }
