@@ -46,20 +46,19 @@ codex-bridge/
 ├── README.md
 ├── .claude-plugin/
 │   └── plugin.json
-└── .claude/
-    ├── hooks.json                 # SessionStart で AGENTS.md を再生成（常時ON・再生成のみ）
-    ├── skills/
-    │   ├── codex-review/SKILL.md
-    │   ├── codex-implement/SKILL.md
-    │   ├── codex-ask/SKILL.md
-    │   └── codex-agents/SKILL.md  # AGENTS.md ジェネレータ（/codex-agents）
-    ├── agents/
-    │   ├── codex-reviewer.md      # read-only
-    │   ├── codex-implementer.md   # workspace-write
-    │   └── codex-advisor.md       # read-only
-    └── hooks/
-        ├── plan-to-codex.sh       # プラン承認→Codex 実装委譲（opt-in）
-        └── gen-agents-md.sh       # AGENTS.md 生成スクリプト
+├── skills/
+│   ├── codex-review/SKILL.md
+│   ├── codex-implement/SKILL.md
+│   ├── codex-ask/SKILL.md
+│   └── codex-agents/SKILL.md  # AGENTS.md ジェネレータ（/codex-agents）
+├── agents/
+│   ├── codex-reviewer.md      # read-only
+│   ├── codex-implementer.md   # workspace-write
+│   └── codex-advisor.md       # read-only
+└── hooks/
+    ├── hooks.json              # SessionStart で AGENTS.md を再生成（常時ON・再生成のみ）
+    ├── plan-to-codex.sh       # プラン承認→Codex 実装委譲（opt-in）
+    └── gen-agents-md.sh       # AGENTS.md 生成スクリプト
 ```
 
 ## 導入方法
@@ -78,9 +77,9 @@ codex-bridge/
 ```bash
 # プロジェクトに導入（スキル4種＋エージェント3種＋フック2種）
 mkdir -p .claude/skills .claude/agents .claude/hooks
-cp -r codex-bridge/.claude/skills/*  .claude/skills/
-cp -r codex-bridge/.claude/agents/*  .claude/agents/
-cp -r codex-bridge/.claude/hooks/*   .claude/hooks/
+cp -r plugins/codex-bridge/skills/*  .claude/skills/
+cp -r plugins/codex-bridge/agents/*  .claude/agents/
+cp plugins/codex-bridge/hooks/gen-agents-md.sh plugins/codex-bridge/hooks/plan-to-codex.sh  .claude/hooks/
 ```
 
 グローバルに使いたい場合は `~/.claude/skills/`・`~/.claude/agents/` にコピーします。
@@ -133,7 +132,7 @@ Codex に実装・検証させよ」と促します（プラン本文は Claude 
   "hooks":[{"type":"command","command":"bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/plan-to-codex.sh"}]}]}}
 ```
 
-- スクリプトは `mkdir -p .claude/hooks && cp -r codex-bridge/.claude/hooks/* .claude/hooks/` で配置。
+- スクリプトは `mkdir -p .claude/hooks && cp plugins/codex-bridge/hooks/plan-to-codex.sh .claude/hooks/` で配置。
 - 全プロジェクトで使いたい場合は `~/.claude/hooks/` に置き、ユーザーの settings に同様に登録します。
 - 注意: **全プラン承認で発火**します／無効化は settings.json から該当エントリを消すだけ／
   `additionalContext` は強い誘導であって厳密な強制ではありません／委譲はその承認済みプラン1件のみ・一度きり。

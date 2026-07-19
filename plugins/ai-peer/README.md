@@ -43,13 +43,12 @@ ai-peer/
 ├── README.md
 ├── .claude-plugin/
 │   └── plugin.json
-└── .claude/
-    ├── skills/
-    │   ├── peer/SKILL.md          # /peer（内部・依存ゼロ）
-    │   └── ask-claude/SKILL.md    # /ask-claude（claude CLI）
-    └── agents/
-        ├── peer-engineer.md       # 内部サブエージェント（read-only ツールのみ・外部CLI不使用）
-        └── claude-advisor.md      # claude CLI を非対話・読み取り専用で駆動
+├── skills/
+│   ├── peer/SKILL.md          # /peer（内部・依存ゼロ）
+│   └── ask-claude/SKILL.md    # /ask-claude（claude CLI）
+└── agents/
+    ├── peer-engineer.md       # 内部サブエージェント（read-only ツールのみ・外部CLI不使用）
+    └── claude-advisor.md      # claude CLI を非対話・読み取り専用で駆動
 ```
 
 ## 導入方法
@@ -67,8 +66,8 @@ ai-peer/
 
 ```bash
 mkdir -p .claude/skills .claude/agents
-cp -r ai-peer/.claude/skills/*  .claude/skills/
-cp -r ai-peer/.claude/agents/*  .claude/agents/
+cp -r plugins/ai-peer/skills/*  .claude/skills/
+cp -r plugins/ai-peer/agents/*  .claude/agents/
 ```
 
 グローバルに使いたい場合は `~/.claude/skills/`・`~/.claude/agents/` にコピーします。

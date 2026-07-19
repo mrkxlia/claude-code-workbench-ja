@@ -157,17 +157,17 @@ Match the surrounding project's language. If the user writes in Japanese or the
 existing notes are in Japanese, write the notes in Japanese. Be terse: this is a
 working document, not prose. Concrete facts (file names, function names, version
 numbers, error messages) beat vague description.
-<!-- PIPELINE-INTEGRATION: この行より上は implementation-skills/.claude/skills/notes/SKILL.md の原本と同一に保つ。
+<!-- PIPELINE-INTEGRATION: この行より上は templates/implementation-skills/.claude/skills/notes/SKILL.md の原本と同一に保つ。
      原本を更新したら、この行より上をまるごと新しい原本で差し替え、この行以降は維持すること。
      この行以降は統合連携版（software-pipeline / task-pipeline 共通）であり、両プラグインのコピーを
      常にファイル全体でバイト同一に保つこと（片方だけ編集しない）。
      一致確認: diff <(awk '/PIPELINE-INTEGRATION/{exit} {print}' このファイル) 原本
-     全体一致確認: diff software-pipeline/.claude/skills/notes/SKILL.md task-pipeline/.claude/skills/notes/SKILL.md -->
+     全体一致確認: diff plugins/software-pipeline/skills/notes/SKILL.md plugins/task-pipeline/skills/notes/SKILL.md -->
 
 ## パイプライン連携（software-pipeline / task-pipeline 統合連携版）
 
 このコピーは software-pipeline（feature-pipeline）と task-pipeline の**両方で同一内容**の
-統合連携版。単体利用の原本は `implementation-skills/.claude/skills/notes/` にある。
+統合連携版。単体利用の原本は `templates/implementation-skills/.claude/skills/notes/` にある。
 パイプラインで使うとき、上記の原本ルールに以下が**優先して**加わる。
 
 ### モード判定（成果物がプログラムかそれ以外か）

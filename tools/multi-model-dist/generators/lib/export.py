@@ -91,7 +91,7 @@ def _check_residual(texts: list[str], known: set[str], where: str):
 
 
 def _emit_sidecars(skill_dir: pathlib.Path, out_skill_dir: pathlib.Path, target: str,
-                   known: set[str], section: str, name: str, emit):
+                   known: set[str], skill_rel_dir: str, emit):
     """スキルディレクトリの SKILL.md 以外（personas.md・SPEC.md 等）を出力先へ複製する（MAPPING ②）。
 
     `.md` は prose としてセンチネル＋用語写像を適用し、その他の拡張子は verbatim 複製する。
@@ -99,7 +99,7 @@ def _emit_sidecars(skill_dir: pathlib.Path, out_skill_dir: pathlib.Path, target:
     for f in sorted(skill_dir.iterdir()):
         if not f.is_file() or f.name == "SKILL.md":
             continue
-        rel = f"{section}/.claude/skills/{name}/{f.name}"
+        rel = f"{skill_rel_dir}/{f.name}"
         dst = out_skill_dir / f.name
         if f.suffix == ".md":
             body = convert.map_body(f.read_text(encoding="utf-8"), target, known)
@@ -125,7 +125,7 @@ def run(repo: pathlib.Path, targets: list[str], out: pathlib.Path) -> int:
     log = {"written": 0, "unchanged": 0, "skip(manual)": 0}
 
     def rel(s):
-        return f"{s.section}/.claude/skills/{s.name}/SKILL.md"
+        return convert.skill_source_rel(repo, s.section, s.name)
 
     def emit(status):
         log[status] = log.get(status, 0) + 1
@@ -139,7 +139,8 @@ def run(repo: pathlib.Path, targets: list[str], out: pathlib.Path) -> int:
         if not s.has_frontmatter:
             # 監査誤り（旧 T1g の再発）をここで止める: allowlist のスキルは frontmatter 必須
             raise SystemExit(f"ERROR: allowlist のスキルに frontmatter がありません: {key}")
-        skill_dir = convert.find_section_root(repo, s.section) / ".claude/skills" / s.name
+        skill_dir = convert.assets_root(repo, s.section) / "skills" / s.name
+        skill_rel_dir = rel(s).rsplit("/", 1)[0]
         for target, ser in (("codex", codex), ("kiro", kiro)):
             if target not in targets:
                 continue
@@ -148,7 +149,7 @@ def run(repo: pathlib.Path, targets: list[str], out: pathlib.Path) -> int:
                 known, rel(s))
             out_path = out / f"build/{target}" / ser.skill_path(s)
             emit(_write(out_path, ser.skill_to_text(s, known, rel(s)), rel(s)))
-            _emit_sidecars(skill_dir, out_path.parent, target, known, s.section, s.name, emit)
+            _emit_sidecars(skill_dir, out_path.parent, target, known, skill_rel_dir, emit)
 
     # T2p エージェント
     for key in sorted(T2P_AGENTS):
@@ -156,7 +157,7 @@ def run(repo: pathlib.Path, targets: list[str], out: pathlib.Path) -> int:
         if not a:
             print(f"  WARN: agent not found: {key}", file=sys.stderr)
             continue
-        arel = f"{a.section}/.claude/agents/{a.name}.md"
+        arel = convert.agent_source_rel(repo, a.section, a.name)
         for target, ser in (("codex", codex), ("kiro", kiro)):
             if target not in targets:
                 continue
@@ -177,7 +178,7 @@ def run(repo: pathlib.Path, targets: list[str], out: pathlib.Path) -> int:
             print(f"  WARN: CLAUDE.md not found: {section}", file=sys.stderr)
             continue
         raw = convert.load_guidance_text(claude_md)
-        grel = f"{section}/CLAUDE.md"
+        grel = f"{claude_md.parent.relative_to(repo)}/CLAUDE.md"
         if "codex" in targets and "codex" in gtargets:
             body = convert.map_body(raw, "codex", known)  # .claude/ パス・/cmd を写像（CC リテラルを残さない）
             _check_residual([body], known, grel)
