@@ -9,6 +9,10 @@
 Claude Code をより快適に使うためのスクリプト・テンプレート・ベストプラクティスを集めたリポジトリです。
 各セクションはそれぞれ独立しており、ユーザーが必要な部分だけコピーして自分のプロジェクトで使うことを想定しています。
 
+Claude Code のテーマから外れる独立ツール・サンプルは別リポジトリに分割している:
+- [power-automate-azure-foundry](https://github.com/mrkxlia/power-automate-azure-foundry) — Power Automate から Azure AI Foundry (GPT) を呼ぶサンプル一式
+- [token-usage-tracker](https://github.com/mrkxlia/token-usage-tracker) — AIエージェントのトークン消費トラッカー
+
 ---
 
 ## ディレクトリ構成
@@ -74,17 +78,6 @@ claude-code-workbench-ja/
 │   ├── generators/                  #   単一パイプライン（bin/export.sh・lib/convert.py＋serializers/・作業用 export スキル）
 │   ├── examples/                    #   生成結果ゴールデン（build/・dist/ は .gitignore）
 │   └── reimpl/                      #   Track B（SPEC 共有→各ツール再実装）※段階導入
-├── token-usage-tracker/             # AIエージェントのトークン消費トラッカー（独立Pythonツール / uv / TDD）
-│   ├── README.md
-│   ├── pyproject.toml               #   uv 管理・[project.scripts] tokentracker
-│   ├── tokentracker/                #   parsers(claude_code/codex/cline) / models / db / pricing(+pricing.toml) / queries / ingest / cli / dashboard
-│   └── tests/                       #   pytest（fixtures に実ログ匿名化の代表ケースを固定）
-├── power-automate-azure-foundry/    # Power Automate から Azure AI Foundry(GPT) を呼ぶサンプル一式
-│   ├── README.md                    #   概要・インポート手順
-│   ├── custom-connector/            #   カスタムコネクタ定義
-│   ├── flows/                       #   フロー定義
-│   ├── packages/                    #   インポート用 zip パッケージ
-│   └── powerapps/                   #   Power Apps サンプル
 ├── docs/                            # リポジトリ内ドキュメント置き場
 │   ├── README.md
 │   └── pipeline-spec-alignment-proposal.html  #   パイプラインと仕様整合の提案資料
