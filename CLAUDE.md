@@ -31,41 +31,55 @@ claude-code-workbench-ja/
 │   └── marketplace.json             # プラグインマーケットプレイス定義（名前: workbench-ja、source は ./plugins/<name>）
 ├── .claude/                         # このリポジトリ自身の作業用スキル（dogfooding・規約1の例外）
 │   └── skills/                      #   create-plan（SPEC.md 同梱）/ create-plan-calibrate（templates/plan-mode 由来・非競合のみ集約）
-├── plugins/                         # プラグイン導入可能な8セクション（marketplace.json 登録対象）
+├── plugins/                         # プラグイン導入可能な8セクション（marketplace.json 登録対象・公式標準レイアウト）
 │   ├── software-pipeline/           #   7エージェント構成「ソフトウェアパイプライン」テンプレート
 │   │   ├── README.md
 │   │   ├── CLAUDE.md                #     コピーして使う CLAUDE.md サンプル
 │   │   ├── .claude-plugin/plugin.json
-│   │   └── .claude/                 #     agents 7種 / skills 7種（clarify / notes / spec-extract パイプライン連携版・pipeline-improve 含む）/ hooks 3種（block-secrets-commit・並列共有衝突を確認する guard-builder-writes・spec-sync-reminder）/ settings.json
+│   │   ├── skills/                  #     7種（clarify / notes / spec-extract パイプライン連携版・pipeline-improve 含む）
+│   │   ├── agents/                  #     7種
+│   │   ├── hooks/                   #     3種（block-secrets-commit・並列共有衝突を確認する guard-builder-writes・spec-sync-reminder。導入先へコピーする資材＝非自動配線）
+│   │   └── setup/settings.json      #     コピー導入用テンプレート
 │   ├── task-pipeline/               #   汎用5エージェント構成「タスクパイプライン」テンプレート（コード以外の成果物向け）
 │   │   ├── README.md
 │   │   ├── CLAUDE.md                #     コピーして使う CLAUDE.md サンプル
 │   │   ├── .claude-plugin/plugin.json
-│   │   └── .claude/                 #     agents 5種 / skills 5種（task-pipeline / clarify / task-pipeline-setup / notes・spec-extract パイプライン連携版）/ hooks / settings.json
+│   │   ├── skills/                  #     5種（task-pipeline / clarify / task-pipeline-setup / notes・spec-extract パイプライン連携版）
+│   │   ├── agents/                  #     5種
+│   │   ├── hooks/                   #     guard-deliverable-writes・spec-sync-reminder（導入先へコピーする資材＝非自動配線）
+│   │   └── setup/settings.json      #     コピー導入用テンプレート
 │   ├── codex-bridge/                #   Codex にレビュー・実装・相談を依頼するスキル＆エージェント
 │   │   ├── README.md
 │   │   ├── .claude-plugin/plugin.json
-│   │   └── .claude/                 #     skills 4種（codex-review / codex-implement / codex-ask / codex-agents）/ agents 3種（codex-reviewer / codex-implementer / codex-advisor）/ hooks（gen-agents-md＋hooks.json 常時ON・plan-to-codex は opt-in）
+│   │   ├── skills/                  #     4種（codex-review / codex-implement / codex-ask / codex-agents）
+│   │   ├── agents/                  #     3種（codex-reviewer / codex-implementer / codex-advisor）
+│   │   └── hooks/                   #     hooks.json（gen-agents-md＝プラグイン導入で自動ON）/ plan-to-codex.sh（opt-in・手動配線）
 │   ├── ai-peer/                     #   ピア相談・セカンドオピニオンを依頼するスキル＆エージェント
 │   │   ├── README.md
 │   │   ├── .claude-plugin/plugin.json
-│   │   └── .claude/                 #     skills 2種（peer=内部・依存ゼロ / ask-claude=claude CLI）/ agents 2種（peer-engineer / claude-advisor）
+│   │   ├── skills/                  #     2種（peer=内部・依存ゼロ / ask-claude=claude CLI）
+│   │   └── agents/                  #     2種（peer-engineer / claude-advisor）
 │   ├── agent-review-panel/          #   複数ペルソナの敵対的パネルレビュー
 │   │   ├── README.md
 │   │   ├── .claude-plugin/plugin.json
-│   │   └── .claude/                 #     skills 1種（review-panel＋personas.md / report-template.md）/ agents 4種（panel-reviewer / panel-codex / panel-verifier / panel-judge）
+│   │   ├── skills/                  #     1種（review-panel＋personas.md / report-template.md）
+│   │   └── agents/                  #     4種（panel-reviewer / panel-codex / panel-verifier / panel-judge）
 │   ├── self-improve/                #   git 不要の自己改善ループ（発見→承認制で適用）
 │   │   ├── README.md
 │   │   ├── RESEARCH.md              #     関連研究・他実装の調査ノート（論文・OSS 比較）
 │   │   ├── .claude-plugin/plugin.json
-│   │   └── .claude/                 #     skills 2種（improve-scan / improve-apply）/ hooks 2種＋hooks.json（検出/通知）/ settings.json サンプル
+│   │   ├── skills/                  #     2種（improve-scan / improve-apply）
+│   │   ├── hooks/                   #     hooks.json（検出/通知＝プラグイン導入で自動ON）
+│   │   └── setup/settings.json      #     手動導入時の登録サンプル
 │   ├── knowledge-share/             #   セッション/リポジトリ横断ナレッジ共有テンプレート
 │   │   ├── README.md
 │   │   ├── install.sh               #     ~/.claude/ への冪等インストーラ（@import ベース導入用）
 │   │   ├── templates/index.md       #     ナレッジ・インデックスの初期テンプレート
 │   │   ├── bin/kb-extract-candidates.sh
 │   │   ├── .claude-plugin/plugin.json
-│   │   └── .claude/                 #     skills 2種（kb / kb-harvest）/ hooks 2種＋hooks.json / settings.json サンプル
+│   │   ├── skills/                  #     2種（kb / kb-harvest）
+│   │   ├── hooks/                   #     hooks.json（SessionStart/SessionEnd＝プラグイン導入で自動ON）
+│   │   └── setup/settings.json      #     手動導入時の登録サンプル
 │   └── model-setup/                 #   モデル運用テンプレート（旧名 sonnet-setup。Opus 4.8 + Sonnet 5 / Sonnet 単独の2プロファイル、9ルール＋追補＋スキル6種＋エージェント3種）
 │       ├── README.md
 │       ├── CLAUDE.md                #     コピペ用テンプレート本体（9つの行動ルール・共通基盤）
@@ -75,7 +89,8 @@ claude-code-workbench-ja/
 │       ├── settings.private.json    #     私用PC向け設定サンプル（opusplan + xhigh）
 │       ├── settings.company.json    #     会社PC向け設定サンプル（sonnet + xhigh）
 │       ├── .claude-plugin/plugin.json
-│       └── .claude/                 #     skills 6種（task-brief / backlog-loop / pr-merge / fan-out / long-run / verify-fresh）/ agents 3種（task-worker / fresh-verifier / bulk-scanner）
+│       ├── skills/                  #     6種（task-brief / backlog-loop / pr-merge / fan-out / long-run / verify-fresh）
+│       └── agents/                  #     3種（task-worker / fresh-verifier / bulk-scanner）
 ├── templates/                       # コピーして使うテンプレート（プラグイン非対応・marketplace.json 未登録）
 │   ├── data-science/                #   データサイエンス向け CLAUDE.md + Skills テンプレート
 │   │   ├── CLAUDE.md
@@ -111,9 +126,9 @@ claude-code-workbench-ja/
 2. **各ディレクトリには README.md を置く** — セクションの目的・使い方・ファイル構成を説明する README.md を必ず用意する。
 3. **リポジトリ全体の言語は日本語** — README.md・CLAUDE.md など、このリポジトリ自体のドキュメントは日本語で記述する。
 4. **マーケットプレイス定義はルートの `.claude-plugin/` に置く** — Claude Code プラグイン仕様上の必須配置であり、規約1の例外。
-5. **プラグイン配下を変更したら version を上げる** — `plugins/` 配下の8プラグイン（software-pipeline・task-pipeline・knowledge-share・codex-bridge・ai-peer・agent-review-panel・self-improve・model-setup）のプラグイン対象ファイル（`.claude/skills/` 配下＝プラグインが配信する skills）を変更したら、該当する `plugins/<name>/.claude-plugin/plugin.json` と `.claude-plugin/marketplace.json` の対応エントリの `version` をセマンティックバージョニングで更新する（プラグイン利用者への更新配信に必要）。エージェント定義・フック・CLAUDE.md は setup スキルが配布するため version 対象外。
+5. **プラグイン配下を変更したら version を上げる（plugin.json のみに書く）** — `plugins/` 配下の8プラグイン（software-pipeline・task-pipeline・knowledge-share・codex-bridge・ai-peer・agent-review-panel・self-improve・model-setup）の配信対象ファイル（`skills/`・`agents/`・`hooks/` 配下。これらは既定探索パスのためプラグイン導入で自動配信される）を変更したら、該当する `plugins/<name>/.claude-plugin/plugin.json` の `version` をセマンティックバージョニングで更新する。**version は plugin.json のみに書く**（`.claude-plugin/marketplace.json` 側には書かない — plugin.json が優先されるため二重管理は非推奨、公式仕様）。CLAUDE.md サンプル・`setup/settings.json` は setup スキルがコピー配布するため version 対象外。
 6. **ルートの `.claude/` はこのリポジトリ自身の作業用（dogfooding）** — 規約1の例外（`.claude-plugin/` と同様）。公式慣例「`.claude/` は単一プロジェクト自身のカスタマイズ用」に従い、**競合しない・非プラグインの**スキルだけを集約する（現状は templates/plan-mode 由来の create-plan / create-plan-calibrate）。プラグイン由来スキルや競合名スキル（notes / spec-extract / clarify）は複製しない（version 二重管理・二重ロードを避けるため）。notes / spec-extract の正本は `templates/implementation-skills/` の原本で、作業中はディレクトリスコープで自動ロードされる。root `.claude/skills/create-plan*` は `templates/plan-mode/.claude/skills/create-plan*` が正本であり、一方向（templates/plan-mode → root）にのみコピーする（`create-plan/` は SKILL.md と同梱 SPEC.md の両方をミラーする）。plan-mode 側を直接編集し、root 側だけを更新して差分が生じる状態を作らない。
-7. **プラグインのフック定義ファイルは2形式の配置を許容する** — `.claude/hooks.json`（codex-bridge・self-improve）と `.claude/hooks/hooks.json`（knowledge-share。フックスクリプトと同じディレクトリに同梱）のどちらも正規の配置で、`plugin.json` の `hooks` フィールドが実パスを指していれば Claude Code は認識する。配置を無理に統一しない。
+7. **プラグインの skills/agents/hooks は公式標準レイアウト（プラグインルート直下）に置く** — `<plugin>/skills/`・`<plugin>/agents/`・`<plugin>/hooks/hooks.json` が既定探索パスであり、plugin.json に `skills`/`hooks` フィールドを明示しない（宣言と実体の二重管理を避ける）。コピー導入用の `settings.json` サンプルはプラグインルート直下に置けない（Claude Code の予約パス）ため `<plugin>/setup/settings.json` に置く。software-pipeline・task-pipeline の `hooks/` は導入先リポジトリへコピーする資材であり、この配置自体はプラグインとして自動発火しない（pipeline-setup が対象リポジトリの `.claude/hooks/` へコピーし `.claude/settings.json` に配線する）。
 
 ---
 

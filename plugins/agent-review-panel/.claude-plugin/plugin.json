@@ -1,6 +1,6 @@
 {
   "name": "agent-review-panel",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "コード・計画・ドキュメントを複数ペルソナのサブエージェント（既定3名）にブラインド並列レビューさせ、相互批判→応答・譲歩→統合まで行う敵対的パネルレビュースキル1種（review-panel）とサブエージェント4種。deep 指定で引用検証と裁定者による最終裁定を追加。codex 指定で外部パネリスト（OpenAI Codex・任意）を混成できる。基本は依存ゼロで動く。",
   "author": {
     "name": "mrkxlia",
@@ -9,6 +9,5 @@
   "homepage": "https://github.com/mrkxlia/claude-code-workbench-ja/tree/main/plugins/agent-review-panel",
   "repository": "https://github.com/mrkxlia/claude-code-workbench-ja",
   "license": "MIT",
-  "keywords": ["review", "panel", "adversarial", "multi-agent", "subagents", "japanese"],
-  "skills": "./.claude/skills/"
+  "keywords": ["review", "panel", "adversarial", "multi-agent", "subagents", "japanese"]
 }

@@ -116,15 +116,15 @@ self-improve/
 ├── README.md
 ├── RESEARCH.md               # 関連研究・他実装の調査ノート
 ├── .claude-plugin/plugin.json
-└── .claude/
-    ├── skills/
-    │   ├── improve-scan/SKILL.md
-    │   └── improve-apply/SKILL.md
-    ├── hooks/
-    │   ├── si-session-end.sh     # SessionEnd: 検出してキューへ
-    │   └── si-session-start.sh   # SessionStart: 未処理件数＋経過日数を通知
-    ├── hooks.json                # 上記2フックを配線（プラグイン導入で自動ON）
-    └── settings.json             # 手動導入時の登録サンプル
+├── skills/
+│   ├── improve-scan/SKILL.md
+│   └── improve-apply/SKILL.md
+├── hooks/
+│   ├── si-session-end.sh     # SessionEnd: 検出してキューへ
+│   ├── si-session-start.sh   # SessionStart: 未処理件数＋経過日数を通知
+│   └── hooks.json            # 上記2フックを配線（プラグイン導入で自動ON）
+└── setup/
+    └── settings.json         # 手動導入時の登録サンプル
 ```
 
 ## 導入方法
@@ -143,11 +143,11 @@ self-improve/
 
 ```bash
 mkdir -p .claude/skills .claude/hooks
-cp -r self-improve/.claude/skills/*  .claude/skills/
-cp -r self-improve/.claude/hooks/*   .claude/hooks/
+cp -r plugins/self-improve/skills/*  .claude/skills/
+cp plugins/self-improve/hooks/si-session-start.sh plugins/self-improve/hooks/si-session-end.sh  .claude/hooks/
 ```
 
-> フックはコピーしただけでは動きません。`~/.claude/hooks/` に置き、`self-improve/.claude/settings.json`
+> フックはコピーしただけでは動きません。`~/.claude/hooks/` に置き、`plugins/self-improve/setup/settings.json`
 > のサンプルを参考に `~/.claude/settings.json` の `hooks.SessionStart`／`hooks.SessionEnd` に追記して
 > ください（`$HOME` ベース）。スキルだけ使う場合はコピーだけで動きます。フックは bash 系のため
 > Windows は Git Bash / WSL が必要・`jq` は不要です。

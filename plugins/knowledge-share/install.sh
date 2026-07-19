@@ -30,10 +30,10 @@ mkdir -p "$KB_DIR/topics" "$KB_DIR/queue" "$KB_DIR/bin"
 # cp -R src dest/ はコピー先に同名ディレクトリがあると dest/kb/kb と入れ子を作るため、
 # コピー先を作ってから「中身」をコピーする（再実行しても入れ子にならない＝冪等）
 mkdir -p "$CLAUDE_DIR/skills/kb" "$CLAUDE_DIR/skills/kb-harvest"
-cp -R "$SRC_DIR/.claude/skills/kb/."         "$CLAUDE_DIR/skills/kb/"
-cp -R "$SRC_DIR/.claude/skills/kb-harvest/." "$CLAUDE_DIR/skills/kb-harvest/"
-cp "$SRC_DIR/.claude/hooks/kb-session-start.sh" "$CLAUDE_DIR/hooks/"
-cp "$SRC_DIR/.claude/hooks/kb-session-end.sh"   "$CLAUDE_DIR/hooks/"
+cp -R "$SRC_DIR/skills/kb/."         "$CLAUDE_DIR/skills/kb/"
+cp -R "$SRC_DIR/skills/kb-harvest/." "$CLAUDE_DIR/skills/kb-harvest/"
+cp "$SRC_DIR/hooks/kb-session-start.sh" "$CLAUDE_DIR/hooks/"
+cp "$SRC_DIR/hooks/kb-session-end.sh"   "$CLAUDE_DIR/hooks/"
 cp "$SRC_DIR/bin/kb-extract-candidates.sh"      "$KB_DIR/bin/"
 
 chmod +x "$CLAUDE_DIR/hooks/kb-session-start.sh" \
@@ -76,7 +76,7 @@ if ! command -v jq >/dev/null 2>&1; then
   echo "    以下を ~/.claude/settings.json の hooks に手動で追記してください"
   echo "    （既存の SessionStart / SessionEnd 配列があれば、上書きせず要素を足す）:"
   echo ""
-  cat "$SRC_DIR/.claude/settings.json"
+  cat "$SRC_DIR/setup/settings.json"
   echo ""
   echo "==> 完了（settings.json は手動マージが必要）"
   exit 0

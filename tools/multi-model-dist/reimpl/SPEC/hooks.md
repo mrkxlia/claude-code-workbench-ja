@@ -1,6 +1,6 @@
 # SPEC: パイプライン系フック（T2h・ガード／通知）
 
-Track B（T2h）の共有仕様。**原本 `plugins/software-pipeline/.claude/hooks/*` ・ `plugins/task-pipeline/.claude/hooks/*` を一次根拠**に
+Track B（T2h）の共有仕様。**原本 `plugins/software-pipeline/hooks/*` ・ `plugins/task-pipeline/hooks/*` を一次根拠**に
 起こした派生ドキュメント。フックは「`.sh` 本体は tool-agnostic に見えても、**起動契機・入力契約・ブロック手段が CC 専用**」
 のため素コピーでは機能等価にならない（MAPPING T2h）。確度ラベル: `[確定]` / `[推定]` / `[要確認]`。
 

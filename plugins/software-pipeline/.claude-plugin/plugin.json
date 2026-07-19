@@ -1,6 +1,6 @@
 {
   "name": "software-pipeline",
-  "version": "2.4.1",
+  "version": "3.0.0",
   "description": "7つの専門エージェントで機能開発を流れ作業化する「ソフトウェアパイプライン」テンプレート。/software-pipeline:pipeline-setup が対象リポジトリを解析してエージェント・CLAUDE.md・フックを自動導入する。",
   "author": {
     "name": "mrkxlia",
@@ -9,6 +9,5 @@
   "homepage": "https://github.com/mrkxlia/claude-code-workbench-ja/tree/main/plugins/software-pipeline",
   "repository": "https://github.com/mrkxlia/claude-code-workbench-ja",
   "license": "MIT",
-  "keywords": ["workflow", "subagents", "software-pipeline", "japanese"],
-  "skills": "./.claude/skills/"
+  "keywords": ["workflow", "subagents", "software-pipeline", "japanese"]
 }

@@ -76,17 +76,16 @@ agent-review-panel/
 ├── README.md
 ├── .claude-plugin/
 │   └── plugin.json
-└── .claude/
-    ├── skills/
-    │   └── review-panel/
-    │       ├── SKILL.md               # /review-panel（プロトコル正本・ファシリテーター手順）
-    │       ├── personas.md            # ペルソナ6種（Task プロンプトへ注入するテンプレート）
-    │       └── report-template.md     # deep モードのレポート雛形
-    └── agents/
-        ├── panel-reviewer.md          # 汎用パネリスト（ペルソナ注入型・read-only）
-        ├── panel-codex.md             # 外部パネリスト（codex CLI を read-only 非対話で駆動）
-        ├── panel-verifier.md          # deep: 引用検証係（haiku・機械的照合のみ）
-        └── panel-judge.md             # deep: 裁定者（討論非関与の fresh context）
+├── skills/
+│   └── review-panel/
+│       ├── SKILL.md               # /review-panel（プロトコル正本・ファシリテーター手順）
+│       ├── personas.md            # ペルソナ6種（Task プロンプトへ注入するテンプレート）
+│       └── report-template.md     # deep モードのレポート雛形
+└── agents/
+    ├── panel-reviewer.md          # 汎用パネリスト（ペルソナ注入型・read-only）
+    ├── panel-codex.md             # 外部パネリスト（codex CLI を read-only 非対話で駆動）
+    ├── panel-verifier.md          # deep: 引用検証係（haiku・機械的照合のみ）
+    └── panel-judge.md             # deep: 裁定者（討論非関与の fresh context）
 ```
 
 ## 導入方法
@@ -104,8 +103,8 @@ agent-review-panel/
 
 ```bash
 mkdir -p .claude/skills .claude/agents
-cp -r agent-review-panel/.claude/skills/*  .claude/skills/
-cp -r agent-review-panel/.claude/agents/*  .claude/agents/
+cp -r plugins/agent-review-panel/skills/*  .claude/skills/
+cp -r plugins/agent-review-panel/agents/*  .claude/agents/
 ```
 
 グローバルに使いたい場合は `~/.claude/skills/`・`~/.claude/agents/` にコピーします。

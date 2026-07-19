@@ -1,6 +1,6 @@
 {
   "name": "codex-bridge",
-  "version": "1.2.2",
+  "version": "2.0.0",
   "description": "コードレビュー・実装・相談を OpenAI Codex に依頼するスキル4種とサブエージェント3種。ユーザー自身は Codex を操作せず、Claude Code が Codex CLI を非対話モードで駆動する（/codex-review・/codex-implement・/codex-ask）。プラン承認で Codex 実装へ委譲する opt-in フックと、Claude ルールを取り込む AGENTS.md ジェネレータ（/codex-agents）を同梱。",
   "author": {
     "name": "mrkxlia",
@@ -9,7 +9,5 @@
   "homepage": "https://github.com/mrkxlia/claude-code-workbench-ja/tree/main/plugins/codex-bridge",
   "repository": "https://github.com/mrkxlia/claude-code-workbench-ja",
   "license": "MIT",
-  "keywords": ["codex", "review", "subagents", "delegation", "japanese"],
-  "skills": "./.claude/skills/",
-  "hooks": "./.claude/hooks.json"
+  "keywords": ["codex", "review", "subagents", "delegation", "japanese"]
 }

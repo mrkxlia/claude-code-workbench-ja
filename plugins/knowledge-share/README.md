@@ -149,7 +149,7 @@ Claude Code でそのまま実行します（clone 不要）:
 
 ```bash
 git clone --depth 1 https://github.com/mrkxlia/claude-code-workbench-ja /tmp/workbench
-bash /tmp/workbench/knowledge-share/install.sh
+bash /tmp/workbench/plugins/knowledge-share/install.sh
 ```
 
 何度実行しても安全（冪等）です。既存のナレッジ・`CLAUDE.md`・他のフックは壊しません。
@@ -169,15 +169,15 @@ bash /tmp/workbench/knowledge-share/install.sh
 
    ```bash
    mkdir -p ~/.claude/skills ~/.claude/hooks ~/.claude/knowledge/{topics,queue,bin}
-   cp -R knowledge-share/.claude/skills/kb ~/.claude/skills/
-   cp -R knowledge-share/.claude/skills/kb-harvest ~/.claude/skills/
-   cp knowledge-share/.claude/hooks/kb-session-*.sh ~/.claude/hooks/
-   cp knowledge-share/bin/kb-extract-candidates.sh ~/.claude/knowledge/bin/
-   cp knowledge-share/templates/index.md ~/.claude/knowledge/index.md   # 既存があれば実行しない
+   cp -R plugins/knowledge-share/skills/kb ~/.claude/skills/
+   cp -R plugins/knowledge-share/skills/kb-harvest ~/.claude/skills/
+   cp plugins/knowledge-share/hooks/kb-session-*.sh ~/.claude/hooks/
+   cp plugins/knowledge-share/bin/kb-extract-candidates.sh ~/.claude/knowledge/bin/
+   cp plugins/knowledge-share/templates/index.md ~/.claude/knowledge/index.md   # 既存があれば実行しない
    chmod +x ~/.claude/hooks/kb-session-*.sh ~/.claude/knowledge/bin/kb-extract-candidates.sh
    ```
 
-3. **フックを `~/.claude/settings.json` に追記マージ** — `.claude/settings.json` の
+3. **フックを `~/.claude/settings.json` に追記マージ** — `plugins/knowledge-share/setup/settings.json` の
    サンプルを参考に、`hooks.SessionStart` / `hooks.SessionEnd` の**配列に要素を足す**。
    既存の settings がある場合の jq マージ例（配列を上書きしない）:
 
@@ -231,4 +231,4 @@ bash /tmp/workbench/knowledge-share/install.sh
 - `~/.claude/` は Windows では `%USERPROFILE%\.claude` に解決されます。
 - `settings.json` のフックは `bash "$HOME"/.claude/hooks/...` の形で配線します
   （Git Bash があれば Claude Code は `sh -c` でこの形を実行できます）。
-- `install.sh` も Git Bash / WSL から `bash knowledge-share/install.sh` で実行します。
+- `install.sh` も Git Bash / WSL から `bash plugins/knowledge-share/install.sh` で実行します。

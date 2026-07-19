@@ -209,17 +209,17 @@ English spec map them to [Verified]/[Inferred]/[Unknown] and adjust the legend
 line to match.
 Requirements are single testable sentences — "〜の場合、〜する" — not paragraphs.
 Concrete identifiers (file, function, test, error message) beat description.
-<!-- PIPELINE-INTEGRATION: この行より上は implementation-skills/.claude/skills/spec-extract/SKILL.md の原本と同一に保つ。
+<!-- PIPELINE-INTEGRATION: この行より上は templates/implementation-skills/.claude/skills/spec-extract/SKILL.md の原本と同一に保つ。
      原本を更新したら、この行より上をまるごと新しい原本で差し替え、この行以降は維持すること。
      この行以降は統合連携版（software-pipeline / task-pipeline 共通）であり、両プラグインのコピーを
      常にファイル全体でバイト同一に保つこと（片方だけ編集しない）。
      一致確認: diff <(awk '/PIPELINE-INTEGRATION/{exit} {print}' このファイル) 原本
-     全体一致確認: diff software-pipeline/.claude/skills/spec-extract/SKILL.md task-pipeline/.claude/skills/spec-extract/SKILL.md -->
+     全体一致確認: diff plugins/software-pipeline/skills/spec-extract/SKILL.md plugins/task-pipeline/skills/spec-extract/SKILL.md -->
 
 ## パイプライン連携（software-pipeline / task-pipeline 統合連携版）
 
 このコピーは software-pipeline（feature-pipeline）と task-pipeline の**両方で同一内容**の
-統合連携版。単体利用の原本は `implementation-skills/.claude/skills/spec-extract/` にある。
+統合連携版。単体利用の原本は `templates/implementation-skills/.claude/skills/spec-extract/` にある。
 
 ### モード判定（成果物がプログラムかそれ以外か）
 

@@ -90,8 +90,23 @@ class AgentIR:
 # ---------------------------------------------------------------------------
 # 走査
 # ---------------------------------------------------------------------------
+def _assets_root_of(section_dir: pathlib.Path) -> pathlib.Path | None:
+    """セクションディレクトリ配下の skills/agents 資産ルートを返す（無ければ None）。
+
+    新レイアウト（plugins/<name>/skills,agents）はセクション直下、
+    旧レイアウト（templates/<name>/.claude/skills,agents）は .claude/ 配下。
+    """
+    if (section_dir / "skills").is_dir() or (section_dir / "agents").is_dir():
+        return section_dir
+    claude = section_dir / ".claude"
+    if claude.is_dir():
+        return claude
+    return None
+
+
 def iter_section_claude_dirs(repo_root: pathlib.Path):
-    """各セクション配下の .claude ディレクトリを返す（plugins/<section>・templates/<section> の2階層走査。ルート直下 .claude は除外）。"""
+    """各セクション配下の資産ルートを返す（plugins/<section>・templates/<section> の2階層走査。
+    新旧レイアウト両対応。ルート直下 .claude は除外）。"""
     for group in SECTION_GROUPS:
         group_dir = repo_root / group
         if not group_dir.is_dir():
@@ -99,9 +114,9 @@ def iter_section_claude_dirs(repo_root: pathlib.Path):
         for child in sorted(group_dir.iterdir()):
             if not child.is_dir() or child.name in EXCLUDE_TOP:
                 continue
-            claude = child / ".claude"
-            if claude.is_dir():
-                yield child.name, claude
+            assets = _assets_root_of(child)
+            if assets is not None:
+                yield child.name, assets
 
 
 def find_section_root(repo_root: pathlib.Path, section: str) -> pathlib.Path:
@@ -111,6 +126,27 @@ def find_section_root(repo_root: pathlib.Path, section: str) -> pathlib.Path:
         if candidate.is_dir():
             return candidate
     raise FileNotFoundError(f"section not found under {SECTION_GROUPS}: {section}")
+
+
+def assets_root(repo_root: pathlib.Path, section: str) -> pathlib.Path:
+    """セクションの skills/agents 資産ルートを返す（新レイアウトはセクション直下、旧レイアウトは .claude/ 配下）。"""
+    root = find_section_root(repo_root, section)
+    found = _assets_root_of(root)
+    if found is None:
+        raise FileNotFoundError(f"no skills/agents assets under: {root}")
+    return found
+
+
+def skill_source_rel(repo_root: pathlib.Path, section: str, name: str) -> str:
+    """センチネル等に出す、スキル SKILL.md の原本相対パス文字列（新旧レイアウト両対応）。"""
+    rel_assets = assets_root(repo_root, section).relative_to(repo_root)
+    return f"{rel_assets}/skills/{name}/SKILL.md"
+
+
+def agent_source_rel(repo_root: pathlib.Path, section: str, name: str) -> str:
+    """センチネル等に出す、エージェント定義の原本相対パス文字列（新旧レイアウト両対応）。"""
+    rel_assets = assets_root(repo_root, section).relative_to(repo_root)
+    return f"{rel_assets}/agents/{name}.md"
 
 
 def load_skill(section: str, skill_md: pathlib.Path) -> SkillIR:
