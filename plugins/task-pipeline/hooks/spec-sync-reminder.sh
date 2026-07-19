@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# SYNCED by tools/skill-sync — DO NOT EDIT. source: plugins/software-pipeline/hooks/spec-sync-reminder.sh
 # spec-sync-reminder.sh — SPEC.md（生きた仕様）の未同期をやさしく知らせる通知フック
 #
 # SessionStart / Stop イベントで呼ばれ、SPEC.md が最後に更新されたコミット以降に

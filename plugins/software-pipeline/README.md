@@ -192,46 +192,21 @@ flowchart TD
   **`/spec-extract` → SPEC.md を人間レビュー → `/feature-pipeline`**
 
 <details>
-<summary><b>原本との同期ルール</b>（implementation-skills 原本との差分確認コマンド）</summary>
+<summary><b>原本との同期ルール</b>（<code>tools/skill-sync</code> による機械生成）</summary>
 
 - **単体で使いたい**（パイプラインを導入しないプロジェクト・単発の実装）→ [`implementation-skills/`](../../templates/implementation-skills/) の**原本**をコピーする
 - **パイプラインで使う** → このセクションのパイプライン連携版を使う（`/pipeline-setup` が自動配布します）
 
-パイプライン連携版は「原本の完全コピー + 末尾の `PIPELINE-INTEGRATION` マーカー以降に**統合連携
-セクション（software-pipeline / task-pipeline 共通・モード自動判定）**」という構造です。
-連携版は**両プラグインでファイル全体がバイト同一**です（どちらの名前空間で解決されても挙動が
-同じため、同名スキルの競合が無害になります）。**原本を更新したら、両連携版でマーカーより上を
-新しい原本でまるごと差し替え、連携セクションを編集するときは必ず両方へ同じ内容をコピーして
-ください**（原本1つ → 同一の連携版2つ）。
-一致確認は「マーカーで切る awk 方式（原本一致）」と「全文 diff（両版同一）」の2段で行います
-（いずれも出力が空なら一致）:
+パイプライン連携版（`notes`・`spec-extract`）とこのプラグインの `clarify` の task-pipeline 側コピーは、
+[`tools/skill-sync/sync.py`](../../tools/skill-sync/sync.py) が原本（[`implementation-skills/`](../../templates/implementation-skills/) と
+このディレクトリの `clarify`）から機械生成する派生ファイルです。**派生ファイルを直接編集しない**
+（先頭に `SYNCED by tools/skill-sync — DO NOT EDIT` の注記があります）。原本または
+`tools/skill-sync/fragments/*.md`（パイプライン連携セクション本文）を編集したら、リポジトリルートで
+以下を実行してください:
 
 ```bash
-# bash（Git Bash / WSL / Mac / Linux）
-for s in notes spec-extract; do
-  orig=templates/implementation-skills/.claude/skills/$s/SKILL.md
-  for link in software-pipeline task-pipeline; do
-    diff <(awk '/PIPELINE-INTEGRATION/{exit} {print}' "plugins/$link/skills/$s/SKILL.md") "$orig" \
-      && echo "OK  $s ($link)"
-  done
-done
-# 両プラグインの連携版が全文一致していること（clarify 含む3スキル）
-for s in notes spec-extract clarify; do
-  diff plugins/software-pipeline/skills/$s/SKILL.md plugins/task-pipeline/skills/$s/SKILL.md \
-    && echo "OK  $s (両版同一)"
-done
-```
-
-```powershell
-# PowerShell（純 Windows・上と同等）
-foreach ($s in 'notes','spec-extract') {
-  $orig = Get-Content "templates/implementation-skills/.claude/skills/$s/SKILL.md"
-  foreach ($link in 'software-pipeline','task-pipeline') {
-    $lines = Get-Content "plugins/$link/skills/$s/SKILL.md"
-    $cut = ($lines | Select-String -SimpleMatch 'PIPELINE-INTEGRATION' | Select-Object -First 1).LineNumber - 1
-    if (-not (Compare-Object $lines[0..($cut-1)] $orig)) { "OK  $s ($link)" }
-  }
-}
+python3 tools/skill-sync/sync.py          # 原本 → 派生ファイルを再生成
+python3 tools/skill-sync/sync.py --check  # 派生が原本と同期済みかだけ検証（CI で使用）
 ```
 
 </details>

@@ -106,11 +106,14 @@ claude-code-workbench-ja/
 │       ├── README.md
 │       └── CLAUDE.md
 ├── tools/                           # 独立ツール・CC資産の配布パイプライン
-│   └── multi-model-dist/            #   CC 資産を Codex/Kiro へ配布（原本不変・生成＝Track A／SPEC 再実装＝Track B）
-│       ├── README.md / MAPPING.md   #     対応表・ティア監査・配置パス確定・本文用語写像
-│       ├── generators/              #     単一パイプライン（bin/export.sh・lib/convert.py＋serializers/・作業用 export スキル）
-│       ├── examples/                #     生成結果ゴールデン（build/・dist/ は .gitignore）
-│       └── reimpl/                  #     Track B（SPEC 共有→各ツール再実装）※段階導入
+│   ├── multi-model-dist/            #   CC 資産を Codex/Kiro へ配布（原本不変・生成＝Track A／SPEC 再実装＝Track B）
+│   │   ├── README.md / MAPPING.md   #     対応表・ティア監査・配置パス確定・本文用語写像
+│   │   ├── generators/              #     単一パイプライン（bin/export.sh・lib/convert.py＋serializers/・作業用 export スキル）
+│   │   ├── examples/                #     生成結果ゴールデン（build/・dist/ は .gitignore）
+│   │   └── reimpl/                  #     Track B（SPEC 共有→各ツール再実装）※段階導入
+│   └── skill-sync/                  #   リポジトリ内の複製スキル/フックを原本から機械生成（sync.py・fragments/）
+│       ├── sync.py                  #     原本→派生を生成／--check で CI 検証
+│       └── fragments/               #     notes・spec-extract のパイプライン連携セクション（単一ソース）
 └── docs/                            # リポジトリ内ドキュメント置き場
     ├── README.md
     ├── pipeline-spec-alignment-proposal.html  #   パイプラインと仕様整合の提案資料
@@ -127,7 +130,7 @@ claude-code-workbench-ja/
 3. **リポジトリ全体の言語は日本語** — README.md・CLAUDE.md など、このリポジトリ自体のドキュメントは日本語で記述する。
 4. **マーケットプレイス定義はルートの `.claude-plugin/` に置く** — Claude Code プラグイン仕様上の必須配置であり、規約1の例外。
 5. **プラグイン配下を変更したら version を上げる（plugin.json のみに書く）** — `plugins/` 配下の8プラグイン（software-pipeline・task-pipeline・knowledge-share・codex-bridge・ai-peer・agent-review-panel・self-improve・model-setup）の配信対象ファイル（`skills/`・`agents/`・`hooks/` 配下。これらは既定探索パスのためプラグイン導入で自動配信される）を変更したら、該当する `plugins/<name>/.claude-plugin/plugin.json` の `version` をセマンティックバージョニングで更新する。**version は plugin.json のみに書く**（`.claude-plugin/marketplace.json` 側には書かない — plugin.json が優先されるため二重管理は非推奨、公式仕様）。CLAUDE.md サンプル・`setup/settings.json` は setup スキルがコピー配布するため version 対象外。
-6. **ルートの `.claude/` はこのリポジトリ自身の作業用（dogfooding）** — 規約1の例外（`.claude-plugin/` と同様）。公式慣例「`.claude/` は単一プロジェクト自身のカスタマイズ用」に従い、**競合しない・非プラグインの**スキルだけを集約する（現状は templates/plan-mode 由来の create-plan / create-plan-calibrate）。プラグイン由来スキルや競合名スキル（notes / spec-extract / clarify）は複製しない（version 二重管理・二重ロードを避けるため）。notes / spec-extract の正本は `templates/implementation-skills/` の原本で、作業中はディレクトリスコープで自動ロードされる。root `.claude/skills/create-plan*` は `templates/plan-mode/.claude/skills/create-plan*` が正本であり、一方向（templates/plan-mode → root）にのみコピーする（`create-plan/` は SKILL.md と同梱 SPEC.md の両方をミラーする）。plan-mode 側を直接編集し、root 側だけを更新して差分が生じる状態を作らない。
+6. **ルートの `.claude/` はこのリポジトリ自身の作業用（dogfooding）** — 規約1の例外（`.claude-plugin/` と同様）。公式慣例「`.claude/` は単一プロジェクト自身のカスタマイズ用」に従い、**競合しない・非プラグインの**スキルだけを集約する（現状は templates/plan-mode 由来の create-plan / create-plan-calibrate）。プラグイン由来スキルや競合名スキル（notes / spec-extract / clarify）は複製しない（version 二重管理・二重ロードを避けるため）。**リポジトリ内で重複管理している派生ファイル（notes・spec-extract の両パイプライン連携版、software-pipeline の clarify → task-pipeline、templates/plan-mode の create-plan・create-plan-calibrate → root `.claude/skills/`、software-pipeline の spec-sync-reminder.{sh,ps1} → task-pipeline）は `tools/skill-sync/sync.py` が原本から機械生成する**。原本または `tools/skill-sync/fragments/*.md`（パイプライン連携セクション本文）のみを編集し、`python3 tools/skill-sync/sync.py` を実行して派生を更新する（`--check` は CI で使う検証専用モード）。派生ファイル自体を直接編集しない（先頭の `SYNCED by tools/skill-sync` 注記がその旨を明示する）。
 7. **プラグインの skills/agents/hooks は公式標準レイアウト（プラグインルート直下）に置く** — `<plugin>/skills/`・`<plugin>/agents/`・`<plugin>/hooks/hooks.json` が既定探索パスであり、plugin.json に `skills`/`hooks` フィールドを明示しない（宣言と実体の二重管理を避ける）。コピー導入用の `settings.json` サンプルはプラグインルート直下に置けない（Claude Code の予約パス）ため `<plugin>/setup/settings.json` に置く。software-pipeline・task-pipeline の `hooks/` は導入先リポジトリへコピーする資材であり、この配置自体はプラグインとして自動発火しない（pipeline-setup が対象リポジトリの `.claude/hooks/` へコピーし `.claude/settings.json` に配線する）。
 
 ---

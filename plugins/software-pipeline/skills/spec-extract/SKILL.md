@@ -16,6 +16,7 @@ description: >-
   "SPEC を直したい", "要件が変わった", "この仕様はもう古い". Can be invoked
   manually as /spec-extract [target path].
 ---
+<!-- SYNCED by tools/skill-sync — DO NOT EDIT. source: templates/implementation-skills/.claude/skills/spec-extract/SKILL.md -->
 
 # Spec Extraction (/spec-extract)
 
@@ -209,12 +210,10 @@ English spec map them to [Verified]/[Inferred]/[Unknown] and adjust the legend
 line to match.
 Requirements are single testable sentences — "〜の場合、〜する" — not paragraphs.
 Concrete identifiers (file, function, test, error message) beat description.
-<!-- PIPELINE-INTEGRATION: この行より上は templates/implementation-skills/.claude/skills/spec-extract/SKILL.md の原本と同一に保つ。
-     原本を更新したら、この行より上をまるごと新しい原本で差し替え、この行以降は維持すること。
-     この行以降は統合連携版（software-pipeline / task-pipeline 共通）であり、両プラグインのコピーを
-     常にファイル全体でバイト同一に保つこと（片方だけ編集しない）。
-     一致確認: diff <(awk '/PIPELINE-INTEGRATION/{exit} {print}' このファイル) 原本
-     全体一致確認: diff plugins/software-pipeline/skills/spec-extract/SKILL.md plugins/task-pipeline/skills/spec-extract/SKILL.md -->
+<!-- PIPELINE-INTEGRATION: この行より上は原本（sentinel の source: 参照）と同一に保つ。
+     このファイルは tools/skill-sync が原本 + tools/skill-sync/fragments/spec-extract-pipeline-integration.md
+     から生成する派生物。直接編集せず、原本または fragment を編集して
+     `python3 tools/skill-sync/sync.py` を実行すること（`--check` は CI で検証のみ行う）。 -->
 
 ## パイプライン連携（software-pipeline / task-pipeline 統合連携版）
 

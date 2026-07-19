@@ -1,4 +1,5 @@
 ﻿# spec-sync-reminder.ps1 — spec-sync-reminder.sh の PowerShell 同等版（SessionStart / Stop）
+# SYNCED by tools/skill-sync — DO NOT EDIT. source: plugins/software-pipeline/hooks/spec-sync-reminder.ps1
 #
 # bash が無い純 Windows/PowerShell 環境向け。挙動は .sh と一致させる:
 #   SPEC.md 最終更新コミット以降にソース/成果物が変わっていれば stderr で非ブロッキング通知。
