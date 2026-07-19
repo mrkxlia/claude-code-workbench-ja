@@ -6,8 +6,10 @@ description: >-
   まとめる。feature-pipeline スキルの Phase 3（Brief）で起動される。
   出力は人間承認チェックポイント2の対象であり、承認されるまで1ファイルも変更されない。
 tools: Read, Grep, Glob
-# 設計ミスが最も高くつく工程のため opus を推奨。opus を使わない環境では inherit に変更する
-model: opus
+# 既定は inherit（プラグイン直接導入でも opus 契約の有無に関わらず動く）。
+# 設計ミスが最も高くつく工程のため、opus が使える環境では pipeline-setup が
+# Step 0-4 の確認を経て model: opus に書き換える（推奨・高品質）。
+model: inherit
 color: purple
 ---
 

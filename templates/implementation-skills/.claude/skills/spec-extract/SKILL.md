@@ -1,99 +1,91 @@
 ---
 name: spec-extract
 description: >-
-  Reverse-engineer a specification (SPEC.md) from existing code, tests, and
-  documents, with every statement labeled by confidence and anchored to
-  evidence. Trigger whenever the user wants to document, understand, or hand
-  off existing code: phrases like "仕様書を作って", "仕様をまとめて",
-  "このコードは何をしている", "ドキュメント化", "リバースエンジニアリング",
-  "write a spec for this", "document this codebase/module/script", "handoff
-  docs", or when preparing to refactor / rewrite / migrate legacy code and no
-  written spec exists. Also trigger before large refactors when the user wants
-  to pin down current behavior first. **Also use this skill to revise / update an
-  existing SPEC.md** as the living spec of record when requirements or behavior
-  change midway — add / change / deprecate requirements with revision history —
-  triggering on phrases like "仕様を変更したい", "要件を改訂したい", "仕様を更新",
-  "SPEC を直したい", "要件が変わった", "この仕様はもう古い". Can be invoked
-  manually as /spec-extract [target path].
+  既存コード・テスト・ドキュメントから仕様書（SPEC.md）を逆引き生成するスキル。全ての記述に
+  確度ラベル（[確定]/[推定]/[不明]）を付け、根拠に紐づける。既存コードの文書化・理解・引き継ぎを
+  したいとき（「仕様書を作って」「仕様をまとめて」「このコードは何をしている」「ドキュメント化」
+  「リバースエンジニアリング」等）や、仕様書の無いレガシーコードをリファクタ/書き換え/移行する
+  前に発動する。大きなリファクタの前に現状の挙動を固定したいときにも使う。**要件・挙動が途中で
+  変わったとき、既存 SPEC.md を生きた spec of record として改訂・更新する**用途にも使う
+  （要件の追加/変更/廃止＋改訂履歴。「仕様を変更したい」「要件を改訂したい」「仕様を更新」
+  「SPEC を直したい」「要件が変わった」「この仕様はもう古い」等）。手動では /spec-extract
+  [対象パス] で起動できる。
 ---
 
-# Spec Extraction (/spec-extract)
+# 仕様逆引き（/spec-extract）
 
-Recover a written specification from an existing implementation. The output is
-a `SPEC.md` where **every requirement is traceable to evidence** (a file:line,
-a test, a doc) and **labeled by confidence**. The cardinal rule: never present
-a guess as a fact. 推測ではなく物証。
+既存の実装から書かれた仕様書を復元する。出力は `SPEC.md` で、**全ての要件が根拠に追跡可能**
+（file:line・テスト・ドキュメント）で**確度ラベル**が付く。鉄則: 推測を事実として提示しない。
+推測ではなく物証。
 
-## Core principle: three confidence levels
+## 中核原則: 3段階の確度
 
-Every statement in the recovered spec carries exactly one label:
+逆引きした仕様の全ての記述は、必ず1つのラベルを持つ:
 
-| Label | Meaning | Backed by |
+| ラベル | 意味 | 根拠 |
 |---|---|---|
-| `[確定]` | Verified behavior | Code that demonstrably does it, or a passing test asserting it |
-| `[推定]` | Inferred intent | Comments, docs, naming, commit messages, implementation-notes.md — plausible but not proven by code/tests |
-| `[不明]` | Open question | Could not determine; needs the user or original author |
+| `[確定]` | 検証済みの挙動 | それを実証しているコード、またはそれを検証するパスするテスト |
+| `[推定]` | 意図の推測 | コメント・ドキュメント・命名・コミットメッセージ・implementation-notes.md — もっともらしいがコード/テストでは未証明 |
+| `[不明]` | 未解決の質問 | 判別不能。ユーザーか原著者への確認が必要 |
 
-A spec with honest `[不明]` entries is more useful than a confident-sounding
-spec that's wrong. The open-questions list is a deliverable, not an apology.
+正直に `[不明]` を含む仕様書は、自信ありげだが間違っている仕様書より有用。未解決の質問リストは
+成果物であって、詫び言葉ではない。
 
-A test counts as `[確定]` evidence only if it passes. Run the test suite when
-feasible; if you didn't run it, say so on the 凡例 line (e.g. 「テスト未実行」).
-Never cite a failing test as `[確定]` evidence — a failing test is itself an
-open question for section 8.
+テストは**パスしている場合のみ** `[確定]` の根拠になる。可能ならテストスイートを実行する。
+実行していない場合は凡例行にその旨を書く（例:「テスト未実行」）。失敗しているテストを `[確定]`
+の根拠として引用しない — 失敗しているテストはそれ自体が section 8 の未解決の質問になる。
 
-## Workflow
+## ワークフロー
 
-### 1. Scope (keep it light)
+### 1. スコープ確認（軽く）
 
-Determine: target (which code/dir/module), depth (overview vs. full behavioral
-spec), and audience (next maintainer? reviewer? a rewrite in another stack?).
-If the user's request makes these obvious, don't ask — state your assumption in
-one line and proceed. If genuinely ambiguous, ask **one** question, not a list.
+対象（どのコード/ディレクトリ/モジュールか）・深さ（概観か完全な挙動仕様か）・読者（次の
+メンテナ？レビュアー？別スタックへの書き換え？）を確定する。ユーザーの依頼から自明なら
+質問せず、前提を一行で述べて進める。本当に曖昧なときだけ**1問だけ**質問する（複数質問の
+リストにしない）。
 
-### 2. Evidence inventory
+### 2. 証拠の棚卸し
 
-Before reading code in depth, map the evidence sources. Cheap, high-yield first:
+コードを深く読む前に、証拠源をマッピングする。安価で高利回りなものから:
 
-1. `implementation-notes.md` / `docs/` / `README` / design docs — intent and decisions
-2. **Tests** — each test is a spec assertion someone cared enough to write
-3. Entry points — `main`, CLI definitions, route tables, exported API surface
-4. Configs, schemas, type definitions, constants — constraints and data model
-5. The implementation itself
-6. Commit history (if available) — for "why" on suspicious spots only; don't read it all
+1. `implementation-notes.md` / `docs/` / `README` / 設計文書 — 意図と判断
+2. **テスト** — 各テストは誰かがわざわざ書いた仕様の主張
+3. エントリポイント — `main`、CLI 定義、ルーティングテーブル、公開 API 表面
+4. 設定・スキーマ・型定義・定数 — 制約とデータモデル
+5. 実装そのもの
+6. コミット履歴（あれば） — 怪しい箇所の「なぜ」だけに使う。全部読まない
 
-Note what's *missing* too (no tests for module X) — that becomes spec risk later.
+*欠けているもの*にも気付く（モジュール X にテストが無い、等）— これは後で仕様リスクになる。
 
-### 3. Extraction passes
+### 3. 抽出パス
 
-Work through these lenses; each produces requirement candidates:
+以下の観点で読み進める。それぞれが要件候補を生む:
 
-- **Behavior**: inputs → outputs → side effects, per entry point. What does it
-  read, write, call, mutate?
-- **Contracts**: translate each meaningful test into a requirement sentence.
-  Test name + assertion = `[確定]` requirement with the test as evidence.
-- **Data**: structures, formats, schemas, units, encodings, valid ranges.
-- **Errors & edges**: what is caught, retried, validated, rejected; what happens
-  on bad input; idempotency; ordering assumptions.
-- **Constraints**: versions, OS/environment assumptions, external services,
-  performance-relevant choices (timeouts, batch sizes, limits).
-- **Intent**: from comments/docs/notes — record as `[推定]` unless code confirms.
+- **挙動**: エントリポイントごとの 入力 → 出力 → 副作用。何を読み・書き・呼び・変更するか
+- **契約**: 意味のあるテストをそれぞれ要件文に翻訳する。テスト名＋アサーション ＝ そのテストを
+  根拠とする `[確定]` 要件
+- **データ**: 構造体・フォーマット・スキーマ・単位・エンコーディング・有効範囲
+- **エラー・エッジケース**: 何を捕捉・リトライ・検証・拒否するか。不正入力時の挙動。冪等性。
+  順序の前提
+- **制約**: バージョン・OS/環境の前提・外部サービス・性能に関わる選択（タイムアウト・
+  バッチサイズ・上限）
+- **意図**: コメント/ドキュメント/ノートから。コードで確認できない限り `[推定]` として記録
 
-While reading, when code and docs disagree, **the code wins for behavior** —
-record the doc's claim as a `[推定]` intent and the discrepancy as an open
-question (was the doc aspirational, or is this a bug?).
+読んでいてコードとドキュメントが食い違う場合、**挙動についてはコードが勝つ** — ドキュメントの
+主張は `[推定]` の意図として記録し、食い違い自体は未解決の質問にする（ドキュメントが願望的
+だったのか、それともこれはバグなのか）。
 
-### 4. Write SPEC.md
+### 4. SPEC.md を書く
 
-Use this structure; omit sections that genuinely don't apply:
+この構造を使い、本当に該当しないセクションは省く:
 
 ```markdown
-# <Target> 仕様書（逆引き）
+# <対象> 仕様書（逆引き）
 生成日: YYYY-MM-DD ／ 対象: <path, commit hash if available>
 凡例: [確定]=コード/テストで実証 [推定]=意図の推測 [不明]=未確認
 
 ## 1. 概要
-<3–6 lines: what this is, who calls it, why it exists>
+<3〜6行: これは何か、誰が呼ぶか、なぜ存在するか>
 
 ## 2. スコープ
 含む: … ／ 含まない: …
@@ -101,16 +93,16 @@ Use this structure; omit sections that genuinely don't apply:
 ## 3. 機能要件
 | ID | 要件 | 確度 | 根拠 |
 |----|------|------|------|
-| F-01 | <one-sentence requirement> | 確定 | `src/x.py:42`, `test_x.py::test_y` |
+| F-01 | <一文で書ける要件> | 確定 | `src/x.py:42`, `test_x.py::test_y` |
 
 ## 4. データ / インターフェース
-<schemas, file formats, API/CLI/DSL surface — with evidence refs>
+<スキーマ・ファイル形式・API/CLI/DSL の表面 — 根拠つき>
 
 ## 5. エラー処理・エッジケース
-<validated/rejected inputs, retries, failure behavior>
+<検証/拒否される入力、リトライ、失敗時の挙動>
 
 ## 6. 制約・前提
-<versions, environment, external dependencies, limits>
+<バージョン・環境・外部依存・上限>
 
 ## 7. テストカバレッジとの突合
 - テストに裏付けられた要件: F-01, F-03, …
@@ -125,87 +117,79 @@ Use this structure; omit sections that genuinely don't apply:
 - YYYY-MM-DD F-03 変更 — 〜の挙動が〜に変わったため（根拠: `src/x.py:88`）
 ```
 
-Requirement IDs (`F-01`…) exist so the user can answer open questions by ID and
-so a later rewrite can check itself off against the list.
+要件ID（`F-01`…）は、ユーザーが未解決の質問にID指定で答えられるように、また後の書き換えが
+このリストと突き合わせて自己確認できるようにするためのもの。
 
-### 5. Cross-check before delivering
+### 5. 納品前のクロスチェック
 
-This pass is what makes the spec trustworthy:
+この工程が仕様書を信頼できるものにする:
 
-1. **Tests → spec**: every meaningful test maps to some requirement. Orphan
-   tests go to section 7 as "見落とし候補".
-2. **Spec → tests**: every `[確定]` requirement cites real evidence — actually
-   open the file/line you cite; don't cite from memory.
-3. **Untested behavior**: `[確定]` requirements backed only by code (no test)
-   get flagged in section 7 — these are exactly the behaviors a refactor will
-   silently break.
-4. Anything you couldn't verify gets demoted to `[推定]` or `[不明]`. When in
-   doubt, demote.
+1. **テスト → 仕様**: 意味のあるテストは全て何らかの要件に対応させる。対応しない孤児テストは
+   section 7 に「見落とし候補」として載せる
+2. **仕様 → テスト**: `[確定]` の要件は全て実在する根拠を引用する — 引用するファイル/行は
+   実際に開いて確認する。記憶から引用しない
+3. **未テストの挙動**: コードだけを根拠とする（テスト無し）`[確定]` 要件は section 7 で
+   フラグを立てる — これはリファクタが黙って壊しかねない挙動そのもの
+4. 検証できなかったものは `[推定]` または `[不明]` に格下げする。迷ったら格下げする
 
 ### 6. clarify パス（対話時のみ — 読むだけで終わらせない）
 
-Reading evidence alone leaves `[不明]` and shaky `[推定]` entries. In an
-interactive session, **resolve them with the user before delivering** — gently
-and thoroughly. This is the `clarify` *protocol embedded here* (not a separate
-skill invocation):
+証拠を読むだけでは `[不明]` と怪しい `[推定]` のエントリが残る。対話セッションでは、
+納品前に**ユーザーと一緒にそれらを解消する** — 丁寧に、徹底的に。これは `clarify` の
+*プロトコルをここに埋め込んだもの*（別スキル呼び出しではない）:
 
-1. Take the `[不明]` list (section 8) and the weakest `[推定]` items.
-2. Ask **one question at a time**, each with a **recommended answer and why**.
-   Wait for the reply before the next — don't batch. Push back on vague answers.
-3. Turn each confirmed answer into a `[確定]`/`[推定]` requirement, citing the
-   user as evidence (`確認: user, YYYY-MM-DD`).
-4. End with one **catch-all** question to cover what the code can't show:
-   「証拠に現れていないが、確認しておくべき暗黙の要望・前提・将来意図は
-   ありますか？」 — surface tacit needs, not just labeled gaps.
-5. Update section 8: promote resolved items to requirements; keep the rest with
-   their 確認先.
+1. `[不明]` リスト（section 8）と最も弱い `[推定]` 項目を取り出す
+2. **一問ずつ**質問する。それぞれに**推奨回答とその理由**を添える。バッチにせず、返答を
+   待ってから次へ。曖昧な回答には突っ込む
+3. 確認できた回答をそれぞれ `[確定]`/`[推定]` 要件に変え、ユーザーを根拠として引用する
+   （`確認: user, YYYY-MM-DD`）
+4. 最後に**総括の質問**を1つ添え、証拠に現れない部分をカバーする:
+   「証拠に現れていないが、確認しておくべき暗黙の要望・前提・将来意図はありますか？」 —
+   ラベル付きの穴だけでなく、暗黙のニーズも表に出す
+5. section 8 を更新する: 解消した項目は要件に昇格させ、残りは確認先つきで残す
 
-**Headless / batch（`claude -p` など対話できない場合）はこのパスをスキップ**し、
-`[不明]` を section 8 の成果物としてそのまま残す（推測を `[確定]` にしない＝物証主義）。
+**Headless / batch（`claude -p` など対話できない場合）はこのパスをスキップ**し、`[不明]` を
+section 8 の成果物としてそのまま残す（推測を `[確定]` にしない＝物証主義）。
 
-### 7. Deliver
+### 7. 納品
 
-Present the SPEC.md, then summarize in a few lines: how many requirements,
-the confidence breakdown (e.g. 確定 18 / 推定 5 / 不明 3), and the top 1–2 open
-questions worth answering first. Don't restate the whole spec in chat.
+SPEC.md を提示し、数行で要約する: 要件数、確度の内訳（例: 確定 18 / 推定 5 / 不明 3）、
+最初に答える価値のある未解決の質問トップ1〜2件。チャットで仕様全体を再掲しない。
 
-## Where the file lives
+## ファイルの置き場所
 
-- Default: `SPEC.md` next to the target (repo root or the module's folder).
-- If a spec already exists, do **not** overwrite it — write
-  `SPEC-recovered.md` and note discrepancies against the original as open
-  questions.
+- 既定: 対象の隣（リポジトリルートまたはモジュールのフォルダ）の `SPEC.md`
+- 既に仕様書がある場合は**上書きしない** — `SPEC-recovered.md` を書き、元のものとの食い違いを
+  未解決の質問として記す
 
 ## 生きた仕様として維持する（増分更新・変更管理）
 
-A recovered `SPEC.md` is not a one-shot artifact — keep it as the **living spec
-of record**. After the first reverse pass, update it incrementally as the code
-changes (a spec rots the moment a decision lands without updating it):
+逆引きした `SPEC.md` は一度きりの成果物ではない — **生きた spec of record** として維持する。
+最初の逆引きの後、コードが変わるたびに増分更新する（判断が反映されずに着地した瞬間、仕様は
+陳腐化し始める）:
 
-- **追加** — new behavior → a new `F-NN` row with evidence.
-- **変更** — behavior changed → **keep the same `F-NN` id**, rewrite the
-  requirement sentence, and record what changed and why. Don't silently overwrite.
-- **廃止** — behavior removed → mark the row `[廃止]`（superseded）with the date
-  and the replacing `F-NN` if any. Keep the history; don't delete the row.
-- Every change appends one line to **section 9 改訂履歴**:
-  `YYYY-MM-DD F-NN 追加/変更/廃止 — 理由`.
+- **追加** — 新しい挙動 → 根拠つきの新しい `F-NN` 行
+- **変更** — 挙動が変わった → **同じ `F-NN` id を維持**し、要件文を書き直し、何がなぜ
+  変わったかを記録する。黙って上書きしない
+- **廃止** — 挙動が削除された → その行を `[廃止]`（supersede）にし、日付と（あれば）
+  置き換え先の `F-NN` を書く。履歴は残す。行を削除しない
+- 変更のたびに**section 9 改訂履歴**へ1行追記する:
+  `YYYY-MM-DD F-NN 追加/変更/廃止 — 理由`
 
-A small, out-of-band edit only needs the affected `F-NN` row touched — not a
-full re-extraction. This keeps the spec a contract that evolves with the code.
+小さな帯域外の編集は該当する `F-NN` 行だけ触れればよく、完全な再抽出は不要。これにより
+仕様書はコードとともに進化する契約であり続ける。
 
-## Scaling to large targets
+## 大規模対象への対応
 
-For anything beyond a few thousand lines, don't read linearly. Spec one entry
-point / module at a time, deepest-value first (the part the user wants to
-refactor or hand off). It's fine to deliver a complete spec for one module with
-section 2 explicitly listing the rest as out of scope — better than a shallow
-spec of everything.
+数千行を超える対象では、線形に読まない。エントリポイント/モジュールを1つずつ、価値の
+深いもの（ユーザーがリファクタ/引き継ぎしたい部分）から仕様化する。1モジュール分の完全な
+仕様書を納品し、section 2 で残りを明示的にスコープ外とするのはよい判断 — 全体の浅い仕様書
+より優れている。
 
-## Style
+## 文体
 
-Write the spec in the user's language (Japanese if they write Japanese).
-For a Japanese spec use the labels as written ([確定]/[推定]/[不明]); for an
-English spec map them to [Verified]/[Inferred]/[Unknown] and adjust the legend
-line to match.
-Requirements are single testable sentences — "〜の場合、〜する" — not paragraphs.
-Concrete identifiers (file, function, test, error message) beat description.
+ユーザーの言語で仕様書を書く（ユーザーが日本語で書くなら日本語で）。日本語の仕様書では
+ラベルをそのまま使う（[確定]/[推定]/[不明]）。英語の仕様書では [Verified]/[Inferred]/[Unknown]
+に写像し、凡例行もそれに合わせる。
+要件は検証可能な一文 — 「〜の場合、〜する」— であり、段落ではない。
+具体的な識別子（ファイル・関数・テスト・エラーメッセージ）は説明に勝る。

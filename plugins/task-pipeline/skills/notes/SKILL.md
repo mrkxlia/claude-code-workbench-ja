@@ -1,163 +1,147 @@
 ---
 name: notes
 description: >-
-  Maintain a running implementation-notes.md that records decisions, deviations,
-  tradeoffs, and gotchas while implementing. Auto-triggers whenever the user asks
-  Claude to implement a spec, build a feature, refactor, fix a bug, or carry out
-  any multi-step coding task — even if they don't explicitly ask for notes.
-  Trigger on phrases like "implement", "build", "add", "refactor", "fix",
-  "according to the spec/design", or whenever following a SPEC/design doc, and
-  especially for work handed off to another session, another agent, or a
-  zip/merge workflow. Also trigger at session start whenever the working
-  directory already contains an implementation-notes.md — read it before doing
-  anything else. Can be invoked manually as /notes to start or update the notes
-  file on demand.
+  実装しながら判断・逸脱・トレードオフ・ハマりどころを implementation-notes.md に記録し続ける
+  スキル。仕様の実装・機能構築・リファクタ・バグ修正など複数ステップのコーディング作業では、
+  明示的に頼まれなくても自動発動する。「実装して」「作って」「直して」「仕様/設計どおりに」
+  といった依頼や、別セッション・別エージェントへの引き継ぎ・zip/マージ作業で特に発動する。
+  作業ディレクトリに既に implementation-notes.md がある場合はセッション開始時にも発動し、
+  何か書く前にまず読む。手動では /notes で記録の開始・更新ができる。
 ---
 <!-- SYNCED by tools/skill-sync — DO NOT EDIT. source: templates/implementation-skills/.claude/skills/notes/SKILL.md -->
 
-# Implementation Notes (/notes)
+# 実装ノート（/notes）
 
-While implementing, keep a running `implementation-notes.md` so that the
-*reasoning behind the code* survives the session. Code shows what was built;
-this file shows why, and what the next person (or the next session) needs to know.
+実装しながら `implementation-notes.md` を書き続け、*コードの背後にある理由*をセッションを
+越えて残す。コードは「何を作ったか」を示すが、このファイルは「なぜそうしたか」と
+「次の人（次のセッション）が知っておくべきこと」を示す。
 
-This skill works two ways:
+このスキルは2通りに動く:
 
-- **Automatically** during implementation tasks (no need to ask).
-- **Manually** via `/notes`:
-  - `/notes` — create the file or catch up on missed entries.
-  - `/notes <text>` — record that text as a decision/note right now.
-  - `/notes status` — refresh only the Status block (see below).
+- **自動**: 実装タスク中は頼まれなくても動く
+- **手動**: `/notes` 経由
+  - `/notes` — ファイルを作成する、または記録漏れを追いつかせる
+  - `/notes <text>` — そのテキストを今すぐ判断/メモとして記録する
+  - `/notes status` — Status ブロックだけを更新する（後述）
 
-## When to maintain the file
+## いつファイルを維持するか
 
-Maintain it during any implementation task. Do **not** wait for the user to ask.
-If the task is a one-line trivial change, skip it. Otherwise, keep the notes.
+どんな実装タスクでも維持する。ユーザーに頼まれるのを待たない。
+1行だけの些細な変更ならスキップしてよい。それ以外は書き続ける。
 
-If a session starts in a repo that already has `implementation-notes.md`,
-read the Status block (and skim the latest session entry) **before** writing
-any code. That is the whole point of the file.
+セッションが既に `implementation-notes.md` のあるリポジトリで始まった場合、
+コードを書く**前に** Status ブロックを読み（最新セッションのエントリにも目を通す）。
+それがこのファイルの存在意義そのもの。
 
-## Where the file lives
+## ファイルの置き場所
 
-- Default: `implementation-notes.md` at the repo root (or the feature's folder).
-- If the project uses a docs folder (`docs/`, `notes/`), put it there instead.
-- **Append, never overwrite** — with two exceptions: the Status block at the
-  top (overwritten each session) and moving the oldest entries out to the
-  archive file (see Size management).
-- If the file already exists, read it first, then continue from where it left off.
+- 既定: リポジトリルート（または機能のフォルダ）の `implementation-notes.md`
+- プロジェクトが docs フォルダ（`docs/`、`notes/`）を使っている場合はそちらに置く
+- **追記のみ、上書きしない** — 例外は2つ: 先頭の Status ブロック（毎セッション上書き）と、
+  古いエントリをアーカイブへ移す操作（後述のサイズ管理）
+- 既にファイルがある場合はまず読んでから、続きから記録する
 
-## Status block (the handoff header)
+## Status ブロック（引き継ぎヘッダー）
 
-Keep this block at the very top of the file and **overwrite it** each session.
-Everything below it is append-only history (touched only when old entries are
-moved to the archive). The goal: the next session understands the current state
-in ten seconds without reading the whole history.
+このブロックをファイルの最上部に置き、毎セッション**上書き**する。それ以下は追記専用の
+履歴（古いエントリをアーカイブへ移すときだけ触る）。目的は、次のセッションが履歴を
+全部読まずに10秒で現状を理解できること。
 
 ```markdown
 <!-- STATUS: overwrite this block; everything below is append-only -->
 ## Status (updated 2026-06-10)
-- State: <one line — what works right now>
-- Next: <the single most important next step>
-- Watch out: <the one gotcha most likely to bite the next session>
+- State: <一行 — 今何が動いているか>
+- Next: <次にやるべき最重要の1手>
+- Watch out: <次のセッションが引っかかりやすい落とし穴>
 ```
 
-Update it at minimum at the end of each session, and whenever the answer to
-"what's the current state?" changes materially.
+最低でも各セッションの終わりに更新し、「現状は？」への答えが実質的に変わるたびに更新する。
 
-## When to record an entry
+## いつエントリを記録するか
 
-Record an entry the moment any of these happen — not in a batch at the end:
+以下のいずれかが起きた瞬間に記録する — 最後にまとめて書かない:
 
-1. **Decision not in the spec** — anything you had to decide that the spec/design
-   left open. State the choice AND the alternative you rejected, with one line on why.
-2. **Deviation from the spec** — where the implementation differs from what was
-   written, and the reason it had to differ.
-3. **Tradeoff** — what you optimized for and what you gave up (performance vs.
-   readability, speed vs. completeness, etc.).
-4. **Gotcha / surprise** — environment quirks, API differences, version
-   constraints, anything that wasted time and would waste the next person's too.
-   A test failing for an unexpected reason is almost always a gotcha — record it.
-5. **Deferred / TODO** — things intentionally left undone, with enough context
-   to resume.
+1. **仕様に無い判断** — 仕様/設計が未確定にしていた事項について何か決めたこと。
+   選んだ案**と**却下した代替案を、理由を一言添えて書く
+2. **仕様からの逸脱** — 実装が書かれていた内容と異なる場合、その理由
+3. **トレードオフ** — 何を優先し何を犠牲にしたか（パフォーマンス vs 可読性、
+   速度 vs 網羅性、等）
+4. **ハマりどころ・意外な事実** — 環境の癖、API の違い、バージョン制約など、
+   時間を浪費しかつ次の人も浪費しかねないもの。予期しない理由でのテスト失敗は
+   ほぼ常にハマりどころなので記録する
+5. **積み残し・TODO** — 意図的にやらずに残したこと。再開に足る文脈つきで
 
-Natural checkpoints that should prompt a quick "anything to record?" check:
-completing a todo item, just before a commit, and just before handing off
-(zip/merge, end of session).
+自然なチェックポイント（「何か記録すべき？」を確認すべきタイミング）: todo 項目の完了時、
+コミット直前、引き継ぎ直前（zip/マージ、セッション終了）。
 
-Before appending, glance at the current session's entries — don't record the
-same decision twice. If an earlier decision got reversed, add a new entry that
-says so and why; don't edit the old one.
+追記する前に今セッションの既存エントリを一瞥し、同じ判断を二重に記録しない。
+以前の判断が覆った場合は、その旨と理由を新しいエントリとして追加する。古いエントリは
+編集しない。
 
-Do **not** record: routine code that matches the spec, obvious choices, or a
-play-by-play of every edit. Signal, not a changelog.
+記録**しない**もの: 仕様どおりの日常的なコード、自明な選択、全編集の逐一実況。
+シグナルであって変更ログではない。
 
-## Entry format
+## エントリの書式
 
-Append entries under a dated session heading. Keep each entry to 1–4 lines.
-**Anchor every entry to evidence**: a file path (ideally `file:line` or a
-function name), a test name, an error message, or a commit hash. A note that
-can't be located in the code is half a note.
+日付付きのセッション見出しの下に追記する。各エントリは1〜4行に収める。
+**すべてのエントリを物証に固定する**: ファイルパス（できれば `file:line` か関数名）、
+テスト名、エラーメッセージ、コミットハッシュのいずれか。コード上で場所を特定できない
+メモは半人前のメモ。
 
 ```markdown
-## 2026-06-10 — <short task name>
+## 2026-06-10 — <タスク名（短く）>
 
 ### Decisions
-- Chose <X> over <Y> because <reason>. (Spec was silent.) → `src/layout.py:120`
+- <理由>のため <Y> ではなく <X> を選んだ。（仕様は未確定だった。）→ `src/layout.py:120`
 
 ### Deviations
-- Spec said <A>; implemented <B> instead because <reason>. → `test_render.py::test_b`
+- 仕様は <A> だったが、<理由>のため <B> を実装した。→ `test_render.py::test_b`
 
 ### Tradeoffs
-- Optimized for <X> at the cost of <Y>. Revisit if <condition>.
+- <Y> を犠牲に <X> を優先した。<条件> になったら見直す。
 
 ### Gotchas
-- <surprise + resolution>. Error was: `<exact message>`.
+- <意外な事実 + 解決策>。エラーは: `<正確なメッセージ>`。
 
 ### Deferred
-- <not done yet> — needs <what> before it can be finished.
+- <未完了のこと> — 完了させるには <何が必要か> が要る。
 ```
 
-Omit any section that has nothing to record this session. Don't write empty headings.
+そのセッションで記録することが無いセクションは省略する。空の見出しを書かない。
 
-## At the end of the task
+## タスクの終わりに
 
-1. Close the session entry with a 1–2 line summary of the current state and the
-   single most important thing the next session should know.
-2. Refresh the Status block at the top to match.
+1. セッションのエントリを、現状と次セッションが知るべき最重要事項の1〜2行サマリーで締める
+2. 先頭の Status ブロックをそれに合わせて更新する
 
-## Size management
+## サイズ管理
 
-When the file exceeds roughly 400 lines, move the oldest session entries into
-`implementation-notes-archive.md` (same folder), keeping the Status block and
-the most recent few sessions in the main file. Mention the archive in the
-Status block so it stays discoverable.
+ファイルがおよそ400行を超えたら、古いセッションエントリを同じフォルダの
+`implementation-notes-archive.md` へ移し、本体には Status ブロックと直近数セッションだけ
+残す。アーカイブへ移したことを Status ブロックに書いておき、見つけられるようにする。
 
-## Relationship to spec extraction
+## 仕様逆引きとの関係
 
-This file is a first-class evidence source for the `spec-extract` skill
-(reverse-engineering a spec from existing code). Well-kept notes turn
-"推定" into "確定" in a recovered spec — one more reason to anchor entries
-to files and tests.
+このファイルは `spec-extract` スキル（既存コードからの仕様逆引き）にとって一級の
+物証源。きちんと保たれたノートは、逆引きした仕様の「推定」を「確定」に変える —
+エントリをファイル・テストに固定しておくべき理由がもう一つ増える。
 
-### Keeping a living SPEC.md in sync (small / out-of-band changes)
+### 生きた SPEC.md を同期させておく（小さな・帯域外の変更）
 
-If the repo already has a `SPEC.md` (the spec of record) and your change
-**alters behavior it describes**, don't wait for a full re-extraction: in the
-same session, do a **lightweight incremental update of the affected `F-NN`
-row(s) only** (rewrite the requirement, append a 改訂履歴 line — see the
-spec-extract skill's 変更管理). Recording the deviation here and touching the
-one `F-NN` row keeps the spec from rotting, without running the whole pipeline.
+リポジトリに既に `SPEC.md`（spec of record）があり、今回の変更が**そこに書かれた挙動を
+変える**場合、完全な再抽出を待たず、同じセッション内で**該当する `F-NN` 行だけの軽量な
+増分更新**を行う（要件を書き換え、改訂履歴の行を追記する — spec-extract スキルの
+変更管理を参照）。ここに逸脱を記録しつつ該当 `F-NN` 行に触れておくことで、パイプライン
+全体を回さずに仕様が陳腐化するのを防げる。
 
-This stays **signal, not a changelog**: only sync rows whose described behavior
-actually changed — routine edits that match the existing spec need no SPEC touch.
+これも**シグナルであって変更ログではない**: 記述された挙動が実際に変わった行だけを
+同期する — 既存仕様どおりの日常的な編集は SPEC に触れる必要が無い。
 
-## Style
+## 文体
 
-Match the surrounding project's language. If the user writes in Japanese or the
-existing notes are in Japanese, write the notes in Japanese. Be terse: this is a
-working document, not prose. Concrete facts (file names, function names, version
-numbers, error messages) beat vague description.
+周囲のプロジェクトの言語に合わせる。ユーザーが日本語で書いている、または既存のノートが
+日本語なら、日本語でノートを書く。簡潔に: これは作業文書であって散文ではない。
+具体的な事実（ファイル名・関数名・バージョン番号・エラーメッセージ）は曖昧な説明に勝る。
 <!-- PIPELINE-INTEGRATION: この行より上は原本（sentinel の source: 参照）と同一に保つ。
      このファイルは tools/skill-sync が原本 + tools/skill-sync/fragments/notes-pipeline-integration.md
      から生成する派生物。直接編集せず、原本または fragment を編集して
