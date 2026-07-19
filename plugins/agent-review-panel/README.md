@@ -9,6 +9,8 @@
 | `/review-panel <対象>`（light・既定） | R0 実施判断 → R1 ブラインド並列 → R2 相互批判 → R3 応答・譲歩 → 統合 | 会話内要約 | **なし（CLI/git/ネット不要）** |
 | `/review-panel deep <対象>` | light ＋ 引用検証 ＋ 裁定者の最終評決 | 会話内サマリ＋`docs/review-panel/*.md` レポート | なし |
 | `/review-panel [deep] codex <対象>` | 上記に外部パネリスト（Codex）を混成 | 同上 | `codex` CLI（任意。未導入なら欠席扱いで内部のみ続行） |
+| `/review-panel [deep] kiro <対象>` | 上記に外部パネリスト（Kiro）を混成 | 同上 | `kiro-cli`（任意。未導入なら欠席扱いで内部のみ続行） |
+| `/review-panel [deep] codex kiro <対象>` | Codex と Kiro を同時混成（各1枠・既定人数+1） | 同上 | `codex` CLI ＋ `kiro-cli`（いずれも任意・個別に欠席縮退） |
 
 ## どれを選ぶか
 
@@ -41,7 +43,8 @@
   効果が逓減する）、light でのレポートファイル出力（軽い相談にファイルは過剰）。
 - **同一モデルの限界**: 内部パネリストはすべて同じ Claude なので、モデル自体が共有するバイアスは
   ペルソナでは消えません。構造的な討論規律で単一レビュアーよりは堅牢になりますが、それでも
-  残る相関を減らしたいときのために `codex` opt-in（異種モデル混成）を用意しています。
+  残る相関を減らしたいときのために `codex` / `kiro` opt-in（異種モデル混成・同時指定も可）を
+  用意しています。
 
 ## プロトコル
 
@@ -68,6 +71,9 @@ deep 追加:
 - **codex 混成** … `codex` CLI が導入・認証済みであること。詳細は
   [`codex-bridge/README.md`](../codex-bridge/README.md) の「前提」を参照（本プラグインは
   codex-bridge に依存しません — 未導入なら外部パネリストを欠席にして内部のみで続行します）。
+- **kiro 混成** … `kiro-cli` が導入・認証済みであること。詳細は
+  [`kiro-bridge/README.md`](../kiro-bridge/README.md) の「前提」を参照（本プラグインは
+  kiro-bridge に依存しません — 未導入なら外部パネリストを欠席にして内部のみで続行します）。
 
 ## ファイル構成
 
@@ -84,6 +90,7 @@ agent-review-panel/
 └── agents/
     ├── panel-reviewer.md          # 汎用パネリスト（ペルソナ注入型・read-only）
     ├── panel-codex.md             # 外部パネリスト（codex CLI を read-only 非対話で駆動）
+    ├── panel-kiro.md              # 外部パネリスト（kiro-cli を read-only 非対話で駆動）
     ├── panel-verifier.md          # deep: 引用検証係（haiku・機械的照合のみ）
     └── panel-judge.md             # deep: 裁定者（討論非関与の fresh context）
 ```
@@ -115,18 +122,20 @@ cp -r plugins/agent-review-panel/agents/*  .claude/agents/
 /review-panel この実装計画をレビューして（…計画本文…）
 /review-panel deep @docs/design.md
 /review-panel codex この差分を敵対的にレビューして
-/review-panel deep codex 5名で リリース前の最終チェックをして
+/review-panel kiro この差分を敵対的にレビューして
+/review-panel deep codex kiro 5名で リリース前の最終チェックをして
 ```
 
 自然文（「パネルレビューして」「複数の視点で徹底的にレビューして」「レビュー会議にかけて」
-「Codex も混ぜて」）でも発動します。
+「Codex も混ぜて」「Kiro も混ぜて」）でも発動します。
 
 ## トークンの目安
 
 - **light（3名）**: Task 6〜9回（R1×3＋R2×3＋R3×0〜3）。対象パッケージは1回構築・
   全ラウンド再利用、R2/R3 は指摘表のみ配布、批判ゼロのパネリストの R3 はスキップ。
 - **deep（4名）**: 上記＋R1/R2/R3 が1名分増＋検証1回（haiku・安価）＋裁定1回。
-- **codex 混成**: Codex 呼び出しは light=1回 / deep=最大2回。
+- **外部混成（codex / kiro）**: 各外部パネリストの CLI 呼び出しは light=1回 / deep=最大2回。
+  両方指定時は既定人数+1（light=4名 / deep=5名）。
 - 単独レビューで足りる対象に使うと割高です（Round 0 で誘導されます）。
 
 ## ライセンス・出典
@@ -142,4 +151,5 @@ cp -r plugins/agent-review-panel/agents/*  .claude/agents/
   「疑わしい」でなく反例で批判する検証優位性、ゴーストパネリスト・追従的収束・
   ファシリテーター私見分離という失敗モード対策、異種モデル混成のコンセプト
 - スキル（入口）／エージェント（実行）の分業と要約契約は、本リポジトリ
-  [`ai-peer`](../ai-peer/)・[`codex-bridge`](../codex-bridge/) と同型
+  [`ai-peer`](../ai-peer/)・[`codex-bridge`](../codex-bridge/)・[`kiro-bridge`](../kiro-bridge/)
+  と同型
