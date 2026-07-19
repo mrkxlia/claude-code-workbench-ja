@@ -6,7 +6,7 @@
     "name": "mrkxlia",
     "url": "https://github.com/mrkxlia"
   },
-  "homepage": "https://github.com/mrkxlia/claude-code-workbench-ja/tree/main/agent-review-panel",
+  "homepage": "https://github.com/mrkxlia/claude-code-workbench-ja/tree/main/plugins/agent-review-panel",
   "repository": "https://github.com/mrkxlia/claude-code-workbench-ja",
   "license": "MIT",
   "keywords": ["review", "panel", "adversarial", "multi-agent", "subagents", "japanese"],

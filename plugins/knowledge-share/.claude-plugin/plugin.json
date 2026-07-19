@@ -6,7 +6,7 @@
     "name": "mrkxlia",
     "url": "https://github.com/mrkxlia"
   },
-  "homepage": "https://github.com/mrkxlia/claude-code-workbench-ja/tree/main/knowledge-share",
+  "homepage": "https://github.com/mrkxlia/claude-code-workbench-ja/tree/main/plugins/knowledge-share",
   "repository": "https://github.com/mrkxlia/claude-code-workbench-ja",
   "license": "MIT",
   "keywords": ["knowledge", "memory", "hooks", "cross-session", "japanese"],

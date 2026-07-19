@@ -16,8 +16,8 @@
 
 ## Track A 仕上げ分
 
-- `codex/agents-md/GlobalClaudeMD-sample.AGENTS.md` — CLAUDE.md→AGENTS.md（@import 平坦化・センチネル）
-- `kiro/.kiro/steering/GlobalClaudeMD-sample-guidance.md` — CLAUDE.md→steering（`inclusion: always`）
+- `codex/agents-md/global-claude-md-sample.AGENTS.md` — CLAUDE.md→AGENTS.md（@import 平坦化・センチネル）
+- `kiro/.kiro/steering/global-claude-md-sample-guidance.md` — CLAUDE.md→steering（`inclusion: always`）
 
 配布パッケージのマニフェスト雛形は `generators/templates/{codex-plugin,kiro-power}/` にあり、
 `export.sh` が `dist/codex-plugin/`・`dist/kiro-power/` を組み立てる（`dist/` 自体は `.gitignore`）。

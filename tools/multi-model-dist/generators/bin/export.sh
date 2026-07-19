@@ -4,12 +4,12 @@
 #   export.sh --target codex,kiro,all   既定: codex,kiro
 #
 # 走査はセクション配下の <section>/.claude/** のみ（ルート .claude / .claude-plugin は除外）。
-# 原本は読むだけ。生成物は <repo>/multi-model-dist/build/ 以下へ（センチネル付き・冪等）。
+# 原本は読むだけ。生成物は <repo>/tools/multi-model-dist/build/ 以下へ（センチネル付き・冪等）。
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LIB_DIR="$(cd "$SCRIPT_DIR/../lib" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/../../../.." && pwd)"
 
 TARGET="codex,kiro"
 while [ $# -gt 0 ]; do
@@ -28,4 +28,4 @@ fi
 
 echo "multi-model-dist: generating (target=$TARGET) ..."
 python3 "$LIB_DIR/export.py" --repo "$REPO_ROOT" --target "$TARGET"
-echo "done. 出力: multi-model-dist/build/  （原本は不変）"
+echo "done. 出力: tools/multi-model-dist/build/  （原本は不変）"

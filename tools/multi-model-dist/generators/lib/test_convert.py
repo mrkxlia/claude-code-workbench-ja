@@ -1,6 +1,6 @@
 """ゴールデン/往復テスト（pytest 不要・直接実行可）。
 
-  python3 multi-model-dist/generators/lib/test_convert.py
+  python3 tools/multi-model-dist/generators/lib/test_convert.py
 
 検証: frontmatter 分離 / 本文用語写像（自己参照・相互参照）/ 残存 CC 語検出 /
       Codex skill・TOML / Kiro skill・JSON / 真理値反転・manual_only 保持 /
@@ -21,7 +21,7 @@ import convert  # noqa: E402
 import export  # noqa: E402
 from serializers import codex, kiro  # noqa: E402
 
-REPO = HERE.parents[2]  # multi-model-dist/generators/lib → リポジトリルート
+REPO = HERE.parents[3]  # tools/multi-model-dist/generators/lib → リポジトリルート
 
 FAILED = []
 
@@ -183,7 +183,7 @@ def test_goldens_match_build():
     tmp = pathlib.Path(tempfile.mkdtemp(prefix="mmd_golden_"))
     try:
         export.run(REPO, ["codex", "kiro"], tmp)
-        examples = REPO / "multi-model-dist/examples"
+        examples = REPO / "tools/multi-model-dist/examples"
         n = 0
         for target in ("codex", "kiro"):
             for g in sorted((examples / target).rglob("*")):

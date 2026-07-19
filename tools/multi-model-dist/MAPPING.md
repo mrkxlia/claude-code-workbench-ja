@@ -67,7 +67,7 @@
 
 | 原本 | Codex | Kiro | 備考 |
 |---|---|---|---|
-| GlobalClaudeMD-sample/CLAUDE.md | AGENTS.md | steering(`inclusion: always`) | 汎用行動原則 |
+| global-claude-md-sample/CLAUDE.md | AGENTS.md | steering(`inclusion: always`) | 汎用行動原則 |
 | data-science/CLAUDE.md | AGENTS.md | steering(`inclusion: always`) | プロジェクト指示書テンプレート |
 | model-setup/CLAUDE.md | **対象外** | steering(`inclusion: always`) | Claude モデルの運用ルールのため Kiro（Claude モデルを実行）でのみ有効。Codex には配らない |
 | model-setup/CLAUDE.{private,company}.md・MODEL-GUIDE.md・settings.*.json | 対象外 | 対象外 | CC の設定・モデル選定に固有 |

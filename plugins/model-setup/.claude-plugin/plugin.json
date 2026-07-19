@@ -6,7 +6,7 @@
     "name": "mrkxlia",
     "url": "https://github.com/mrkxlia"
   },
-  "homepage": "https://github.com/mrkxlia/claude-code-workbench-ja/tree/main/model-setup",
+  "homepage": "https://github.com/mrkxlia/claude-code-workbench-ja/tree/main/plugins/model-setup",
   "repository": "https://github.com/mrkxlia/claude-code-workbench-ja",
   "license": "MIT",
   "keywords": ["sonnet", "opus", "model-selection", "effort", "workflow", "fable-parity", "subagents", "model-routing", "japanese"],

@@ -63,7 +63,7 @@ T2P_AGENTS = {                                # 対のエージェント
 # CLAUDE.md → AGENTS.md / steering（Track A の指示書ガイダンス。pipeline 系 CLAUDE.md は Track B なので除外）
 # 値はターゲットの allowlist。model-setup は Claude モデル運用ルールのため Kiro のみ（MAPPING ①ガイダンス表）。
 GUIDANCE_CLAUDE = {
-    "GlobalClaudeMD-sample": ("codex", "kiro"),
+    "global-claude-md-sample": ("codex", "kiro"),
     "data-science": ("codex", "kiro"),
     "model-setup": ("kiro",),
 }
@@ -139,7 +139,7 @@ def run(repo: pathlib.Path, targets: list[str], out: pathlib.Path) -> int:
         if not s.has_frontmatter:
             # 監査誤り（旧 T1g の再発）をここで止める: allowlist のスキルは frontmatter 必須
             raise SystemExit(f"ERROR: allowlist のスキルに frontmatter がありません: {key}")
-        skill_dir = repo / s.section / ".claude/skills" / s.name
+        skill_dir = convert.find_section_root(repo, s.section) / ".claude/skills" / s.name
         for target, ser in (("codex", codex), ("kiro", kiro)):
             if target not in targets:
                 continue
@@ -168,7 +168,11 @@ def run(repo: pathlib.Path, targets: list[str], out: pathlib.Path) -> int:
 
     # CLAUDE.md → AGENTS.md（Codex）/ steering inclusion:always（Kiro）。対象ターゲットは GUIDANCE_CLAUDE の値。
     for section, gtargets in GUIDANCE_CLAUDE.items():
-        claude_md = repo / section / "CLAUDE.md"
+        try:
+            claude_md = convert.find_section_root(repo, section) / "CLAUDE.md"
+        except FileNotFoundError:
+            print(f"  WARN: section not found: {section}", file=sys.stderr)
+            continue
         if not claude_md.is_file():
             print(f"  WARN: CLAUDE.md not found: {section}", file=sys.stderr)
             continue
@@ -235,7 +239,7 @@ def main():
     targets = [t.strip() for t in args.target.split(",") if t.strip()]
     if "all" in targets:
         targets = ["codex", "kiro"]
-    out = pathlib.Path(args.out).resolve() if args.out else repo / "multi-model-dist"
+    out = pathlib.Path(args.out).resolve() if args.out else repo / "tools/multi-model-dist"
     return run(repo, targets, out)
 
 

@@ -2,7 +2,7 @@
 
 設計（MAPPING.md に従う）:
 - frontmatter/構造化変換は PyYAML / json / 内蔵 TOML シリアライザ（tomllib 往復検証付き・決定的出力）に委譲（bash 文字列連結はしない）。
-- 走査は各セクション配下の <section>/.claude/** のみ。ルート直下 .claude/ と .claude-plugin/ は除外。
+- 走査は plugins/<section>/.claude/** と templates/<section>/.claude/** のみ。ルート直下 .claude/ と .claude-plugin/ は除外。
 - 生成物にはセンチネルを付け、手書き（センチネル無し）の生成先は上書きしない。
 - 本文の用語写像（/cmd→$mention/#name、Task、.claude/ パス）はターゲット別に適用する。
 """
@@ -21,6 +21,8 @@ SENTINEL_KEY = "_generated"
 
 # 走査から除外するトップレベルディレクトリ
 EXCLUDE_TOP = {".claude", ".claude-plugin"}
+# セクションを探すグループディレクトリ（plugins/<section> / templates/<section>）
+SECTION_GROUPS = ("plugins", "templates")
 
 
 def sentinel_line(source_rel: str, comment: str = "<!--", close: str = "-->") -> str:
@@ -89,13 +91,26 @@ class AgentIR:
 # 走査
 # ---------------------------------------------------------------------------
 def iter_section_claude_dirs(repo_root: pathlib.Path):
-    """各セクション配下の .claude ディレクトリを返す（ルート直下 .claude は除外）。"""
-    for child in sorted(repo_root.iterdir()):
-        if not child.is_dir() or child.name in EXCLUDE_TOP:
+    """各セクション配下の .claude ディレクトリを返す（plugins/<section>・templates/<section> の2階層走査。ルート直下 .claude は除外）。"""
+    for group in SECTION_GROUPS:
+        group_dir = repo_root / group
+        if not group_dir.is_dir():
             continue
-        claude = child / ".claude"
-        if claude.is_dir():
-            yield child.name, claude
+        for child in sorted(group_dir.iterdir()):
+            if not child.is_dir() or child.name in EXCLUDE_TOP:
+                continue
+            claude = child / ".claude"
+            if claude.is_dir():
+                yield child.name, claude
+
+
+def find_section_root(repo_root: pathlib.Path, section: str) -> pathlib.Path:
+    """セクション名からその実ディレクトリ（plugins/<section> または templates/<section>）を解決する。"""
+    for group in SECTION_GROUPS:
+        candidate = repo_root / group / section
+        if candidate.is_dir():
+            return candidate
+    raise FileNotFoundError(f"section not found under {SECTION_GROUPS}: {section}")
 
 
 def load_skill(section: str, skill_md: pathlib.Path) -> SkillIR:

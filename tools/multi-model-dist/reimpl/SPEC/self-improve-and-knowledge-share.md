@@ -1,6 +1,6 @@
 # SPEC: knowledge-share ＋ self-improve（横断ナレッジと自己改善の閉ループ）
 
-Track B（最も CC 結合度が高い＝低忠実度）。**原本 `knowledge-share/.claude/{skills,hooks}` ・ `self-improve/.claude/{skills,hooks}`
+Track B（最も CC 結合度が高い＝低忠実度）。**原本 `plugins/knowledge-share/.claude/{skills,hooks}` ・ `plugins/self-improve/.claude/{skills,hooks}`
 を一次根拠**に起こした派生ドキュメント。グローバル KB ストア・`@import` 自動読込・transcript jsonl 採掘・SessionStart/End フック・
 cksum プロジェクトキー・両者の閉ループ に依存するため、各ツールでは **degrade 必須**。確度ラベル: `[確定]`/`[推定]`/`[要確認]`。
 

@@ -178,7 +178,7 @@ flowchart TD
 ## 実装ノートと仕様逆引き — implementation-skills との関係
 
 このテンプレートの `notes` / `spec-extract` スキルは、
-[`implementation-skills/`](../implementation-skills/) セクションのスキルの**パイプライン連携版**です。
+[`implementation-skills/`](../../templates/implementation-skills/) セクションのスキルの**パイプライン連携版**です。
 パイプラインの空白だった2つを埋めます:
 
 - **notes（実装ノート）** — ビルダー3種が「ブリーフにない判断・逸脱・トレードオフ・
@@ -194,7 +194,7 @@ flowchart TD
 <details>
 <summary><b>原本との同期ルール</b>（implementation-skills 原本との差分確認コマンド）</summary>
 
-- **単体で使いたい**（パイプラインを導入しないプロジェクト・単発の実装）→ [`implementation-skills/`](../implementation-skills/) の**原本**をコピーする
+- **単体で使いたい**（パイプラインを導入しないプロジェクト・単発の実装）→ [`implementation-skills/`](../../templates/implementation-skills/) の**原本**をコピーする
 - **パイプラインで使う** → このセクションのパイプライン連携版を使う（`/pipeline-setup` が自動配布します）
 
 パイプライン連携版は「原本の完全コピー + 末尾の `PIPELINE-INTEGRATION` マーカー以降に**統合連携
@@ -445,7 +445,7 @@ cp -r /tmp/workbench/software-pipeline/.claude/skills/build-with-tests ~/.claude
 
 - `clarify` / `build-with-tests` … パイプライン非依存。単体で使える。
 - `pipeline-improve` … パイプラインの運用ログ（`docs/pipeline/`）を前提にするため、単体利用には向かない。
-- `notes` / `spec-extract` … 単体で使うなら**原本**の [`implementation-skills/`](../implementation-skills/) を入れるのが推奨。
+- `notes` / `spec-extract` … 単体で使うなら**原本**の [`implementation-skills/`](../../templates/implementation-skills/) を入れるのが推奨。
 
 > プロジェクト単位で導入したい場合は、上の「セットアップ → 方式C（手動セットアップ）」の
 > スキルコピー手順（`.claude/skills/` 宛）を参照してください。ここではどこでも使える

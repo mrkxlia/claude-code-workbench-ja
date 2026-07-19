@@ -1,6 +1,6 @@
 # SPEC: codex-bridge（ホストエージェントから Codex CLI を駆動する）
 
-Track B の共有仕様。**原本 `codex-bridge/.claude/{skills,agents}` を一次根拠**に起こした派生ドキュメント
+Track B の共有仕様。**原本 `plugins/codex-bridge/.claude/{skills,agents}` を一次根拠**に起こした派生ドキュメント
 （複製ではない）。原本の挙動が変わったらこの SPEC を手動追従し、各ツール実装（`../impl/<tool>/codex-bridge`）を更新する。
 確度ラベル: `[確定]`＝原本に明記 / `[推定]`＝原本から合理的に補完 / `[要確認]`＝ツール/バージョン依存。
 
@@ -58,7 +58,7 @@ Track B の共有仕様。**原本 `codex-bridge/.claude/{skills,agents}` を一
 
 ## S8. 各ツール実装
 
-- **Claude Code（原本）**: `codex-bridge/.claude/{skills,agents}`（参照元）。
+- **Claude Code（原本）**: `plugins/codex-bridge/.claude/{skills,agents}`（参照元）。
 - **Kiro**: `../impl/kiro/codex-bridge/`（本 SPEC からの再実装）。`.kiro/agents/*.json`＋`.kiro/skills/*/SKILL.md`。Kiro Power 同梱。
 - **Codex 自身**: 対象外（Codex から Codex を駆動する意味がない）。
 - **codex-agents スキル**（原本4種のうちの1つ・AGENTS.md ジェネレータ）: 各ツール実装では**意図的に非対応**。

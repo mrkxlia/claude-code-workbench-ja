@@ -6,7 +6,7 @@
     "name": "mrkxlia",
     "url": "https://github.com/mrkxlia"
   },
-  "homepage": "https://github.com/mrkxlia/claude-code-workbench-ja/tree/main/task-pipeline",
+  "homepage": "https://github.com/mrkxlia/claude-code-workbench-ja/tree/main/plugins/task-pipeline",
   "repository": "https://github.com/mrkxlia/claude-code-workbench-ja",
   "license": "MIT",
   "keywords": ["workflow", "subagents", "task-pipeline", "deliverables", "japanese"],

@@ -7,7 +7,7 @@
   "plugins": [
     {
       "name": "software-pipeline",
-      "source": "./software-pipeline",
+      "source": "./plugins/software-pipeline",
       "description": "7つの専門エージェントで機能開発を流れ作業化する「ソフトウェアパイプライン」テンプレート。スキル7種（pipeline-setup / feature-pipeline / clarify / build-with-tests / notes / spec-extract / pipeline-improve）を提供する。clarify / notes / spec-extract は task-pipeline と同一内容の統合連携版（モード自動判定）。",
       "version": "2.4.1",
       "category": "workflow",
@@ -19,7 +19,7 @@
     },
     {
       "name": "task-pipeline",
-      "source": "./task-pipeline",
+      "source": "./plugins/task-pipeline",
       "description": "5つの専門エージェントでコード以外の成果物（drawio 図・ドキュメント・レポート）の作成を流れ作業化する「タスクパイプライン」テンプレート。スキル5種（task-pipeline-setup / task-pipeline / clarify / notes / spec-extract）を提供する。clarify / notes / spec-extract は software-pipeline と同一内容の統合連携版（モード自動判定）。",
       "version": "1.3.1",
       "category": "workflow",
@@ -31,7 +31,7 @@
     },
     {
       "name": "knowledge-share",
-      "source": "./knowledge-share",
+      "source": "./plugins/knowledge-share",
       "description": "セッション/リポジトリ横断のナレッジ共有テンプレート。スキル2種（kb / kb-harvest）と SessionStart/SessionEnd フックで、解決した知見の自動読み込み・記録・回収を Claude Code の公式機能だけで実現する。self-improve と連携し #promote タグで知見を恒久成果物へ昇格できる（後方互換・任意）。",
       "version": "1.1.1",
       "category": "productivity",
@@ -43,7 +43,7 @@
     },
     {
       "name": "codex-bridge",
-      "source": "./codex-bridge",
+      "source": "./plugins/codex-bridge",
       "description": "コードレビュー・実装・相談を OpenAI Codex に依頼するスキル4種（codex-review / codex-implement / codex-ask / codex-agents）とサブエージェント3種。ユーザー自身は Codex を操作せず、Claude Code が Codex CLI を非対話モードで駆動する。プラン承認で Codex 実装へ委譲する opt-in フックと、Claude ルールを取り込む AGENTS.md ジェネレータを同梱。",
       "version": "1.2.2",
       "category": "workflow",
@@ -55,7 +55,7 @@
     },
     {
       "name": "ai-peer",
-      "source": "./ai-peer",
+      "source": "./plugins/ai-peer",
       "description": "セカンドオピニオン／ピア相談を依頼するスキル2種とサブエージェント2種。peer は内部 Claude サブエージェントで完結し外部CLI・git・ネット不要（実装前のプランレビュー・ブレスト・第二の視点）。ask-claude は別の Claude を CLI（claude -p）で非対話・読み取り専用に起動し独立見解を要約する。Codex への相談は codex-bridge を参照。",
       "version": "0.1.1",
       "category": "workflow",
@@ -67,7 +67,7 @@
     },
     {
       "name": "self-improve",
-      "source": "./self-improve",
+      "source": "./plugins/self-improve",
       "description": "単発セッションの訂正・繰り返し・行き詰まりから、スキル・CLAUDE.md・.claude/rules・hook・エージェントを継続改善する git 不要の自己改善ループ。improve-scan（発見）と improve-apply（判定→品質ゲート→1件ずつ承認→適用→ロールバック）の2スキルと、検出/通知フックを提供。棚卸し（未使用スキルの縮退候補化）と効果検証（適用済み改善の再発突合）も行う。knowledge-share の kb と密連携し、キュー共有と #promote 知見の恒久成果物への昇格・リンク書き戻しを行う（単体でも動作）。",
       "version": "0.3.0",
       "category": "productivity",
@@ -79,7 +79,7 @@
     },
     {
       "name": "model-setup",
-      "source": "./model-setup",
+      "source": "./plugins/model-setup",
       "description": "モデル運用テンプレート（Opus 4.8 + Sonnet 5 / Sonnet 単独。旧名 sonnet-setup）。上位モデル（Fable 5 級）の振る舞いをプロファイル別に再現する。スキル6種（task-brief / backlog-loop / pr-merge / fan-out / long-run / verify-fresh）と、サブエージェント3種・プロファイル別 CLAUDE 追補2種・モデル/effort 選定ガイド（Fable 5 パリティマップ付き）・settings サンプルを提供する。",
       "version": "2.0.0",
       "category": "productivity",
@@ -91,7 +91,7 @@
     },
     {
       "name": "agent-review-panel",
-      "source": "./agent-review-panel",
+      "source": "./plugins/agent-review-panel",
       "description": "コード・計画・ドキュメントを複数ペルソナのサブエージェント（既定3名）にブラインド並列レビューさせ、相互批判→応答・譲歩→統合まで行う敵対的パネルレビュースキル1種（review-panel）とサブエージェント4種。deep 指定で引用検証と裁定者による最終裁定を追加。codex 指定で外部パネリスト（OpenAI Codex・任意）を混成できる。基本は依存ゼロで動く。",
       "version": "0.1.0",
       "category": "workflow",

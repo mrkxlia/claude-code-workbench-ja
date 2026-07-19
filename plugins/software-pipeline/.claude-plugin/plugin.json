@@ -6,7 +6,7 @@
     "name": "mrkxlia",
     "url": "https://github.com/mrkxlia"
   },
-  "homepage": "https://github.com/mrkxlia/claude-code-workbench-ja/tree/main/software-pipeline",
+  "homepage": "https://github.com/mrkxlia/claude-code-workbench-ja/tree/main/plugins/software-pipeline",
   "repository": "https://github.com/mrkxlia/claude-code-workbench-ja",
   "license": "MIT",
   "keywords": ["workflow", "subagents", "software-pipeline", "japanese"],
