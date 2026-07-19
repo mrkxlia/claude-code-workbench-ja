@@ -40,13 +40,14 @@
 | self-improve/improve-scan | 有 | 高（transcript 走査） | — | **T3** | Track B |
 | self-improve/improve-apply | 有 | 高（承認制適用） | — | **T3** | Track B |
 | codex-bridge/codex-review,implement,ask,codex-agents | 有 | 高（`codex exec` 駆動） | — | **Track B(Kiro版)** | Kiro→Codex 駆動の Kiro 版を SPEC から再実装 |
+| kiro-bridge/kiro-review,kiro-ask | 有 | 高（`kiro-cli chat` 駆動） | — | **Track B(Codex版)** | codex-bridge の対称形。Codex→kiro-cli 駆動の Codex 版を SPEC から再実装。**Kiro 版への配布は対象外**（Kiro が自分自身を子プロセスとして起動する自己再帰になり無意味なため。codex-bridge に Codex 版が無いのと同じ理由） |
 | model-setup/task-brief | 有 | 低 | — | **T1** | Track A 生成（本文用語写像） |
 | model-setup/backlog-loop | 有 | 中（pr-merge / improve-apply 言及） | — | **T1** | Track A 生成 |
 | model-setup/pr-merge | 有 | 中（git/gh CLI・commit-commands 言及） | — | **T1** | Track A 生成（CC 公式プラグイン commit-commands への言及は写像対象外＝④参照） |
 | model-setup/long-run | 有 | 低 | — | **T1** | Track A 生成（Claude モデル名前提の文面は Kiro で有効・Codex では参考情報） |
 | model-setup/fan-out | 有 | 高（task-worker / fresh-verifier 起動） | — | **T2p** | スキル＋エージェント対で移植 |
 | model-setup/verify-fresh | 有 | 高（fresh-verifier 起動） | — | **T2p** | スキル＋エージェント対で移植 |
-| agent-review-panel/review-panel | 有 | 高（panel-* 4体・多ラウンド討論） | — | **T2p** | スキル＋エージェント4体＋サイドカー（personas.md / report-template.md を用語写像つき複製）。panel-codex は codex CLI 前提の任意機能（未導入なら欠席＝原本と同じ縮退） |
+| agent-review-panel/review-panel | 有 | 高（panel-* 5体・多ラウンド討論） | — | **T2p** | スキル＋エージェント5体＋サイドカー（personas.md / report-template.md を用語写像つき複製）。panel-codex は codex CLI 前提、panel-kiro は kiro-cli 前提の任意機能（いずれも未導入なら欠席＝原本と同じ縮退。同時指定にも対応） |
 
 > **ルート除外（重複）**: `./.claude/skills/create-plan`・`create-plan-calibrate` は plan-mode と md5 一致の複製。走査対象外。
 > **サイドカー**: スキルディレクトリ内の SKILL.md 以外のファイル（personas.md・SPEC.md 等）は、生成時に同じ出力ディレクトリへ複製する（②参照）。
@@ -60,8 +61,9 @@
 | ai-peer | peer-engineer | **T2p** | peer スキルと対で移植 |
 | ai-peer | claude-advisor | **対象外** | ask-claude（別 Claude 起動）専用 |
 | codex-bridge | 3件（codex-reviewer/implementer/advisor） | **Track B(Kiro版)** | Kiro `.kiro/agents/*.json` へ再実装の素材 |
+| kiro-bridge | 2件（kiro-reviewer/advisor） | **Track B(Codex版)** | Codex 側の再実装素材（対称形）。Kiro 版は自己再帰のため対象外 |
 | model-setup | 3件（task-worker/fresh-verifier=sonnet, bulk-scanner=haiku） | **T2p** | fan-out / verify-fresh スキルと対で移植。`model:` tier は Kiro=id 写像・Codex=omit（③） |
-| agent-review-panel | 4件（panel-reviewer/codex/verifier/judge） | **T2p** | review-panel スキルと対で移植。`model: inherit` は捨てる。panel-codex は codex CLI 前提（任意・欠席可） |
+| agent-review-panel | 5件（panel-reviewer/codex/kiro/verifier/judge） | **T2p** | review-panel スキルと対で移植。`model: inherit` は捨てる。panel-codex は codex CLI 前提、panel-kiro は kiro-cli 前提（いずれも任意・欠席可） |
 
 ### ガイダンス（CLAUDE.md → AGENTS.md / steering）
 
