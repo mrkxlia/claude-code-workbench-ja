@@ -89,18 +89,19 @@ flowchart LR
 |---|-------------|------|-----------|--------|-------------|-----------|
 | 1 | `source-researcher` | 作る前に素材・規約をマッピングする | Read, Grep, Glob | sonnet | なし | 調査レポート（research.md） |
 | 2 | `requirements-writer` | 依頼を受け入れ基準つき要件にする | Read | sonnet | なし | 成果物要件（requirements.md）🛑承認1 |
-| 3 | `brief-writer` | 要件を作業ブリーフにする | Read, Grep, Glob | opus | なし | 作業ブリーフ（brief.md）🛑承認2 |
+| 3 | `brief-writer` | 要件を作業ブリーフにする | Read, Grep, Glob | inherit（opus可用時は`task-pipeline-setup`が opus に昇格） | なし | 作業ブリーフ（brief.md）🛑承認2 |
 | 4 | `deliverable-builder` | 成果物の作成（スキル利用可） | Read, Grep, Glob, Edit, Write, Bash, Skill | inherit | 出力ディレクトリのみ | 成果物 + セルフチェックつきサマリー |
 | 5 | `deliverable-reviewer` | 成果物と要件/ブリーフのギャップ報告 | Read, Grep, Glob | sonnet | なし | Critical/Important/Minor レポート 🛑承認3 |
 
 モデルは工程ごとにコストと品質のバランスで階層化しています。
-構成ミスが最も高くつく `brief-writer` には opus、作成系はメインセッションと同じモデル（inherit）、
-調査・検証系は sonnet が既定です。各エージェント定義の frontmatter の `model:` を書き換えれば変更できます
-（opus を使わない環境では `brief-writer` を `inherit` に）。
+作成系はメインセッションと同じモデル（inherit）、調査・検証系は sonnet が既定です。
+構成ミスが最も高くつく `brief-writer` も既定は `inherit`（opus 契約の有無を問わず安全に動く）
+ですが、opus が使える環境では品質優先で opus に昇格させるのを推奨します。各エージェント定義の
+frontmatter の `model:` を書き換えれば変更できます。
 
-> **注意**: `task-pipeline-setup` は導入時に opus の可用性を確認し、使えない環境では
-> `brief-writer.md` の `model: opus` を自動的に `inherit` に書き換える。手動でパイプライン
-> ファイルだけをコピーした場合は、この書き換えは行われないため自分で変更すること。
+> **注意**: `task-pipeline-setup` は導入時に opus の可用性を確認し、使える環境では
+> `brief-writer.md` の `model: inherit` を自動的に `opus` に書き換える。手動でパイプライン
+> ファイルだけをコピーした場合は、この書き換えは行われないため、opus を使いたければ自分で変更すること。
 
 ## フェーズの流れ — 5工程と3つのチェックポイント
 

@@ -89,20 +89,21 @@ flowchart TB
 |---|-------------|------|-----------|--------|-------------|-----------|
 | 1 | `codebase-researcher` | 作る前にコードをマッピングする | Read, Grep, Glob | sonnet | なし | 調査レポート（research.md） |
 | 2 | `story-writer` | アイデアを受け入れ基準つきストーリーにする | Read | sonnet | なし | ユーザーストーリー（story.md）🛑承認1 |
-| 3 | `spec-writer` | ストーリーを技術ブリーフにする | Read, Grep, Glob | opus | なし | 技術ブリーフ（brief.md）🛑承認2 |
+| 3 | `spec-writer` | ストーリーを技術ブリーフにする | Read, Grep, Glob | inherit（opus可用時は`pipeline-setup`が opus に昇格） | なし | 技術ブリーフ（brief.md）🛑承認2 |
 | 4 | `backend-builder` | API・サービス・ジョブ・ユニットテスト | Read, Grep, Glob, Edit, Write, Bash | inherit | バックエンドのフォルダ + 実装ノート | 実装 + API契約（api-contract.md） |
 | 5 | `frontend-builder` | コンポーネント・ページ・フック・UIテスト | Read, Grep, Glob, Edit, Write, Bash | inherit | フロントエンドのフォルダ + 実装ノート | 実装 + サマリー |
 | 6 | `test-verifier` | ストーリーに対する受け入れテスト | Read, Grep, Glob, Edit, Write, Bash | sonnet | テストファイル + 実装ノート | 受け入れテスト + 検証レポート |
 | 7 | `implementation-validator` | 実装とストーリー/ブリーフのギャップ報告 | Read, Grep, Glob | sonnet | なし | Critical/Important/Minor レポート 🛑承認3 |
 
 モデルは工程ごとにコストと品質のバランスで階層化しています（公式ドキュメントの推奨プラクティス）。
-設計ミスが最も高くつく `spec-writer` には opus、実装系はメインセッションと同じモデル（inherit）、
-調査・検証系は sonnet が既定です。各エージェント定義の frontmatter の `model:` を書き換えれば変更できます
-（opus を使わない環境では `spec-writer` を `inherit` に）。
+実装系・調査系はメインセッションと同じモデル（inherit）が既定です。設計ミスが最も高くつく
+`spec-writer` も既定は `inherit`（opus 契約の有無を問わず安全に動く）ですが、opus が使える
+環境では品質優先で opus に昇格させるのを推奨します。各エージェント定義の frontmatter の
+`model:` を書き換えれば変更できます。
 
-> **注意**: `pipeline-setup` は導入時に opus の可用性を確認し、使えない環境では
-> `spec-writer.md` の `model: opus` を自動的に `inherit` に書き換える。手動でパイプライン
-> ファイルだけをコピーした場合は、この書き換えは行われないため自分で変更すること。
+> **注意**: `pipeline-setup` は導入時に opus の可用性を確認し、使える環境では
+> `spec-writer.md` の `model: inherit` を自動的に `opus` に書き換える。手動でパイプライン
+> ファイルだけをコピーした場合は、この書き換えは行われないため、opus を使いたければ自分で変更すること。
 
 ## 成果物と関係性 — `docs/pipeline/<slug>/` を中心としたデータの流れ
 

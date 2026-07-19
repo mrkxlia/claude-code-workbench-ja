@@ -10,6 +10,9 @@ description: >-
   手動では /create-plan <達成したいゴール> で起動する。
   このスキルは決して実装・変更には移らず、計画ファイルを書き出したら停止する。
 argument-hint: <達成したいゴール>
+# ADJ-7（SPEC.md参照）: Claude Code は allowed-tools/disallowed-tools に対応するため、
+# INV-1/INV-2（計画ファイル以外への書き込み禁止）をここで機械的に強制する。較正不要・恒久設定。
+disallowed-tools: Edit, Write, NotebookEdit
 ---
 
 # create-plan — 変更せずに「実行計画」を作る
@@ -32,8 +35,8 @@ argument-hint: <達成したいゴール>
    - 読み取りは Read / Grep / Glob を優先し、シェルは読み取り確認のみ最小限にとどめる。
      <<ADJ-1: 実行環境のシェルは PowerShell / コマンドプロンプトを想定。読み取り確認は `Get-ChildItem` /
      `Get-Content` 等の読み取り系のみ。較正で確定する。>>
-     <<ADJ-7: このエージェントがツール許可リスト（`allowed-tools` 等）に対応する場合、INV-1 / INV-2 を
-     機械的に強制する設定をここ（frontmatter 等）に加える。較正で確定する。>>
+     <<ADJ-7: Claude Code 向けの既定値は frontmatter の `disallowed-tools`（Edit / Write /
+     NotebookEdit）で解決済み。Claude Code 以外へ較正する場合は対応可否に応じて調整する。>>
 
 2. **MCP は default-deny。**
    - 読み取り系だと確証が持てる MCP ツールだけ使う。`create_*` / `*_write` / `update_*` / `delete_*` /
