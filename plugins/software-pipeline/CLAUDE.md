@@ -117,6 +117,20 @@ npx prisma migrate dev       # マイグレーション作成・適用
 | `/notes` | 実装ノートを手動で開始・更新する（パイプライン内ではビルダーが自動記録） |
 | `/pipeline-improve [期間や slug]` | 運用実績から失敗シグナルを検出し、エージェント定義・スキル・CLAUDE.md の改善案を提案・適用する |
 
+## AIDLC との対応
+
+このパイプラインの流れは AWS Labs [AI-DLC](https://github.com/awslabs/aidlc-workflows)（AIが提案・
+人間が承認するゲート付き開発ライフサイクル）の簡易版にあたる（対応表の全体は
+`model-setup/MODEL-GUIDE.md` §9）。既存のフェーズ・エージェント構成そのままの読み替えで、
+追加の操作は不要:
+
+- **Inception（要件・設計）** = Phase 1〜3。`codebase-researcher`=調査役・`story-writer`=要件役・
+  `spec-writer`=設計役。ストーリー承認・ブリーフ承認の2つが承認ゲート
+- **Construction（実装）** = Phase 4〜6。`backend-builder`/`frontend-builder`=実装役・
+  `test-verifier`=テスト役。brief の「並列実行グループ」が AIDLC の Units of Work にあたる
+- **検証ゲート** = Phase 7 の `implementation-validator`（検証役・読み取り専用）と最終レビュー承認。
+  実装役と検証役の分離は維持する（作った本人に採点させない）
+
 ## 並列実行・テストギャップ・調査の網羅性（補足）
 
 - **並列実行グループ** — brief の「並列実行プラン」が独立グループ（所有パスが交わらず共有ファイルを書かない）を

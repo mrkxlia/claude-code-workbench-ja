@@ -19,7 +19,8 @@ CLAUDE.md・スキル・サブエージェントとして常設化するテン�
 | [`CLAUDE.md`](CLAUDE.md) | コピペ用テンプレート本体（9つの行動ルール・Opus/Sonnet 共通基盤） |
 | [`CLAUDE.private.md`](CLAUDE.private.md) | プロファイル追補（Opus+Sonnet・私用PC）: 追補ルール10〜14 |
 | [`CLAUDE.company.md`](CLAUDE.company.md) | プロファイル追補（Sonnet 単独・会社PC）: 追補ルール10〜15 |
-| [`MODEL-GUIDE.md`](MODEL-GUIDE.md) | モデル仕様・effort 選定・プロファイル・Fable 5 パリティマップ |
+| [`MODEL-GUIDE.md`](MODEL-GUIDE.md) | モデル仕様・effort 選定・プロファイル・Fable 5 パリティマップ・AIDLC 簡易版ワークフロー（§9） |
+| [`PROMPTS.md`](PROMPTS.md) | 都度貼りプロンプト集（Plan モード用初回テンプレート＋公式スニペット翻案） |
 | [`settings.private.json`](settings.private.json) | 私用 PC 向け設定サンプル（`opusplan` + `xhigh`） |
 | [`settings.company.json`](settings.company.json) | 会社 PC 向け設定サンプル（`sonnet` + `xhigh`） |
 | `skills/task-brief/` | 最初のターンでタスク仕様をブリーフ化するスキル |
@@ -70,9 +71,11 @@ CLAUDE.md・スキル・サブエージェントとして常設化するテン�
 | `bulk-scanner` | 一覧化・分類・一次スクリーニングなど機械的な大量スキャン（読み取り専用） | haiku |
 
 サブエージェント（`agents/`）はスキルと同じくプラグイン導入だけで自動配信されます。
-プロファイル追補（`CLAUDE.private.md` / `CLAUDE.company.md`）は skills/agents/hooks の
-いずれでもなくプラグインの自動配信対象外のため、**プラグイン導入（方法A）の場合もファイル
-コピー（下記）が必要**です。
+プロファイル追補（`CLAUDE.private.md` / `CLAUDE.company.md`）と `PROMPTS.md` は
+skills/agents/hooks のいずれでもなくプラグインの自動配信対象外のため、**プラグイン導入
+（方法A）の場合もファイルコピー（下記）が必要**です。特に追補のルール14/15
+（ワークフローの既定 — Plan モード起点の自動ルーティング・AIDLC 簡易版）は本テンプレートの
+中核なので、コピーを忘れると「普通の依頼から適切なスキルが裏で呼ばれる」動きになりません。
 Fable 5 のどの挙動を何が担うかの対応は [`MODEL-GUIDE.md`](MODEL-GUIDE.md) §8 を参照。
 
 ## 導入手順
@@ -189,6 +192,12 @@ claude plugin marketplace add severity1/severity1-marketplace
 - ルール1〜7: X 記事「Sonnet 5をFable 5にする方法〜Claude本人にインタビューして聞いた7つの神設定」
   （[@armadillo_ai](https://x.com/armadillo_ai) 氏）を参照・要約・翻案したものです。著作権は同氏に帰属します。
 - ルール8〜9・MODEL-GUIDE.md: Claude 公式ドキュメント（2026-07時点）に基づく。
+  日本語版 [Prompting Claude Sonnet 5（ja）](https://platform.claude.com/docs/ja/build-with-claude/prompt-engineering/prompting-claude-sonnet-5) も参照。
+- 追補ルール14/15（ワークフローの既定）・MODEL-GUIDE §9・PROMPTS.md #0:
+  AWS Labs [aidlc-workflows](https://github.com/awslabs/aidlc-workflows)（AI-DLC）の簡易化。
+  役割分離・外部検証の裏づけ論文（MetaGPT / ChatDev / Huang et al. ICLR 2024 / Kamoi et al. 2024）は
+  MODEL-GUIDE §9 に記載。
+- PROMPTS.md #1〜#9: 公式 Prompting Claude Sonnet 5 / Prompting best practices のスニペット翻案。
 - 追補ルール10〜13・fan-out / long-run / verify-fresh スキル・パリティマップ:
   [Prompting Claude Fable 5](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5)
   （自律実行・進捗の証拠監査・並列委譲・fresh 検証・境界の各公式スニペット）の翻案。

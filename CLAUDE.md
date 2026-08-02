@@ -90,7 +90,8 @@ claude-code-workbench-ja/
 │       ├── CLAUDE.md                #     コピペ用テンプレート本体（9つの行動ルール・共通基盤）
 │       ├── CLAUDE.private.md        #     プロファイル追補（Opus+Sonnet・私用PC）ルール10〜14
 │       ├── CLAUDE.company.md        #     プロファイル追補（Sonnet単独・会社PC）ルール10〜15
-│       ├── MODEL-GUIDE.md           #     モデル仕様・effort選定・プロファイル・Fable 5 パリティマップ
+│       ├── MODEL-GUIDE.md           #     モデル仕様・effort選定・プロファイル・Fable 5 パリティマップ・AIDLC 簡易版ワークフロー
+│       ├── PROMPTS.md               #     都度貼りプロンプト集（Plan モード用初回テンプレート・公式スニペット翻案）
 │       ├── settings.private.json    #     私用PC向け設定サンプル（opusplan + xhigh）
 │       ├── settings.company.json    #     会社PC向け設定サンプル（sonnet + xhigh）
 │       ├── .claude-plugin/plugin.json
