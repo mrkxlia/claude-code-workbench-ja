@@ -78,6 +78,20 @@
 | `/spec-extract [対象]` | 既存成果物・規約から「成果物仕様」を SPEC.md に逆引き固定する。**既存 SPEC.md の改訂・更新（要件/構成を途中で変える）にも使う**（整合性の土台＋以降の維持） |
 | `/notes` | 成果物作成の判断・逸脱を implementation-notes.md に記録する（パイプライン内ではビルダーが自動記録） |
 
+## AIDLC との対応
+
+このパイプラインの流れは AWS Labs [AI-DLC](https://github.com/awslabs/aidlc-workflows)（AIが提案・
+人間が承認するゲート付き開発ライフサイクル）の簡易版にあたる（対応表の全体は
+`model-setup/MODEL-GUIDE.md` §9）。既存のフェーズ・エージェント構成そのままの読み替えで、
+追加の操作は不要:
+
+- **Inception（要件・設計）** = 調査〜ブリーフ。`source-researcher`=調査役・
+  `requirements-writer`=要件役・`brief-writer`=設計役。要件承認・ブリーフ承認の2つが承認ゲート
+- **Construction（作成）** = `deliverable-builder`（実装役・出力ディレクトリのみ）。
+  brief の「並列実行プラン」の独立成果物グループが AIDLC の Units of Work にあたる
+- **検証ゲート** = `deliverable-reviewer`（検証役・読み取り専用）と最終レビュー承認。
+  実装役と検証役の分離は維持する（作った本人に採点させない）
+
 ## 並列実行・調査の網羅性（補足）
 
 - **並列実行グループ** — brief の「並列実行プラン」が独立成果物グループ（出力パスが交わらず共有ファイルを

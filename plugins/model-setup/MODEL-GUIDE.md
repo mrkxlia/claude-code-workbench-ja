@@ -44,6 +44,11 @@ effort レベルは 5 段階（`low` / `medium` / `high` / `xhigh` / `max`）。
 Sonnet 4.6 の `high` 相当、Sonnet 5 の `high` は Sonnet 4.6 の `max` 相当という公式の
 目安がある（ベンチマークする際はレベル名でなく実測の思考の長さで比較する）。
 
+Sonnet 5 は effort レベルを**特に低い側で字義どおり守る** — `low`/`medium` では期待以上の
+ことをせず、求められた範囲に作業を限定する。複雑な問題で推論が浅いときの第一手は
+プロンプトの工夫ではなく effort の引き上げ（`high`/`xhigh`）。レイテンシ都合で低 effort を
+維持する定型ルートには、的を絞った促し（`PROMPTS.md` #1）を貼る。
+
 ## 3. プロファイル
 
 ### 私用 PC（Opus 4.8 + Sonnet 5・git あり・Codex 不使用）
@@ -98,6 +103,14 @@ git が無い環境での代替策:
   報告して」と言うと、Sonnet 5 は調査の深さ自体は落とさずに指摘の報告を絞り込みがちで、
   見かけ上の再現率（recall）が下がることがある。フィルタリングは別工程に任せ、
   発見工程では網羅性を優先させる（`model-setup/CLAUDE.md` ルール9）。
+- **応答の長さはタスクの複雑さに応じて可変。** 特定の冗長性に寄せたいときはプロンプトで
+  明示する（`PROMPTS.md` #8）。また長いエージェント作業中の進捗報告は素の品質が上がって
+  いるため、「ツール呼び出しn回ごとに報告」のような機械的スキャフォールディングは足さない
+  （区切り基準で報告する — long-run の報告規律と同じ）。
+- **デザイン・フロントエンドは固定のハウススタイルに収束しやすい。** `temperature` が
+  使えないため、多様性は「構築前に方向性を複数提案させて選ぶ」（`PROMPTS.md` #6、追補
+  ルール14/15 の複数案比較）と具体仕様の明示で作る。本格運用は公式 `frontend-design`
+  スキル・superpowers `brainstorming`（`docs/skills-guide/` 参照）。
 
 ## 6. 構造で補う（LLM アプリ・プロンプト開発編）
 
@@ -172,8 +185,55 @@ Sonnet/Haiku と Opus/Fable の差は「賢さ」ではなく「構造」で埋�
 | 結論先行・見ていない読者向けサマリ | 追補ルール13 |
 | メモリ（教訓の記録・更新） | **knowledge-share プラグイン（`kb` / `kb-harvest`）を使う — 本セクションでは新規に作らない** |
 | 長時間作業での序盤制約の保持 | `/long-run` の「ブリーフ固定＋区切り再読」＋ §7 エスカレーション（完全には埋まらない） |
+| テストへの過剰適合の回避（汎用解の実装） | `task-worker` ルール5 ＋ `fresh-verifier` 観点4（未委譲の直接実装には `PROMPTS.md` #3） |
+| 開いていないコードを推測で語らない | 追補ルール10（3点目・両プロファイル共通） |
 
 **互換方向の注意**: 公式ガイドは「旧世代向けに書かれたスキルは Fable 5 には処方的すぎる
 （削るほど良い）」とする一方、その裏返しとして **Sonnet / Opus 向けのスキルは処方的・
 明示的に書くのが正しい方向**になる。本セクションの3スキル（fan-out / long-run / verify-fresh）が
 長く具体的なのは意図的であり、「冗長だから」と簡略化しないこと。
+
+## 9. AIDLC 簡易版ワークフロー（Plan モード起点の自動ルーティング）
+
+AWS Labs [AI-DLC (aidlc-workflows)](https://github.com/awslabs/aidlc-workflows) —
+「AI が提案し、人間が承認する」ゲート付き開発ライフサイクル — を参考に、
+その流れを**新しいルールツリーを作らずに**このリポジトリの既存資材へ写像した簡易版。
+実装の本体は追補ルール14（private）／15（company）「ワークフローの既定」で、
+エンドユーザの操作は「**Plan モードで普通に依頼 → 計画を承認**」の2つだけに減らし、
+スキルの選択・起動は CC 側が裏で行う。
+
+### AIDLC の概念 → このリポジトリでの担い手
+
+| AIDLC の概念 | このリポジトリでの担い手 |
+|---|---|
+| Intent（意図の表明） | Plan モードでの普通の依頼（`PROMPTS.md` #0 のテンプレートを貼るとさらに確実） |
+| Inception: 要件確認（構造化質問） | `task-brief`（選択肢＋推奨値の一括質問）／深い要件は `clarify`〔pipelines 導入時〕 |
+| Inception: 設計・計画 | Plan モードの実行計画（使うスキル分担・検証チェックポイントを明記） |
+| 承認ゲート（Human in the Loop） | Plan 承認（唯一のゲート）／Step ごとに刻むなら `backlog-loop`／パイプラインの3チェックポイント |
+| Construction: 実装 | 軽微なら直接実行。機能開発 → `feature-pipeline`、非コード成果物 → `task-pipeline`、汎用実装 → `task-worker` |
+| Units of Work（並列作業単位） | `/fan-out` の分解（書き込み範囲が交わらないサブタスク）／pipelines の並列実行グループ |
+| 検証（レビュー役の分離） | `/verify-fresh`（`fresh-verifier`）を要所で自動実行。コードは `/codex-review`、設計・文書は `review-panel`・`peer`〔各導入時〕 |
+| 複雑度適応（adaptive execution） | 軽微な変更（1〜2ファイル・完了条件が自明）はパイプラインを通さず直接実行 |
+| 成果物の集約（aidlc-docs/ 相当） | 作業メモ（long-run）・`notes`（実装ノート）・`kb`（教訓）〔各導入時〕 — 新規の仕組みは作らない |
+
+### 簡易化で削ったもの
+
+- **ルールツリー**（aidlc-rules/ の階層的ルール群）→ CLAUDE 追補のルール1本＋各スキルの既存手順で代替
+- **opt-in 拡張機構**（extensions/）→ プラグインの導入有無〔導入時〕がそのまま opt-in にあたる
+- **Operations フェーズ**（デプロイ・監視）→ 対象外（AIDLC 本家でも将来予定）
+
+### 設計の裏づけ（類似実装・研究）
+
+- **ゲート付き spec/plan 先行ワークフローは業界の収束点**: [GitHub spec-kit](https://github.com/github/spec-kit)
+  （Specify→Plan→Tasks→Implement）・[BMAD-METHOD](https://github.com/bmad-code-org/BMAD-METHOD)
+  （フェーズ別ロールエージェント）・AI-DLC が同型。本節はその最軽量版（ゲートは Plan 承認の1点）
+- **役割分離マルチエージェントの有効性**: [MetaGPT](https://arxiv.org/abs/2308.00352)（PM/Architect/
+  Engineer/QA の SOP 分業）・[ChatDev](https://arxiv.org/abs/2307.07924)（各段階で実装役と
+  レビュー役が対話検証）が、複雑タスクでの役割分離の優位を報告 → pipelines・task-worker /
+  fresh-verifier の分離の根拠
+- **外部検証の必要性**: [LLMs Cannot Self-Correct Reasoning Yet](https://arxiv.org/abs/2310.01798)
+  （Huang et al., ICLR 2024）・[自己修正の批判的サーベイ](https://arxiv.org/abs/2406.01297)
+  （Kamoi et al., 2024）が「外部フィードバックなしの自己修正は不安定（悪化もある）」と報告。
+  誤りを生んだ文脈を持たない fresh context の評価は有効 → `/verify-fresh` を要所で自動で挟む根拠
+- **既知の失敗モード**: 単純タスクへのプロセス過剰（→ 複雑度適応）・マルチエージェントの
+  トークンコスト（→ 軽微は直接実行・機械的スキャンは haiku の `bulk-scanner`）

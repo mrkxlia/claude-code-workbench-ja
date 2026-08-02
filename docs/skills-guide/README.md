@@ -31,6 +31,8 @@ cp -r plugins/model-setup/skills/verify-fresh ~/.claude/skills/
 mkdir -p ~/.claude/agents && cp -r plugins/model-setup/agents/* ~/.claude/agents/
 cat plugins/model-setup/CLAUDE.md plugins/model-setup/CLAUDE.company.md >> ~/.claude/CLAUDE.md
 # ~/.claude/settings.json に plugins/model-setup/settings.company.json をマージ
+# 都度貼りプロンプト集（自動配信されない資材）も手元に置いておくと便利
+cp plugins/model-setup/PROMPTS.md ~/.claude/model-setup-PROMPTS.md
 
 # codex-bridge: 会社でのみ Codex CLI が使えるため、単一モデル環境のレビュー/セカンドオピニオン役として導入
 cp -r plugins/codex-bridge/skills/* ~/.claude/skills/
@@ -109,6 +111,7 @@ Anthropic公式リポジトリのスキル。安定性が最も高く、今す�
 | **Setup Pre-Commit** | コミット前の品質チェックを自動設定 | `mattpocock/skills` | `setup-pre-commit` |
 | **Git Guardrails** | 危険なGitコマンド防止・ブランチ保護ルールを自動構築 | `mattpocock/skills` | `git-guardrails-claude-code` |
 | **Web Artifacts Builder** | React/TypeScript/TailwindでWebアプリをHTMLとして生成 | `web-artifacts-builder@skills` | — |
+| **Ralph Wiggum** | 完了するまで同じプロンプトを stop-hook で再投入する自走ループ（数時間規模のタスクリスト消化向け。最大反復回数を必ず指定する） | `anthropics/claude-code` → `plugins/ralph-wiggum` | `ralph-loop` |
 | **Superpowers（一括）** | 上記含む14スキルをまとめて導入 | `obra/superpowers` v5.1.0 | — |
 
 ---
