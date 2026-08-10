@@ -12,7 +12,7 @@
 
 - settings: `plugins/model-setup/settings.private.json`（`opusplan` + `xhigh`）
 - workbench-ja のプラグイン: `model-setup`・`self-improve`・`knowledge-share`
-  （`software-pipeline`・`task-pipeline`・`ai-peer` は必要に応じて）
+  （`pipeline` は必要に応じて）
 - `plan-mode`・`implementation-skills` はファイルコピーで導入（非プラグイン）
 - 公式プラグイン: `commit-commands`・`pr-review-toolkit`・`skill-creator`・`claude-md-management`
 - `codex-bridge` は導入**しない**（Codex CLI を使っていないため）
@@ -42,8 +42,8 @@ cp -r plugins/codex-bridge/agents/* ~/.claude/agents/
 # plan-mode / implementation-skills も同様にコピーで導入可能
 ```
 
-- `software-pipeline` / `task-pipeline` を会社 PC で使う場合は、手動コピーではなく
-  **必ず setup スキル経由**（`pipeline-setup` / `task-pipeline-setup`）で導入する
+- `pipeline` を会社 PC で使う場合は、手動コピーではなく
+  **必ず setup スキル経由**（`pipeline-setup`）で導入する
   （Windows で bash が無い場合の `.ps1` フック振り分けが setup 経由でしか働かないため）。
 
 ---

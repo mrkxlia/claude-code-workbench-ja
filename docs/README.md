@@ -1,6 +1,6 @@
 # docs/ — リポジトリ横断の設計ノート
 
-このディレクトリは、特定のセクション（`software-pipeline/` など）単体に閉じない、
+このディレクトリは、特定のセクション（`pipeline/` など）単体に閉じない、
 **複数セクションをまたぐ設計提案・検討資料**を置く場所です。
 
 セクション固有のドキュメントは各セクションの `README.md` に置き、ここには
@@ -10,4 +10,4 @@
 
 | ファイル | 内容 |
 |---------|------|
-| `pipeline-spec-alignment-proposal.html` | `software-pipeline` / `task-pipeline` / `implementation-skills` の3つに、既存リポジトリの仕様の「吸い出し（extraction）」と以降要件の「合致性（conformance）」を強制化するための設計提案・判断材料（案A 軽量強化 / 案B steering 層新設の比較）。ブラウザで開いて読む単一ファイル HTML。 |
+| `pipeline-spec-alignment-proposal.html` | 旧 `software-pipeline` / `task-pipeline`（現 `pipeline` に統合）/ `implementation-skills` に、既存リポジトリの仕様の「吸い出し（extraction）」と以降要件の「合致性（conformance）」を強制化するための設計提案・判断材料（案A 軽量強化 / 案B steering 層新設の比較）。ブラウザで開いて読む単一ファイル HTML。 |

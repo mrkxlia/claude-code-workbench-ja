@@ -1,6 +1,6 @@
 # SPEC: software-pipeline（7エージェントで機能を end-to-end 実装するパイプライン）
 
-Track B の共有仕様。**原本 `plugins/software-pipeline/{skills/feature-pipeline,agents,CLAUDE.md}` を一次根拠**に起こした
+Track B の共有仕様。**原本 `plugins/pipeline/{skills/feature-pipeline,agents,CLAUDE.md}` を一次根拠**に起こした
 派生ドキュメント（複製ではない）。原本が変わったらこの SPEC を手動追従し、各ツール実装（`../impl/<tool>/software-pipeline`）を更新する。
 確度ラベル: `[確定]`＝原本に明記 / `[推定]`＝合理的補完 / `[要確認]`＝ツール/バージョン依存。
 
@@ -60,7 +60,7 @@ brief が独立グループ（所有パスが交わらず共有ファイルを�
 
 ## S8. 各ツール実装
 
-- **Claude Code（原本）**: `plugins/software-pipeline/{skills,agents}`（参照元）。
+- **Claude Code（原本）**: `plugins/pipeline/{skills,agents}`（参照元。旧 software-pipeline は pipeline プラグインに統合済み）。
 - **Kiro**: `../impl/kiro/software-pipeline/`。本 SPEC からの再実装。`.kiro/agents/*.json`×7＋`.kiro/skills/feature-pipeline`＋
   steering（ハードルール）。**写像**（本リポジトリ README の SDD 対応表より）: story↔`requirements.md`・brief↔`design.md`・
   status/差し戻し↔`tasks.md`・SPEC.md↔living spec。Kiro Power に同梱。

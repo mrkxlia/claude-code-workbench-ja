@@ -29,7 +29,7 @@ SessionStart フック**を同梱します（kb-harvest と同じ「検出/通�
 | | 対象 | 起点データ | 出力 | 前提 |
 |---|---|---|---|---|
 | **kb-harvest**（knowledge-share） | 個人の横断ナレッジ | トランスクリプト jsonl | `~/.claude/knowledge/` への**メモ追記**（スキルは直さない） | なし |
-| **pipeline-improve**（software/task-pipeline） | パイプライン定義 | `LEARNINGS.md`・`status.md` 等**パイプライン産物** | 定義の改善編集 | **パイプライン運用中**（`docs/pipeline/`） |
+| **pipeline-improve**（pipeline プラグイン） | パイプライン定義 | `LEARNINGS.md`・`status.md` 等**パイプライン産物** | 定義の改善編集 | **パイプライン運用中**（`docs/pipeline/`） |
 | **self-improve（本セクション）** | 任意リポジトリのスキル/CLAUDE.md/rules/hook/agent | 直近トランスクリプト＋kb 蓄積 | 上記への**改善・新規作成**編集（承認制・`.bak`） | **パイプライン不要・git 不要** |
 
 要点: `pipeline-improve` はパイプライン運用が前提、`kb-harvest` はメモを貯めるだけ。
@@ -92,7 +92,7 @@ self-improve は「**普通の単発セッションの訂正から、その場�
 - **承認制**: 候補を1件ずつ提示し Accept / Reject / Modify。承認なしに1ファイルも変更しない。
 - **ロールバック**: 各 Edit 前に `<file>.bak` 退避。`settings.json` など JSON マージ系は
   追加エントリだけを記録して差分単位で復元（他設定を巻き戻さない）。
-- **品質ゲート**: self-review →（任意で `/peer` か `/ask-claude` に独立レビュー）→ 公式スキルガイド検証 →
+- **品質ゲート**: self-review →（任意で fresh context の Task サブエージェントか `/codex-ask` に独立レビュー）→ 公式スキルガイド検証 →
   秘密情報・公開可否チェック（kb のサニタイズ規律）。
 - **サニタイズ**: backlog にも成果物にも、生ログ・絶対パス・秘密情報を残さない。
 
@@ -171,7 +171,7 @@ Claude Code 向け OSS 実装の比較、本セクションの設計との対応
 ## ライセンス・出典
 
 [MIT License](../LICENSE)。自己改善ループの構成は以下を参考にした独自実装です（コードのコピーでは
-ありません）。先行事例に無い**ロールバック・kb 連携・依存ゼロの品質ゲート（peer/ask-claude）・
+ありません）。先行事例に無い**ロールバック・kb 連携・依存ゼロの品質ゲート・
 客観ログ突合（嘘のない改善）**を加えています。
 
 - TerenceBristol/claude-improve（`/improve`＝会話シグナル検出 → 設定ファイルを1件ずつ承認で改善）

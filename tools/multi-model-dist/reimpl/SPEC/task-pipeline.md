@@ -1,6 +1,6 @@
 # SPEC: task-pipeline（5エージェントでコード以外の成果物を作るパイプライン）
 
-Track B の共有仕様。**原本 `plugins/task-pipeline/{skills/task-pipeline,agents,CLAUDE.md}` を一次根拠**に起こした
+Track B の共有仕様。**原本 `plugins/pipeline/{skills/task-pipeline,agents,CLAUDE.task.md}` を一次根拠**に起こした
 派生ドキュメント（複製ではない）。原本が変わったらこの SPEC を手動追従し、各ツール実装を更新する。
 確度ラベル: `[確定]` / `[推定]` / `[要確認]`。software-pipeline SPEC と対をなす（コード→成果物への汎用化）。
 
@@ -58,6 +58,6 @@ brief が独立グループ（出力パスが交わらず共有ファイルを�
 
 ## S8. 各ツール実装
 
-- **Claude Code（原本）**: `plugins/task-pipeline/{skills,agents}`（参照元）。
+- **Claude Code（原本）**: `plugins/pipeline/{skills,agents}`（参照元。旧 task-pipeline は pipeline プラグインに統合済み）。
 - **Kiro**: `../impl/kiro/task-pipeline/`。`.kiro/agents/*.json`×5＋skill＋steering。**写像**: requirements↔`requirements.md`・brief↔`design.md`・status/差し戻し↔`tasks.md`。Kiro Power 同梱。
 - **Codex**: `../impl/codex/task-pipeline/`。`.codex/agents/*.toml`×5＋orchestrator skill。status.md ファイル永続化は原本どおり。Codex plugin 同梱。

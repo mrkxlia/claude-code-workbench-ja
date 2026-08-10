@@ -33,7 +33,7 @@ cksum プロジェクトキー・両者の閉ループ に依存するため、�
 | 通知 | SessionStart フック | **Kiro hooks `SessionStart`** | 非対応（手動起動のみ） |
 | project キー | `cksum`（cwd 正規化） | 同一アルゴリズム流用可 | 同上 |
 | 昇格先 | CLAUDE.md・`.claude/rules`・skill・hook・agent | steering・`.kiro/skills`・`.kiro/hooks`・`.kiro/agents` | AGENTS.md・`.agents/skills`・`.codex/agents`（hook 不可） |
-| 品質ゲートのピア | `/peer`・`/ask-claude`（ai-peer） | Kiro 内のレビュー（または codex-bridge `/codex-ask`） | codex 自身・人手 |
+| 品質ゲートのピア | fresh context の Task サブエージェント（または codex-bridge `/codex-ask`） | Kiro 内のレビュー（または codex-bridge `/codex-ask`） | codex 自身・人手 |
 
 ## K3. degrade 方針 `[確定]`
 

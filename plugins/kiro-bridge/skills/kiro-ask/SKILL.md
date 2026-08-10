@@ -29,9 +29,9 @@ kiro-cli を**非対話モード**（`--trust-tools=read`）で駆動し、Kiro 
 
 - **kiro-review** … 差分/コードの**指摘**（重大度 P1–P4）。「悪いところを挙げて」。
 - **kiro-ask** … 自由形式の**助言・議論**。「どう設計すべき？」「この方針は妥当？」。
-- **相談相手を変えたいとき**（[`ai-peer`](../../../../ai-peer/)・[`codex-bridge`](../../../../codex-bridge/)
-  セクション）: 依存を増やしたくない・オフライン/git なし環境なら `/peer`（内部 Claude・
-  依存ゼロ）、別 Claude の独立見解なら `/ask-claude`、Codex の意見なら `/codex-ask`。
+- **相談相手を変えたいとき**（[`codex-bridge`](../../../../codex-bridge/) セクション）:
+  依存を増やしたくない・オフライン/git なし環境なら内蔵の Task サブエージェント
+  （fresh context）、Codex の意見なら `/codex-ask`。
   kiro-ask は相談相手が **Kiro**（`kiro-cli`）である点が違う。
 
 ## 前提

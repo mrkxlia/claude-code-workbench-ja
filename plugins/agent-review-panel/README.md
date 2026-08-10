@@ -14,8 +14,8 @@
 
 ## どれを選ぶか
 
-- **1名のセカンドオピニオンで足りる（実装前の壁打ち・軽い相談）→ [`ai-peer`](../ai-peer/) の `/peer`**。
-  そちらのほうがずっと軽い（Task 1回 vs 6〜9回）。
+- **1名のセカンドオピニオンで足りる（実装前の壁打ち・軽い相談）→ 内蔵の Task サブエージェント
+  （fresh context）に相談**。そちらのほうがずっと軽い（Task 1回 vs 6〜9回）。
 - **行レベルの網羅的なコードレビューが欲しい → 内蔵 `/code-review` か [`codex-bridge`](../codex-bridge/) の `/codex-review`**。
   単独レビュアーの網羅性が目的ならそちら。
 - **重要な設計判断・リリース前・意見が割れそうな対象 → 本パネル**。指摘を討論でたたき合わせ、
@@ -49,7 +49,7 @@
 ## プロトコル
 
 ```
-Round 0   実施判断・編成承認（Task なし。単純な対象は /peer・/code-review へ誘導）
+Round 0   実施判断・編成承認（Task なし。単純な対象は単発 Task 相談・/code-review へ誘導）
    │      対象パッケージを1回だけ構築（行番号つき・目安400行）
 Round 1   panel-reviewer ×N を1ターンで一斉起動（ブラインド: 互いの存在を知らない）
    │      → 指摘リスト（物証つき）＋ブラインドスコア＋最重要指摘
@@ -151,5 +151,5 @@ cp -r plugins/agent-review-panel/agents/*  .claude/agents/
   「疑わしい」でなく反例で批判する検証優位性、ゴーストパネリスト・追従的収束・
   ファシリテーター私見分離という失敗モード対策、異種モデル混成のコンセプト
 - スキル（入口）／エージェント（実行）の分業と要約契約は、本リポジトリ
-  [`ai-peer`](../ai-peer/)・[`codex-bridge`](../codex-bridge/)・[`kiro-bridge`](../kiro-bridge/)
+  [`codex-bridge`](../codex-bridge/)・[`kiro-bridge`](../kiro-bridge/)
   と同型

@@ -39,12 +39,11 @@ CC 資産はツールごとに移植容易度が大きく異なります。そ�
 ### Track A の生成カバレッジ（現在）
 
 - **T1 スキル**: implementation-skills（notes / spec-extract）・plan-mode（create-plan / create-plan-calibrate）・
-  **data-science 10種**・**model-setup**（task-brief / backlog-loop / pr-merge / long-run）
-- **T2p スキル＋エージェント対**: ai-peer（peer＋peer-engineer）・**model-setup**（fan-out / verify-fresh＋
+  **model-setup**（task-brief / backlog-loop / pr-merge / long-run）
+- **T2p スキル＋エージェント対**: **model-setup**（fan-out / verify-fresh＋
   task-worker / fresh-verifier / bulk-scanner）・**agent-review-panel**（review-panel＋panel-* 4種・サイドカー同梱）
-- **ガイダンス CLAUDE.md**: global-claude-md-sample・data-science（Codex＋Kiro）／model-setup（Kiro のみ。
-  Claude モデル運用ルールのため）
-- **Track B（生成しない）**: software/task-pipeline・knowledge-share・self-improve・codex-bridge・フック・ask-claude
+- **ガイダンス CLAUDE.md**: model-setup（Kiro のみ。Claude モデル運用ルールのため）
+- **Track B（生成しない）**: パイプライン・knowledge-share・self-improve・codex-bridge・フック
   → `reimpl/` の SPEC から手書き再実装
 
 ## ディレクトリ構成

@@ -139,8 +139,6 @@ def test_real_repo_collect():
             check(s.has_frontmatter, f"allowlist スキルに frontmatter: {key}")
     for key in sorted(export.T2P_AGENTS):
         check(key in by_agent, f"allowlist エージェントが実在: {key}")
-    ds = [s for s in skills if s.section == "data-science"]
-    check(len(ds) == 10 and all(s.has_frontmatter for s in ds), "data-science 10スキル全て frontmatter 有り")
 
 
 def test_export_integration():
@@ -149,9 +147,9 @@ def test_export_integration():
     try:
         export.run(REPO, ["codex", "kiro"], tmp)
         _, _, known = convert.collect(REPO)
-        # (a) data-science スキルが両ターゲットに生成される（旧: T1g デッドコードで脱落していた）
-        check((tmp / "build/codex/.agents/skills/visualization/SKILL.md").is_file(), "codex に data-science スキル生成")
-        check((tmp / "build/kiro/.kiro/skills/visualization/SKILL.md").is_file(), "kiro に data-science スキル生成")
+        # (a) T1 スキルが両ターゲットに生成される
+        check((tmp / "build/codex/.agents/skills/notes/SKILL.md").is_file(), "codex に T1 スキル生成")
+        check((tmp / "build/kiro/.kiro/skills/notes/SKILL.md").is_file(), "kiro に T1 スキル生成")
         # (b) review-panel のサイドカーが複製される
         for f in ("personas.md", "report-template.md"):
             p = tmp / "build/codex/.agents/skills/review-panel" / f

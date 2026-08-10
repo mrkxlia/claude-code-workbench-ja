@@ -55,10 +55,10 @@ backlog を読み、レバレッジの高い順に並べる。**CLAUDE.md と ru
 - 検証チェックリスト（固定）: frontmatter（`name`/`description`/トリガー語）・見出し構成・記述の自己完結性。
   参照は公式ドキュメント `https://code.claude.com/docs/en/skills`（常に最新に追従）。
 
-### 3. 品質ゲート（ai-peer と連携）
+### 3. 品質ゲート
 
 1. **self-review**（自分で見直す）
-2. 任意で **`/peer`（依存ゼロ）** または **`/ask-claude`** に独立レビューを依頼
+2. 任意で **fresh context の Task サブエージェント**（依存ゼロ）または **`/codex-ask`**（codex-bridge 導入時）に独立レビューを依頼
 3. 生成/編集した SKILL.md を**公式スキルガイドで検証**（frontmatter・トリガー・構成）
 4. **秘密情報・公開可否チェック**（kb のサニタイズ規律を流用：トークン/内部ホスト名/顧客データを残さない）
 
@@ -113,7 +113,7 @@ backlog の「昇格候補」（`#promote` 付き kb エントリ等）を恒久
 
 ## 既存の自己改善系との住み分け
 
-- **pipeline-improve（software/task-pipeline）** … パイプライン運用が前提（`docs/pipeline/` の産物を読む）。
+- **pipeline-improve（pipeline プラグイン）** … パイプライン運用が前提（`docs/pipeline/` の産物を読む）。
 - **kb-harvest（knowledge-share）** … 知見メモを `~/.claude/knowledge/` に貯めるだけ（スキルは直さない）。
 - **improve-apply（本スキル）** … パイプライン不要・git 不要で、**任意リポジトリの恒久成果物を直す/作る**。
 

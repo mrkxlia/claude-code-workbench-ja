@@ -15,9 +15,15 @@ Codex CLI を**非対話モード（`codex exec`）**で Bash 越しに駆動し
 さらに、**プラン承認で Codex 実装へ委譲する opt-in フック**（`plan-to-codex.sh`）と、
 **セッション開始時に `AGENTS.md` を再生成する常時フック**（`hooks.json`）を同梱します（後述）。
 
-> **相談相手が Codex 以外でよいなら** [`ai-peer`](../ai-peer/) セクションを使ってください。
-> 依存を増やしたくない・git なし環境なら `/peer`（内部 Claude・依存ゼロ）、別 Claude の独立見解なら
-> `/ask-claude`。codex-bridge は相手が **OpenAI Codex** のときに使います。
+> **相談相手が Codex 以外でよいなら**: 依存を増やしたくない・git なし環境なら内蔵の Task
+> サブエージェント（fresh context）や内蔵 `/code-review` で足ります。codex-bridge は相手が
+> **OpenAI Codex** のときに使います。
+>
+> **公式プラグインとの使い分け**: OpenAI 公式の
+> [codex-plugin-cc](https://github.com/openai/codex-plugin-cc) もレビュー・タスク委譲・
+> バックグラウンドジョブ管理を提供します。本プラグインの独自価値は **AGENTS.md ジェネレータ
+> （`/codex-agents`＋SessionStart 自動再生成）・プラン承認で実装委譲する opt-in フック・
+> read-only 既定の安全設計の明文化**の3点で、これらが不要なら公式プラグインの利用も検討してください。
 
 ## なぜこの構成か
 

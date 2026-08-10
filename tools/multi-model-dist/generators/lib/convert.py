@@ -152,7 +152,7 @@ def agent_source_rel(repo_root: pathlib.Path, section: str, name: str) -> str:
 def load_skill(section: str, skill_md: pathlib.Path) -> SkillIR:
     meta, body = split_frontmatter(skill_md.read_text(encoding="utf-8"))
     if meta is None:
-        # frontmatter 無し（data-science 等）= T1g ガイダンス。name はディレクトリ名で補完。
+        # frontmatter 無し = 参照ドキュメント型。name はディレクトリ名で補完。
         return SkillIR(section, skill_md.parent.name, "", body, has_frontmatter=False)
     return SkillIR(
         section=section,
