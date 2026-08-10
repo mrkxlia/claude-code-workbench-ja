@@ -16,10 +16,8 @@ flowchart TD
     N1 --> N2{"何を作る？"}
     N2 -->|"コードで機能開発"| N3["software-pipeline の<br/>pipeline-setup を実行"]
     N2 -->|"図・ドキュメント等"| N4["task-pipeline の<br/>task-pipeline-setup を実行"]
-    N2 -->|"データ分析"| N5["data-science の<br/>CLAUDE.md と skills をコピー"]
     N3 --> N6["knowledge-share・self-improve は<br/>いつでも追加導入可"]
     N4 --> N6
-    N5 --> N6
 
     Existing --> E1["1. 現状を仕様化する（推奨）<br/>spec-extract で SPEC.md を生成"]
     E1 --> E2["2. 必要ならパイプラインを導入<br/>pipeline-setup / task-pipeline-setup"]
@@ -34,7 +32,6 @@ flowchart TD
 2. **プロジェクトの土台を選ぶ**（対象リポジトリに導入。何を作るかで変わる）
    - コードで機能開発が中心 → `software-pipeline` の `pipeline-setup` を実行（エージェント7種・CLAUDE.md・フックを対象リポジトリに自動導入）
    - 図・ドキュメント・レポートが中心 → `task-pipeline` の `task-pipeline-setup` を実行
-   - データ分析プロジェクト → `data-science` の CLAUDE.md とスキル一式をコピー
 3. 知見の蓄積（`knowledge-share`）や自己改善ループ（`self-improve`）は、上記と独立して**いつ追加してもよい**。
 
 ### 既存リポジトリ（すでにコード・成果物がある）
@@ -61,7 +58,7 @@ flowchart TD
 | 種別 | 動き方 | 呼び出し方 | 入れると何が嬉しいか | 代表例 |
 |---|---|---|---|---|
 | 🔁 フック（完全自動） | プラグイン導入直後から、SessionStart/SessionEnd/PreToolUse 等のイベントで**頼まなくても毎回発火**する | 不要（無効化しない限り常時ON） | 「言い忘れ」「やり忘れ」を構造的に防げる。導入するだけで効果が始まる | 知見の自動読込・回収、改善候補の検出・通知、機密コミット防止、仕様更新漏れの通知（下表） |
-| 💬 スキル（自然文トリガー） | 自然文の依頼を Claude が判断し、**自動的に適切なスキルを選ぶ**（`/スキル名` での明示起動も可） | 「〜して」と頼む、または `/スキル名` | 手順や合言葉を覚えていなくても、思った通りに頼めば正しい型が起動する | `task-brief`・`backlog-loop`・`pr-merge`・`feature-pipeline`・`task-pipeline`・`clarify`・`notes`・`spec-extract`・`kb`・`peer`・`ask-claude`・`codex-review` など大半のスキル |
+| 💬 スキル（自然文トリガー） | 自然文の依頼を Claude が判断し、**自動的に適切なスキルを選ぶ**（`/スキル名` での明示起動も可） | 「〜して」と頼む、または `/スキル名` | 手順や合言葉を覚えていなくても、思った通りに頼めば正しい型が起動する | `task-brief`・`backlog-loop`・`pr-merge`・`feature-pipeline`・`task-pipeline`・`clarify`・`notes`・`spec-extract`・`kb`・`codex-review` など大半のスキル |
 | 🎯 明示専用スキル | 自然文では発火せず、**`/スキル名` で名指ししたときだけ**動く（`disable-model-invocation: true`） | `/スキル名` のみ | 導入・較正など一度きり／影響の大きい操作を誤発動させない | `pipeline-setup`・`task-pipeline-setup`・`pipeline-improve`・`create-plan-calibrate` |
 
 ### 🔁 自動フック一覧（導入するだけで効果が始まるもの）
@@ -74,13 +71,13 @@ flowchart TD
 | software-pipeline | block-secrets-commit / guard-builder-writes / spec-sync-reminder | コミット前／Edit・Write 前／セッション開始・Stop | 機密のコミット防止、担当外ファイルへの書き込み防止、仕様更新漏れの通知 |
 | task-pipeline | guard-deliverable-writes / spec-sync-reminder | Edit・Write 前／セッション開始・Stop | 出力先外への書き込み防止、仕様更新漏れの通知 |
 
-> フックは一覧の5プラグインのみが持ちます。他のプラグイン（model-setup・kiro-bridge・ai-peer・agent-review-panel 等）はスキルのみで完結し、常駐フックはありません。
+> フックは一覧の5プラグインのみが持ちます。他のプラグイン（model-setup・kiro-bridge・agent-review-panel 等）はスキルのみで完結し、常駐フックはありません。
 
 ## 導入方法（クイックスタート）
 
 ### 方法1: プラグインで導入する（最も簡単）
 
-Claude Code でそのまま実行します（clone 不要）。現在9つのプラグインを配信しています:
+Claude Code でそのまま実行します（clone 不要）。現在8つのプラグインを配信しています:
 
 ```
 /plugin marketplace add mrkxlia/claude-code-workbench-ja
@@ -89,7 +86,6 @@ Claude Code でそのまま実行します（clone 不要）。現在9つのプ�
 /plugin install knowledge-share@workbench-ja
 /plugin install codex-bridge@workbench-ja
 /plugin install kiro-bridge@workbench-ja
-/plugin install ai-peer@workbench-ja
 /plugin install agent-review-panel@workbench-ja
 /plugin install self-improve@workbench-ja
 /plugin install model-setup@workbench-ja
@@ -110,9 +106,6 @@ Claude Code でそのまま実行します（clone 不要）。現在9つのプ�
 - **kiro-bridge** — 導入すると `/kiro-review`・`/kiro-ask` で、コードレビュー・相談を Kiro に
   依頼できます（ユーザーは Kiro を直接操作せず、Claude Code が kiro-cli を非対話・read-only
   で駆動。実装委譲スキルは持ちません）。詳しくは [kiro-bridge/README.md](plugins/kiro-bridge/) を参照。
-- **ai-peer** — 導入すると `/peer`（内部 Claude・**依存ゼロ**で実装前のプランレビュー・ブレスト・
-  第二の視点）と `/ask-claude`（別の Claude を CLI で起動して独立見解）でピア相談ができます。
-  詳しくは [ai-peer/README.md](plugins/ai-peer/) を参照。
 - **agent-review-panel** — 導入すると `/review-panel` で、コード差分・実装計画・ドキュメントを
   複数ペルソナのサブエージェント（既定3名）に**ブラインド並列レビュー→相互批判→応答・譲歩→統合**
   の討論つきでレビューさせられます（基本は依存ゼロ）。`deep` で引用検証＋裁定者の最終評決、
@@ -154,12 +147,6 @@ mkdir -p .claude/skills .claude/agents && cp -r /tmp/workbench/plugins/codex-bri
 # kiro-bridge — Kiro 依頼スキル2種＋エージェント2種をプロジェクトへ
 mkdir -p .claude/skills .claude/agents && cp -r /tmp/workbench/plugins/kiro-bridge/skills/* .claude/skills/ && cp -r /tmp/workbench/plugins/kiro-bridge/agents/* .claude/agents/
 
-# data-science — CLAUDE.md とスキル一式をプロジェクトへ
-cp /tmp/workbench/templates/data-science/CLAUDE.md ./CLAUDE.md && cp -r /tmp/workbench/templates/data-science/.claude ./.claude
-
-# global-claude-md-sample（旧名 GlobalClaudeMD-sample）— グローバル CLAUDE.md として配置
-cp /tmp/workbench/templates/global-claude-md-sample/CLAUDE.md ~/.claude/CLAUDE.md
-
 # model-setup — 運用ルール（共通9ルール＋プロファイル追補のどちらか一方）をグローバル CLAUDE.md に追記
 #   私用PC(Opus+Sonnet)は CLAUDE.private.md、会社PC(Sonnet単独)は CLAUDE.company.md
 cat /tmp/workbench/plugins/model-setup/CLAUDE.md /tmp/workbench/plugins/model-setup/CLAUDE.company.md >> ~/.claude/CLAUDE.md
@@ -185,13 +172,11 @@ mkdir -p ~/.claude/agents && cp -r /tmp/workbench/plugins/model-setup/agents/* ~
 | 変更せず実行計画だけ立てたい（Plan/Ask 相当） | **plan-mode**（`/create-plan`） | 非プラグイン。`cp` 導入。コード以外の一般タスクにも使える |
 | 別 AI（OpenAI Codex）にレビュー/実装/相談を委譲したい | **codex-bridge**（`/codex-review` ほか） | Claude が Codex CLI を非対話で駆動。ユーザーは Codex を触らない |
 | 別 AI（Kiro）にレビュー/相談を委譲したい | **kiro-bridge**（`/kiro-review`・`/kiro-ask`） | Claude が kiro-cli を非対話・read-only で駆動。実装委譲はしない |
-| 実装前のプランレビュー・壁打ち・第二の視点が欲しい | **ai-peer**（`/peer`・`/ask-claude`） | peer は依存ゼロ（git/CLI/ネット不要）。ask-claude は別 Claude を CLI で起動 |
 | 重要な判断を複数の視点で敵対的にレビュー・討論させたい | **agent-review-panel**（`/review-panel`） | 既定3名がブラインド並列→相互批判→統合。deep で引用検証＋裁定者、codex・kiro で異種モデル混成（同時指定も可） |
 | 訂正・繰り返しからスキルや CLAUDE.md を継続改善したい | **self-improve**（`/improve-scan`・`/improve-apply`） | git 不要・承認制・ロールバック付き。kb と連携 |
 | セッション/リポジトリ横断で知見を蓄積・再利用したい | **knowledge-share**（`/kb`・`/kb-harvest`） | @import ＋フックで知見の自動読み込み・記録・回収 |
 | 要件・仕様を質問で詰めたい | **clarify**（software/task に同梱） | 単体利用も可（各プラグイン README の「単体利用」参照） |
 | 既存コード/成果物から仕様書を逆引きしたい | **implementation-skills**（`/spec-extract`） | 確度ラベル付き SPEC.md を生成。`/notes` で実装の経緯も記録 |
-| データ分析プロジェクトの土台がほしい | **data-science** | Polars・uv・Jupyter 前提の CLAUDE.md ＋スキル |
 | Opus+Sonnet や Sonnet 単独で上位モデル（Fable 5 級）並みの振る舞いに近づけたい | **model-setup** | 9ルール＋プロファイル別追補を CLAUDE.md に常設化、並列委譲・fresh 検証・自律完走のスキル/エージェント、モデル/effortガイド |
 | backlog.md 駆動で計画→実施→PR→マージまで定型ループで回したい | model-setup（`/backlog-loop`・`/pr-merge`） | Step承認ゲート付き。git なし環境は変更ファイル一覧提示で完了 |
 | トークン/コストを可視化したい | **[token-usage-tracker](https://github.com/mrkxlia/token-usage-tracker)**（別リポジトリ） | Claude Code 等のログを集計（独立 Python ツール） |
@@ -284,16 +269,6 @@ bash 系のため Windows は Git Bash / WSL が必要・`jq` は不要）。**�
 `--sandbox workspace-write` に相当する OS レベル隔離が無いため、**実装を委譲するスキルは持ちません**
 （理由は README の「なぜこの構成か」参照）。**プラグイン1コマンドで導入可能**（上の「導入方法」参照）。
 
-#### [`plugins/ai-peer/`](plugins/ai-peer/)
-セカンドオピニオン／ピア相談を依頼するスキル2種とサブエージェント2種。
-**peer**（`/peer`）は内部 Claude サブエージェントで完結し、外部 CLI・git・ネットワークを一切使わずに
-（依存ゼロ＝ロックダウン/オフライン/git なし環境でも動く）実装前のプランレビュー・ブレスト・汎用の
-第二意見を返します。**ask-claude**（`/ask-claude`）は別の Claude を `claude` CLI で非対話・読み取り専用
-（`--permission-mode plan`）に起動して独立見解を要約します。「相談相手」をエンジンで選べるよう、
-依存の勾配（peer→ask-claude→〔Codex は codex-bridge〕）を明示しています。行レベルのコードレビューは
-内蔵 `/code-review` や `/codex-review` に委譲し、peer は実装前と発想支援に軸足を置きます。**プラグイン
-1コマンドで導入可能**（上の「導入方法」参照）。
-
 #### [`plugins/agent-review-panel/`](plugins/agent-review-panel/)
 コード差分・実装計画・ドキュメントを、異なるペルソナの複数サブエージェント（既定3名）にレビューさせる
 **敵対的パネルレビュー**のスキル1種とサブエージェント5種。**review-panel**（`/review-panel`）が
@@ -302,7 +277,7 @@ bash 系のため Windows は Git Bash / WSL が必要・`jq` は不要）。**�
 `deep` 指定で引用検証（panel-verifier が file:line の実在を機械照合）と討論非関与の裁定者
 （panel-judge）による最終評決＋レポート出力を追加、`codex`・`kiro` 指定で外部パネリスト
 （panel-codex 経由の OpenAI Codex／panel-kiro 経由の Kiro・いずれも未導入なら欠席扱い・**同時指定も可**）
-を混成して同一モデルの相関バイアスを減らせます。1名で足りる相談は `ai-peer` の `/peer` に、単独の
+を混成して同一モデルの相関バイアスを減らせます。1名で足りる相談は内蔵の Task サブエージェントに、単独の
 コードレビューは内蔵 `/code-review`・`/codex-review`・`/kiro-review` に任せる住み分けです。
 **プラグイン1コマンドで導入可能**（上の「導入方法」参照）。
 
@@ -310,7 +285,7 @@ bash 系のため Windows は Git Bash / WSL が必要・`jq` は不要）。**�
 普通の単発セッションの訂正・繰り返し・行き詰まりから、スキル・CLAUDE.md・`.claude/rules`・hook・
 エージェントを継続改善する **git 不要の自己改善ループ**。**improve-scan**（`/improve-scan`）が
 トランスクリプト（と、あれば `~/.claude/knowledge/`）から改善の種を発見してローカル backlog に貯め、
-**improve-apply**（`/improve-apply`）が判定 → 品質ゲート（self-review／任意で peer・ask-claude／公式
+**improve-apply**（`/improve-apply`）が判定 → 品質ゲート（self-review／任意で独立レビュー／公式
 スキルガイド検証／サニタイズ）→ **1件ずつ承認** → 適用（`.bak`・差分ロールバック）→ kb へ記録、まで
 通します。GitHub Issue/PR は使わずローカル完結し、改善候補を検出・通知する SessionStart/SessionEnd
 フックも同梱（「検出/通知は自動・本体は手動」）。`pipeline-improve`（パイプライン前提）・`kb-harvest`
@@ -321,10 +296,6 @@ bash 系のため Windows は Git Bash / WSL が必要・`jq` は不要）。**�
 複数セッション・複数リポジトリで解決した知見（エラー対処・ハマりどころ）が揮発する問題を、Claude Code の公式機能だけで解決します。ユーザーメモリ＋ **@import** で知見インデックスを全セッションに自動読み込みし、ユーザーレベルスキル **kb**（記録・検索・昇格）・**kb-harvest**（過去トランスクリプトからの採掘）、SessionEnd / SessionStart フックによる回収キューと未回収通知を組み合わせます。構造は公式の自動メモリ（インデックス＋トピック分割・200行/25KB 予算）に揃えた「リポジトリ横断版」です。**プラグイン1コマンドで導入可能**（上の「導入方法」参照）なほか、`@import` ベースで入れたい場合は冪等な `install.sh` も使えます。他セクションに依存せず単体で完結します（フック・スクリプトは bash 系のため Windows は Git Bash / WSL が必要）。
 
 ### templates/ — コピーして使うテンプレート
-
-#### [`templates/data-science/`](templates/data-science/)
-データサイエンスプロジェクト用 CLAUDE.md テンプレート + Skills。
-Polars・uv・Jupyter を前提にした CLAUDE.md と、分析業務向け10種のスキルファイルをそのままコピーして使えます。
 
 #### [`templates/implementation-skills/`](templates/implementation-skills/)
 実装の文脈を残す・取り戻すスキル2種。
@@ -337,10 +308,6 @@ Polars・uv・Jupyter を前提にした CLAUDE.md と、分析業務向け10種
 限らず一般タスクに使え、不変要件（INV）と調整ポイント（ADJ）を `SPEC.md` で定義しています。非プラグインのため
 `cp` でプロジェクトや `~/.claude/skills/` に入れて使います（このリポジトリ自身ではルート `.claude/` から直接利用可）。
 
-#### [`templates/global-claude-md-sample/`](templates/global-claude-md-sample/)
-グローバルスコープ用 CLAUDE.md サンプル（`~/.claude/CLAUDE.md`。旧名 GlobalClaudeMD-sample）。
-Think Before Coding・Simplicity First・Surgical Changes など、すべてのプロジェクトに共通する行動原則を定義したファイルです。
-
 ### tools/ — 独立ツール・配布パイプライン
 
 #### [`tools/multi-model-dist/`](tools/multi-model-dist/)
@@ -348,7 +315,7 @@ Think Before Coding・Simplicity First・Surgical Changes など、すべての�
 **原本（`plugins|templates/*/.claude/**`・`CLAUDE.md`）は一切変えず**、tool-agnostic な資産は単一ソースから生成（**Track A**：単一パイプライン
 `generators/bin/export.sh` → Codex `.agents/skills`・`.codex/agents/*.toml`／Kiro `.kiro/skills`・`.kiro/agents/*.json`・steering）、
 パイプラインやフック依存など生成では再現できないものは SPEC を共有源に各ツールへネイティブ再実装（**Track B**：`reimpl/`）します。
-Track A は implementation-skills・plan-mode・ai-peer に加え **data-science 10スキル・model-setup・agent-review-panel**
+Track A は implementation-skills・plan-mode に加え **model-setup・agent-review-panel**
 （スキル同梱の personas.md 等もサイドカー複製）をカバーします。構造化変換は bash でなく `lib/convert.py`＋シリアライザに
 委譲し、センチネル・冪等・本文用語写像（`/cmd`→`$mention`/`#name`）・ゴールデン/往復検証を備えます。移植容易度のティア監査・配置パス・フィールド/本文写像は [`MAPPING.md`](tools/multi-model-dist/MAPPING.md) を正本とします。
 実装方法論は [obra/superpowers](https://github.com/obra/superpowers)（subagent-driven development）を参考にしています。
@@ -390,15 +357,11 @@ Power Automate のクラウドフローから Azure AI Foundry（Azure OpenAI）
 
 | セクション | 参考元 | ライセンス・扱い |
 |-----------|--------|----------------|
-| [`templates/global-claude-md-sample/`](templates/global-claude-md-sample/) | [multica-ai/andrej-karpathy-skills](https://github.com/multica-ai/andrej-karpathy-skills) | MIT License — 由来部分の帰属と MIT 全文をファイル内に記載 |
-| [`templates/global-claude-md-sample/`](templates/global-claude-md-sample/) | [Qiita 記事（4q_sano 氏）](https://qiita.com/4q_sano/items/f313eed59628273b8026) | 著作権は 4q_sano 氏に帰属 — 著作権法第32条に基づく引用・要約 |
 | [`plugins/model-setup/`](plugins/model-setup/) | X 記事「Sonnet 5をFable 5にする方法」（[@armadillo_ai 氏](https://x.com/armadillo_ai)） | 記事の7原則を参照・要約・翻案した独自整形（コピーではない）— 帰属を README とファイル内に記載 |
-| [`templates/data-science/`](templates/data-science/) | [Zenn 記事](https://zenn.dev/green_tea/articles/d310e5cf809190)・[atsushi-green/ds-ai-coding-skills](https://github.com/atsushi-green/ds-ai-coding-skills) | 記事のコンセプトに基づく独自実装（コピーではない）— 帰属を README に記載 |
 | [`docs/skills-guide/`](docs/skills-guide/) | [anthropics/skills](https://github.com/anthropics/skills)・[obra/superpowers](https://github.com/obra/superpowers)・[mattpocock/skills](https://github.com/mattpocock/skills) | リンクと独自解説のみ収録。各スキル本体は各リポジトリのライセンス（anthropics/skills は Apache 2.0 + 一部 source-available）に従う |
 | [`plugins/software-pipeline/`](plugins/software-pipeline/) | [How to Build a Software Factory with Claude Code（@sairahul1 氏）](https://x.com/sairahul1/status/2058832033628241931) | 記事のコンセプトに基づく独自実装（コピーではない）— 帰属を README に記載 |
 | [`plugins/task-pipeline/`](plugins/task-pipeline/) | [How to Build a Software Factory with Claude Code（@sairahul1 氏）](https://x.com/sairahul1/status/2058832033628241931) | 記事のコンセプトをコード以外の成果物向けに汎用化した独自実装（コピーではない）— 帰属を README に記載 |
 | [`plugins/codex-bridge/`](plugins/codex-bridge/) | [eddiearc/codex-delegator](https://github.com/eddiearc/codex-delegator)・[hamelsmu/claude-review-loop](https://github.com/hamelsmu/claude-review-loop)・[OpenAI Codex CLI ドキュメント](https://developers.openai.com/codex/) | 構成・プロンプト型のコンセプトを参考にした独自実装（コードのコピーではない） |
-| [`plugins/ai-peer/`](plugins/ai-peer/) | [hiroro-work/claude-plugins](https://github.com/hiroro-work/claude-plugins) | `peer`（内部サブエージェント完結）・`ask-*`（他 AI に第二意見を聞く）のコンセプトを参考にした独自実装（コードのコピーではない） |
 | [`plugins/agent-review-panel/`](plugins/agent-review-panel/) | [wan-huiyan/agent-review-panel](https://github.com/wan-huiyan/agent-review-panel)・[makinux/adversarial-panel](https://github.com/makinux/adversarial-panel) | 多フェーズ・パネル構成（並列独立レビュー→討論→検証→裁定）／4ラウンド敵対プロトコル（ブラインド回答→相互批判→譲歩→統合）のコンセプトを参考にした独自実装（コードのコピーではない）— 帰属を README に記載 |
 | [`plugins/self-improve/`](plugins/self-improve/) | [TerenceBristol/claude-improve](https://github.com/TerenceBristol/claude-improve)・[accidentalrebel/claude-skill-session-retrospective](https://github.com/accidentalrebel/claude-skill-session-retrospective)・[takiko 氏 Zenn 記事](https://zenn.dev/takiko/articles/claude-code-skill-from-logs)・[toarusyakaijin 氏 Qiita 記事](https://qiita.com/toarusyakaijin/items/60cc81bcced532963e6a) | 記事/スキルのコンセプト（シグナル検出・ログからのスキル化6フェーズ・skills-evolve/learn 等）を参考にした独自実装（コードのコピーではない） |
 | 仕様駆動開発まわりの解説（本 README の早見表） | [「1 Todo=1 Commit=1 Spec Update」（Zenn / Luup Developers）](https://zenn.dev/luup_developers/articles/server-jang-20251215)・[「SPEC駆動開発ツール比較」（Qiita / kanagawa41 氏）](https://qiita.com/kanagawa41/items/ef134490b61b41675e01) | 記事のコンセプト・比較観点を参考にした独自解説（コードのコピーではない）— 帰属を本表に記載 |

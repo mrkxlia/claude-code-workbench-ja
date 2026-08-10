@@ -21,9 +21,6 @@
 | implementation-skills/spec-extract | 有 | 中（`/cmd`） | — | **T1** | Track A 生成（本文用語写像）＝**正本** |
 | plan-mode/create-plan | 有 | 中（ADJ/SPEC.md 参照） | — | **T1** | Track A 生成（本文用語写像＋ADJ→許可機構写像） |
 | plan-mode/create-plan-calibrate | 有（`disable-model-invocation`） | 低 | — | **T1** | Track A 生成（`disable-model-invocation: true`→Codex `allow_implicit_invocation: false`） |
-| data-science/*（10件） | **有** | 低（参照ドキュメント） | — | **T1** | Track A 生成（通常スキル。※旧監査の「FM 無し→T1g」は誤認で、10件とも frontmatter 有り。T1g ティアは廃止） |
-| ai-peer/peer | 有 | 高（Task で peer-engineer 起動） | — | **T2p** | スキル＋エージェント対で移植 |
-| ai-peer/ask-claude | 有 | 高（`claude` CLI 駆動） | — | **対象外** | CC 結合（別 Claude 起動）のため移植しない |
 | software-pipeline/notes | 有 | 中 | **可**（上=正本同一/下=連携） | 上=**T1**(正本へ集約)／下=**T3** | 上半分は正本で代替・下半分は Track B |
 | software-pipeline/spec-extract | 有 | 中 | **可** | 同上 | 同上 |
 | task-pipeline/notes | 有 | 中 | **可** | 同上 | 同上 |
@@ -52,14 +49,12 @@
 > **ルート除外（重複）**: `./.claude/skills/create-plan`・`create-plan-calibrate` は plan-mode と md5 一致の複製。走査対象外。
 > **サイドカー**: スキルディレクトリ内の SKILL.md 以外のファイル（personas.md・SPEC.md 等）は、生成時に同じ出力ディレクトリへ複製する（②参照）。
 
-### サブエージェント（agents/*.md・計17件）
+### サブエージェント（agents/*.md・計15件）
 
 | セクション | ファイル | ティア | 備考 |
 |---|---|---|---|
 | software-pipeline | 7件（backend/frontend-builder, codebase-researcher, spec-writer, story-writer, test-verifier, implementation-validator） | **T2** | `.md`→Codex `.toml`／Kiro `.json`。`color` 捨て・`model: inherit` 捨て/既定・`sonnet/opus`→model id・`tools:`→各ツール表現。**ただし所属パイプラインが T3 なので実体は Track B の素材** |
 | task-pipeline | 5件（brief/requirements-writer, deliverable-builder/reviewer, source-researcher） | **T2** | 同上（パイプラインは Track B） |
-| ai-peer | peer-engineer | **T2p** | peer スキルと対で移植 |
-| ai-peer | claude-advisor | **対象外** | ask-claude（別 Claude 起動）専用 |
 | codex-bridge | 3件（codex-reviewer/implementer/advisor） | **Track B(Kiro版)** | Kiro `.kiro/agents/*.json` へ再実装の素材 |
 | kiro-bridge | 2件（kiro-reviewer/advisor） | **Track B(Codex版)** | Codex 側の再実装素材（対称形）。Kiro 版は自己再帰のため対象外 |
 | model-setup | 3件（task-worker/fresh-verifier=sonnet, bulk-scanner=haiku） | **T2p** | fan-out / verify-fresh スキルと対で移植。`model:` tier は Kiro=id 写像・Codex=omit（③） |
@@ -69,8 +64,6 @@
 
 | 原本 | Codex | Kiro | 備考 |
 |---|---|---|---|
-| global-claude-md-sample/CLAUDE.md | AGENTS.md | steering(`inclusion: always`) | 汎用行動原則 |
-| data-science/CLAUDE.md | AGENTS.md | steering(`inclusion: always`) | プロジェクト指示書テンプレート |
 | model-setup/CLAUDE.md | **対象外** | steering(`inclusion: always`) | Claude モデルの運用ルールのため Kiro（Claude モデルを実行）でのみ有効。Codex には配らない |
 | model-setup/CLAUDE.{private,company}.md・MODEL-GUIDE.md・settings.*.json | 対象外 | 対象外 | CC の設定・モデル選定に固有 |
 | software/task-pipeline の CLAUDE.md | 対象外 | 対象外 | パイプライン前提＝Track B に含める |
@@ -127,7 +120,7 @@
 |---|---|---|---|
 | `/<skill>`（相互参照・自己参照とも） | `$<skill>` mention | `#<skill>` | 既知スキル名のみ置換。直前が ASCII 英数字/`_`/`/` のときだけ除外（**日本語密着の `/cmd` も写像**＝F3 修正）。残存検証も同じ境界で相互チェック |
 | frontmatter `description` 本文 | 同上を適用 | 同上 | description も prose なので写像（CC リテラルを残さない） |
-| guidance（CLAUDE.md→AGENTS.md/steering）本文 | 同上を適用 | 同上 | 平坦化後に用語写像（data-science のスキル一覧表の `/name`・図中の `.claude/` を変換） |
+| guidance（CLAUDE.md→AGENTS.md/steering）本文 | 同上を適用 | 同上 | 平坦化後に用語写像（本文中の `/name`・図中の `.claude/` を変換） |
 | 「Task ツールで起動」「サブエージェント」 | Codex subagents | Kiro subagents | 多段連鎖は Track B |
 | `.claude/skills/`・`.claude/agents/` | `.agents/skills/`・`.codex/agents/` | `.kiro/skills/`・`.kiro/agents/` | 配置パス確定表に従う |
 | bare `.claude/`（設定・図・配置先） | `.codex/` | `.kiro/` | catch-all（残り全ての `.claude/`） |

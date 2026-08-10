@@ -26,17 +26,6 @@ T1_SKILLS = {
     ("implementation-skills", "spec-extract"),
     ("plan-mode", "create-plan"),
     ("plan-mode", "create-plan-calibrate"),
-    # data-science 参照ドキュメント10種（全て frontmatter 有り＝通常スキルとして生成。MAPPING ①）
-    ("data-science", "analysis-reporting"),
-    ("data-science", "dataframe-polars"),
-    ("data-science", "notebook-workflow"),
-    ("data-science", "path-and-io"),
-    ("data-science", "python-project-ops"),
-    ("data-science", "python-style"),
-    ("data-science", "safe-data-handling"),
-    ("data-science", "sql-analysis"),
-    ("data-science", "statistical-ml-review"),
-    ("data-science", "visualization"),
     # model-setup の tool-agnostic なプロトコルスキル（fan-out / verify-fresh は T2p）
     ("model-setup", "task-brief"),
     ("model-setup", "backlog-loop"),
@@ -44,13 +33,11 @@ T1_SKILLS = {
     ("model-setup", "long-run"),
 }
 T2P_SKILLS = {                                # スキル＋エージェント対
-    ("ai-peer", "peer"),
     ("model-setup", "fan-out"),
     ("model-setup", "verify-fresh"),
     ("agent-review-panel", "review-panel"),
 }
 T2P_AGENTS = {                                # 対のエージェント
-    ("ai-peer", "peer-engineer"),
     ("model-setup", "task-worker"),
     ("model-setup", "fresh-verifier"),
     ("model-setup", "bulk-scanner"),
@@ -63,8 +50,6 @@ T2P_AGENTS = {                                # 対のエージェント
 # CLAUDE.md → AGENTS.md / steering（Track A の指示書ガイダンス。pipeline 系 CLAUDE.md は Track B なので除外）
 # 値はターゲットの allowlist。model-setup は Claude モデル運用ルールのため Kiro のみ（MAPPING ①ガイダンス表）。
 GUIDANCE_CLAUDE = {
-    "global-claude-md-sample": ("codex", "kiro"),
-    "data-science": ("codex", "kiro"),
     "model-setup": ("kiro",),
 }
 

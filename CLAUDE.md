@@ -17,7 +17,7 @@ Claude Code のテーマから外れる独立ツール・サンプルは別リ�
 
 ## ディレクトリ構成
 
-トップレベルは **plugins/**（プラグイン導入可能な9セクション）・**templates/**（コピーして使うテンプレート4種）・
+トップレベルは **plugins/**（プラグイン導入可能な8セクション）・**templates/**（コピーして使うテンプレート2種）・
 **tools/**（独立ツール・CC資産の配布パイプライン）・**docs/**（リポジトリ内ドキュメント）の4分類。
 ルートの `.claude/` と `.claude-plugin/` は分類対象外（規約1の例外、現位置維持）。
 
@@ -31,7 +31,7 @@ claude-code-workbench-ja/
 │   └── marketplace.json             # プラグインマーケットプレイス定義（名前: workbench-ja、source は ./plugins/<name>）
 ├── .claude/                         # このリポジトリ自身の作業用スキル（dogfooding・規約1の例外）
 │   └── skills/                      #   create-plan（SPEC.md 同梱）/ create-plan-calibrate（templates/plan-mode 由来・非競合のみ集約）
-├── plugins/                         # プラグイン導入可能な9セクション（marketplace.json 登録対象・公式標準レイアウト）
+├── plugins/                         # プラグイン導入可能な8セクション（marketplace.json 登録対象・公式標準レイアウト）
 │   ├── software-pipeline/           #   7エージェント構成「ソフトウェアパイプライン」テンプレート
 │   │   ├── README.md
 │   │   ├── CLAUDE.md                #     コピーして使う CLAUDE.md サンプル
@@ -59,11 +59,6 @@ claude-code-workbench-ja/
 │   │   ├── .claude-plugin/plugin.json
 │   │   ├── skills/                  #     2種（kiro-review / kiro-ask）
 │   │   └── agents/                  #     2種（kiro-reviewer / kiro-advisor）
-│   ├── ai-peer/                     #   ピア相談・セカンドオピニオンを依頼するスキル＆エージェント
-│   │   ├── README.md
-│   │   ├── .claude-plugin/plugin.json
-│   │   ├── skills/                  #     2種（peer=内部・依存ゼロ / ask-claude=claude CLI）
-│   │   └── agents/                  #     2種（peer-engineer / claude-advisor）
 │   ├── agent-review-panel/          #   複数ペルソナの敵対的パネルレビュー（codex / kiro 混成 opt-in）
 │   │   ├── README.md
 │   │   ├── .claude-plugin/plugin.json
@@ -98,19 +93,12 @@ claude-code-workbench-ja/
 │       ├── skills/                  #     6種（task-brief / backlog-loop / pr-merge / fan-out / long-run / verify-fresh）
 │       └── agents/                  #     3種（task-worker / fresh-verifier / bulk-scanner）
 ├── templates/                       # コピーして使うテンプレート（プラグイン非対応・marketplace.json 未登録）
-│   ├── data-science/                #   データサイエンス向け CLAUDE.md + Skills テンプレート
-│   │   ├── CLAUDE.md
-│   │   ├── README.md
-│   │   └── .claude/skills/          #     10種のスキルファイル
 │   ├── implementation-skills/       #   実装ノート記録 + 仕様書逆引きスキル（単体利用向け原本。連携版を software/task 両パイプラインに同梱）
 │   │   ├── README.md
 │   │   └── .claude/skills/          #     notes / spec-extract の2スキル（原本）
 │   ├── plan-mode/                   #   変更せず実行計画だけ作る create-plan スキル（Plan/Ask モード相当）
 │   │   ├── README.md
 │   │   └── .claude/skills/          #     create-plan（不変要件 INV / 調整 ADJ を定義する SPEC.md 同梱）/ create-plan-calibrate の2スキル
-│   └── global-claude-md-sample/     #   グローバルスコープ用 CLAUDE.md サンプル（旧名 GlobalClaudeMD-sample）
-│       ├── README.md
-│       └── CLAUDE.md
 ├── tools/                           # 独立ツール・CC資産の配布パイプライン
 │   ├── multi-model-dist/            #   CC 資産を Codex/Kiro へ配布（原本不変・生成＝Track A／SPEC 再実装＝Track B）
 │   │   ├── README.md / MAPPING.md   #     対応表・ティア監査・配置パス確定・本文用語写像
@@ -135,7 +123,7 @@ claude-code-workbench-ja/
 2. **各ディレクトリには README.md を置く** — セクションの目的・使い方・ファイル構成を説明する README.md を必ず用意する。
 3. **リポジトリ全体の言語は日本語** — README.md・CLAUDE.md など、このリポジトリ自体のドキュメントは日本語で記述する。
 4. **マーケットプレイス定義はルートの `.claude-plugin/` に置く** — Claude Code プラグイン仕様上の必須配置であり、規約1の例外。
-5. **プラグイン配下を変更したら version を上げる（plugin.json のみに書く）** — `plugins/` 配下の9プラグイン（software-pipeline・task-pipeline・knowledge-share・codex-bridge・kiro-bridge・ai-peer・agent-review-panel・self-improve・model-setup）の配信対象ファイル（`skills/`・`agents/`・`hooks/` 配下。これらは既定探索パスのためプラグイン導入で自動配信される）を変更したら、該当する `plugins/<name>/.claude-plugin/plugin.json` の `version` をセマンティックバージョニングで更新する。**version は plugin.json のみに書く**（`.claude-plugin/marketplace.json` 側には書かない — plugin.json が優先されるため二重管理は非推奨、公式仕様）。CLAUDE.md サンプル・`setup/settings.json` は setup スキルがコピー配布するため version 対象外。
+5. **プラグイン配下を変更したら version を上げる（plugin.json のみに書く）** — `plugins/` 配下の8プラグイン（software-pipeline・task-pipeline・knowledge-share・codex-bridge・kiro-bridge・agent-review-panel・self-improve・model-setup）の配信対象ファイル（`skills/`・`agents/`・`hooks/` 配下。これらは既定探索パスのためプラグイン導入で自動配信される）を変更したら、該当する `plugins/<name>/.claude-plugin/plugin.json` の `version` をセマンティックバージョニングで更新する。**version は plugin.json のみに書く**（`.claude-plugin/marketplace.json` 側には書かない — plugin.json が優先されるため二重管理は非推奨、公式仕様）。CLAUDE.md サンプル・`setup/settings.json` は setup スキルがコピー配布するため version 対象外。
 6. **ルートの `.claude/` はこのリポジトリ自身の作業用（dogfooding）** — 規約1の例外（`.claude-plugin/` と同様）。公式慣例「`.claude/` は単一プロジェクト自身のカスタマイズ用」に従い、**競合しない・非プラグインの**スキルだけを集約する（現状は templates/plan-mode 由来の create-plan / create-plan-calibrate）。プラグイン由来スキルや競合名スキル（notes / spec-extract / clarify）は複製しない（version 二重管理・二重ロードを避けるため）。**リポジトリ内で重複管理している派生ファイル（notes・spec-extract の両パイプライン連携版、software-pipeline の clarify → task-pipeline、templates/plan-mode の create-plan・create-plan-calibrate → root `.claude/skills/`、software-pipeline の spec-sync-reminder.{sh,ps1} → task-pipeline）は `tools/skill-sync/sync.py` が原本から機械生成する**。原本または `tools/skill-sync/fragments/*.md`（パイプライン連携セクション本文）のみを編集し、`python3 tools/skill-sync/sync.py` を実行して派生を更新する（`--check` は CI で使う検証専用モード）。派生ファイル自体を直接編集しない（先頭の `SYNCED by tools/skill-sync` 注記がその旨を明示する）。
 7. **プラグインの skills/agents/hooks は公式標準レイアウト（プラグインルート直下）に置く** — `<plugin>/skills/`・`<plugin>/agents/`・`<plugin>/hooks/hooks.json` が既定探索パスであり、plugin.json に `skills`/`hooks` フィールドを明示しない（宣言と実体の二重管理を避ける）。コピー導入用の `settings.json` サンプルはプラグインルート直下に置けない（Claude Code の予約パス）ため `<plugin>/setup/settings.json` に置く。software-pipeline・task-pipeline の `hooks/` は導入先リポジトリへコピーする資材であり、この配置自体はプラグインとして自動発火しない（pipeline-setup が対象リポジトリの `.claude/hooks/` へコピーし `.claude/settings.json` に配線する）。
 
@@ -143,6 +131,6 @@ claude-code-workbench-ja/
 
 ## 重要: ファイルはテンプレート・サンプルとして扱うこと
 
-このリポジトリに含まれるファイル（`templates/data-science/CLAUDE.md`、`templates/global-claude-md-sample/CLAUDE.md`、各スキルファイルなど）は、**ユーザーが自分のプロジェクトにコピーして使うためのテンプレート・サンプル**です。
+このリポジトリに含まれるファイル（`plugins/software-pipeline/CLAUDE.md`、各スキルファイルなど）は、**ユーザーが自分のプロジェクトにコピーして使うためのテンプレート・サンプル**です。
 
-このリポジトリ自体の開発にそのまま適用しない。たとえば `templates/global-claude-md-sample/CLAUDE.md` はグローバル設定のサンプルであり、このリポジトリの開発ルールではありません。
+このリポジトリ自体の開発にそのまま適用しない。たとえば各パイプラインの `CLAUDE.md` サンプルは導入先リポジトリ用であり、このリポジトリの開発ルールではありません。

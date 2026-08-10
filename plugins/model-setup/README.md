@@ -135,18 +135,12 @@ Opus で計画→Sonnet で実行する流れ、Sonnet 5 特有の運用注意(�
 **Fable 5 の挙動を何で再現するかのパリティマップ（§8）**までは
 [`MODEL-GUIDE.md`](MODEL-GUIDE.md) にまとめてある。
 
-## GlobalClaudeMD-sample との併用（重複に注意）
+## 他の行動原則系 CLAUDE.md との併用（重複に注意）
 
-[`GlobalClaudeMD-sample/`](../../templates/global-claude-md-sample/) と両方導入する場合、次の3つが重複します。
-**どちらか片方に寄せてください**（二重に書くとシグナルが薄まります）。
-
-| 本テンプレートのルール | GlobalClaudeMD-sample の対応原則 |
-|------------------------|----------------------------------|
-| 2. 複数解釈を勝手に選ばない | 1. Think Before Coding |
-| 3. ついで改善の禁止 | 3. Surgical Changes |
-| 4. 「検証した」を報告 | 4. Goal-Driven Execution ／ 6. 検証できない場合は理由と手動確認手順 |
-
-ルール 1・5・6・7・8・9 は GlobalClaudeMD-sample に対応物がないため、そのまま追加できます。
+[multica-ai/andrej-karpathy-skills](https://github.com/multica-ai/andrej-karpathy-skills) などの
+行動原則系 CLAUDE.md と併用する場合、ルール 2（複数解釈を勝手に選ばない）・3（ついで改善の禁止）・
+4（「検証した」を報告）は Think Before Coding / Surgical Changes / Goal-Driven Execution と趣旨が
+重複しやすいので、**どちらか片方に寄せてください**（二重に書くとシグナルが薄まります）。
 
 ## プロンプト最適化（既存 OSS の活用）
 

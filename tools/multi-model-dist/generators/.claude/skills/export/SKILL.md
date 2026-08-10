@@ -38,12 +38,11 @@ python3 multi-model-dist/generators/lib/test_convert.py   # ゴールデン/往�
 
 ## 範囲（MAPPING.md 準拠）
 
-- **生成する（Track A）**: T1 スキル（notes / spec-extract / create-plan* / data-science 10種 /
+- **生成する（Track A）**: T1 スキル（notes / spec-extract / create-plan* /
   model-setup の task-brief・backlog-loop・pr-merge・long-run）、T2p スキル＋エージェント対
-  （peer＋peer-engineer / fan-out・verify-fresh＋model-setup エージェント3種 / review-panel＋panel-* 4種。
-  サイドカーの personas.md・SPEC.md 等も複製）、ガイダンス CLAUDE.md（global-claude-md-sample・data-science＝
-  Codex+Kiro、model-setup＝Kiro のみ）。
-- **生成しない（Track B / 対象外）**: パイプライン・self-improve・knowledge-share・codex-bridge・フック・ask-claude。
+  （fan-out・verify-fresh＋model-setup エージェント3種 / review-panel＋panel-* 4種。
+  サイドカーの personas.md・SPEC.md 等も複製）、ガイダンス CLAUDE.md（model-setup＝Kiro のみ）。
+- **生成しない（Track B / 対象外）**: パイプライン・self-improve・knowledge-share・codex-bridge・フック。
   これらは `reimpl/SPEC/` を共有源に各ツールへ手書き再実装する。
 
 ## 依存

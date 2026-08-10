@@ -1,6 +1,6 @@
 {
   "name": "agent-review-panel",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "コード・計画・ドキュメントを複数ペルソナのサブエージェント（既定3名）にブラインド並列レビューさせ、相互批判→応答・譲歩→統合まで行う敵対的パネルレビュースキル1種（review-panel）とサブエージェント5種。deep 指定で引用検証と裁定者による最終裁定を追加。codex 指定・kiro 指定で外部パネリスト（OpenAI Codex／Kiro・任意・同時指定も可）を混成できる。基本は依存ゼロで動く。",
   "author": {
     "name": "mrkxlia",

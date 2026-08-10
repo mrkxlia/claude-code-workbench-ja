@@ -30,9 +30,9 @@ Claude Code が Codex CLI を**非対話モード**（`--sandbox read-only`）�
 - **codex-review** … 差分/コードの**指摘**（重大度 P1–P4）。「悪いところを挙げて」。
 - **codex-ask** … 自由形式の**助言・議論**。「どう設計すべき？」「この方針は妥当？」。
 - **codex-implement** … コードを**書かせる**。codex-ask は read-only で書き換えない。
-- **相談相手を変えたいとき**（[`ai-peer`](../../../../ai-peer/) セクション）: 依存を増やしたくない・
-  オフライン/git なし環境なら `/peer`（内部 Claude・依存ゼロ）、別 Claude の独立見解なら `/ask-claude`。
-  codex-ask は相談相手が **Codex**（`codex` CLI）である点が違う。
+- **相談相手を変えたいとき**: 依存を増やしたくない・オフライン/git なし環境なら、内蔵の Task
+  サブエージェント（fresh context）に相談内容を渡して第二の視点を得る。codex-ask は相談相手が
+  **Codex**（`codex` CLI）である点が違う。
 
 ## 前提
 

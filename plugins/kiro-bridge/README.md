@@ -10,9 +10,9 @@
 | `/kiro-review [スコープ]` | 差分/指定ファイルを Kiro にレビューさせ、重大度 P1–P4 で要約 | `--trust-tools=read` | `kiro-reviewer` |
 | `/kiro-ask <相談内容>` | 設計相談・セカンドオピニオンを Kiro に答えさせ要約（コードは書かない） | `--trust-tools=read` | `kiro-advisor` |
 
-> **相談相手を変えたいとき** [`ai-peer`](../ai-peer/)・[`codex-bridge`](../codex-bridge/) セクション。
-> 依存を増やしたくない・git なし環境なら `/peer`（内部 Claude・依存ゼロ）、別 Claude の独立見解
-> なら `/ask-claude`、Codex の意見なら `/codex-ask`。kiro-bridge は相手が **Kiro**
+> **相談相手を変えたいとき** [`codex-bridge`](../codex-bridge/) セクション。
+> 依存を増やしたくない・git なし環境なら内蔵の Task サブエージェント（fresh context）、
+> Codex の意見なら `/codex-ask`。kiro-bridge は相手が **Kiro**
 > （`kiro-cli`）のときに使います。
 
 ## なぜこの構成か
