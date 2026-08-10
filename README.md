@@ -14,13 +14,13 @@ flowchart TD
 
     New --> N1["1. 個人の運用ルールを整える<br/>model-setup を導入"]
     N1 --> N2{"何を作る？"}
-    N2 -->|"コードで機能開発"| N3["software-pipeline の<br/>pipeline-setup を実行"]
-    N2 -->|"図・ドキュメント等"| N4["task-pipeline の<br/>task-pipeline-setup を実行"]
+    N2 -->|"コードで機能開発"| N3["pipeline の pipeline-setup を<br/>コードモードで実行"]
+    N2 -->|"図・ドキュメント等"| N4["pipeline の pipeline-setup を<br/>成果物モードで実行"]
     N3 --> N6["knowledge-share・self-improve は<br/>いつでも追加導入可"]
     N4 --> N6
 
     Existing --> E1["1. 現状を仕様化する（推奨）<br/>spec-extract で SPEC.md を生成"]
-    E1 --> E2["2. 必要ならパイプラインを導入<br/>pipeline-setup / task-pipeline-setup"]
+    E1 --> E2["2. 必要ならパイプラインを導入<br/>pipeline-setup（モード選択つき）"]
     E2 --> E3["個人の運用ルール model-setup は<br/>新規/既存どちらでも導入可"]
 ```
 
@@ -30,8 +30,7 @@ flowchart TD
 
 1. **個人の運用ルールを先に整える**（Claude Code のユーザー設定に一度入れれば全プロジェクトで効く）— `model-setup` を導入（9ルール＋プロファイル別追補＋`task-brief`／`backlog-loop`／`pr-merge`／`fan-out`／`long-run`／`verify-fresh`）。
 2. **プロジェクトの土台を選ぶ**（対象リポジトリに導入。何を作るかで変わる）
-   - コードで機能開発が中心 → `software-pipeline` の `pipeline-setup` を実行（エージェント7種・CLAUDE.md・フックを対象リポジトリに自動導入）
-   - 図・ドキュメント・レポートが中心 → `task-pipeline` の `task-pipeline-setup` を実行
+   - `pipeline` の `pipeline-setup` を実行（コード/成果物のモード選択つき。エージェント・CLAUDE.md・フックを対象リポジトリに自動導入）
 3. 知見の蓄積（`knowledge-share`）や自己改善ループ（`self-improve`）は、上記と独立して**いつ追加してもよい**。
 
 ### 既存リポジトリ（すでにコード・成果物がある）
@@ -39,7 +38,7 @@ flowchart TD
 いきなりパイプラインを回すと、既存の暗黙の規約と衝突しかねません。まず現状を仕様として固定してから入れるのがおすすめです。
 
 1. **現状を仕様化する（推奨）** — `implementation-skills`（または各パイプライン連携版）の `spec-extract` で、既存コード・成果物から確度ラベル付きの `SPEC.md` を逆引き生成する。
-2. **その後にパイプラインを導入する場合** — `pipeline-setup` / `task-pipeline-setup` を実行する。対象リポジトリのスタック・git の有無・OS を自動検出し、既存の CLAUDE.md や `.claude/settings.json` は上書きせずマージを提案する設計なので、すでに手を入れたリポジトリでも安全に走らせられる。
+2. **その後にパイプラインを導入する場合** — `pipeline-setup` を実行する。対象リポジトリのスタック・git の有無・OS を自動検出し、既存の CLAUDE.md や `.claude/settings.json` は上書きせずマージを提案する設計なので、すでに手を入れたリポジトリでも安全に走らせられる。
 3. `model-setup` は個人設定なので、新規・既存を問わずいつ導入してもよい。
 
 ## 自動で動くもの／明示的に動かすもの
@@ -59,7 +58,7 @@ flowchart TD
 |---|---|---|---|---|
 | 🔁 フック（完全自動） | プラグイン導入直後から、SessionStart/SessionEnd/PreToolUse 等のイベントで**頼まなくても毎回発火**する | 不要（無効化しない限り常時ON） | 「言い忘れ」「やり忘れ」を構造的に防げる。導入するだけで効果が始まる | 知見の自動読込・回収、改善候補の検出・通知、機密コミット防止、仕様更新漏れの通知（下表） |
 | 💬 スキル（自然文トリガー） | 自然文の依頼を Claude が判断し、**自動的に適切なスキルを選ぶ**（`/スキル名` での明示起動も可） | 「〜して」と頼む、または `/スキル名` | 手順や合言葉を覚えていなくても、思った通りに頼めば正しい型が起動する | `task-brief`・`backlog-loop`・`pr-merge`・`feature-pipeline`・`task-pipeline`・`clarify`・`notes`・`spec-extract`・`kb`・`codex-review` など大半のスキル |
-| 🎯 明示専用スキル | 自然文では発火せず、**`/スキル名` で名指ししたときだけ**動く（`disable-model-invocation: true`） | `/スキル名` のみ | 導入・較正など一度きり／影響の大きい操作を誤発動させない | `pipeline-setup`・`task-pipeline-setup`・`pipeline-improve`・`create-plan-calibrate` |
+| 🎯 明示専用スキル | 自然文では発火せず、**`/スキル名` で名指ししたときだけ**動く（`disable-model-invocation: true`） | `/スキル名` のみ | 導入・較正など一度きり／影響の大きい操作を誤発動させない | `pipeline-setup`・`pipeline-improve`・`create-plan-calibrate` |
 
 ### 🔁 自動フック一覧（導入するだけで効果が始まるもの）
 
@@ -68,21 +67,19 @@ flowchart TD
 | knowledge-share | kb-session-start / kb-session-end | セッション開始／終了 | 知見インデックスの自動読込、未回収の知見の検出・通知 |
 | self-improve | si-session-start / si-session-end | セッション開始／終了 | 改善候補の検出、未適用 backlog の通知（適用自体は `/improve-apply` で手動） |
 | codex-bridge | gen-agents-md | セッション開始 | CLAUDE.md 等から AGENTS.md を自動生成・同期（Codex にも同じルールを効かせる） |
-| software-pipeline | block-secrets-commit / guard-builder-writes / spec-sync-reminder | コミット前／Edit・Write 前／セッション開始・Stop | 機密のコミット防止、担当外ファイルへの書き込み防止、仕様更新漏れの通知 |
-| task-pipeline | guard-deliverable-writes / spec-sync-reminder | Edit・Write 前／セッション開始・Stop | 出力先外への書き込み防止、仕様更新漏れの通知 |
+| pipeline | block-secrets-commit / guard-builder-writes / guard-deliverable-writes / spec-sync-reminder | コミット前／Edit・Write 前／セッション開始・Stop | 機密のコミット防止、担当外・出力先外への書き込み防止、仕様更新漏れの通知（guard はモードに応じて setup が配線） |
 
-> フックは一覧の5プラグインのみが持ちます。他のプラグイン（model-setup・kiro-bridge・agent-review-panel 等）はスキルのみで完結し、常駐フックはありません。
+> フックは一覧の4プラグインのみが持ちます。他のプラグイン（model-setup・kiro-bridge・agent-review-panel 等）はスキルのみで完結し、常駐フックはありません。
 
 ## 導入方法（クイックスタート）
 
 ### 方法1: プラグインで導入する（最も簡単）
 
-Claude Code でそのまま実行します（clone 不要）。現在8つのプラグインを配信しています:
+Claude Code でそのまま実行します（clone 不要）。現在7つのプラグインを配信しています:
 
 ```
 /plugin marketplace add mrkxlia/claude-code-workbench-ja
-/plugin install software-pipeline@workbench-ja
-/plugin install task-pipeline@workbench-ja
+/plugin install pipeline@workbench-ja
 /plugin install knowledge-share@workbench-ja
 /plugin install codex-bridge@workbench-ja
 /plugin install kiro-bridge@workbench-ja
@@ -91,12 +88,10 @@ Claude Code でそのまま実行します（clone 不要）。現在8つのプ�
 /plugin install model-setup@workbench-ja
 ```
 
-- **software-pipeline** — 新しいセッションで `/software-pipeline:pipeline-setup` を実行すると、
-  対象リポジトリにパイプライン一式（エージェント7種・CLAUDE.md・フック）が導入されます。
-  詳しくは [software-pipeline/README.md](plugins/software-pipeline/) を参照。
-- **task-pipeline** — 新しいセッションで `/task-pipeline:task-pipeline-setup` を実行すると、
-  コード以外の成果物（図・ドキュメント・レポート）向けのパイプライン一式（エージェント5種・
-  CLAUDE.md・フック）が導入されます。詳しくは [task-pipeline/README.md](plugins/task-pipeline/) を参照。
+- **pipeline** — 新しいセッションで `/pipeline:pipeline-setup` を実行すると、モード選択
+  （コード開発 `/feature-pipeline` ／コード以外の成果物 `/task-pipeline`）つきで対象リポジトリに
+  パイプライン一式（エージェント・CLAUDE.md・フック）が導入されます。旧 software-pipeline /
+  task-pipeline の統合後継です。詳しくは [pipeline/README.md](plugins/pipeline/) を参照。
 - **knowledge-share** — 導入するだけで、`/knowledge-share:kb`・`/knowledge-share:kb-harvest`
   スキルと、知見の自動読み込み・回収を行う SessionStart/SessionEnd フックが全セッションで
   有効になります。詳しくは [knowledge-share/README.md](plugins/knowledge-share/) を参照。
@@ -132,11 +127,8 @@ git clone --depth 1 https://github.com/mrkxlia/claude-code-workbench-ja /tmp/wor
 ```
 
 ```bash
-# software-pipeline — pipeline-setup をパーソナルスキル化（以後どのリポジトリでも /pipeline-setup が使える）
-mkdir -p ~/.claude/skills && cp -r /tmp/workbench/plugins/software-pipeline/skills/pipeline-setup ~/.claude/skills/
-
-# task-pipeline — task-pipeline-setup をパーソナルスキル化
-mkdir -p ~/.claude/skills && cp -r /tmp/workbench/plugins/task-pipeline/skills/task-pipeline-setup ~/.claude/skills/
+# pipeline — pipeline-setup をパーソナルスキル化（以後どのリポジトリでも /pipeline-setup が使える）
+mkdir -p ~/.claude/skills && cp -r /tmp/workbench/plugins/pipeline/skills/pipeline-setup ~/.claude/skills/
 
 # implementation-skills — notes / spec-extract をプロジェクト（または ~/.claude/skills/）へ
 mkdir -p .claude/skills && cp -r /tmp/workbench/templates/implementation-skills/.claude/skills/* .claude/skills/
@@ -166,16 +158,16 @@ mkdir -p ~/.claude/agents && cp -r /tmp/workbench/plugins/model-setup/agents/* ~
 
 | やりたいこと | 使うもの | ひとこと |
 |--------------|----------|----------|
-| 機能をコードで end-to-end 実装したい | **software-pipeline**（`/feature-pipeline`） | 7エージェント連鎖＋3つの人間承認チェックポイント |
-| パイプラインを通すほどでない小さな実装＋テスト | software-pipeline の `/build-with-tests` | 既存パターン確認 → 実装とテスト並行 → 型チェック |
-| 図・ドキュメント等コード以外の成果物を作りたい | **task-pipeline**（`/task-pipeline`） | 5エージェント連鎖。drawio 等のユーザー導入スキルも呼べる |
+| 機能をコードで end-to-end 実装したい | **pipeline**（`/feature-pipeline`） | 7エージェント連鎖＋3つの人間承認チェックポイント |
+| パイプラインを通すほどでない小さな実装＋テスト | pipeline の `/build-with-tests` | 既存パターン確認 → 実装とテスト並行 → 型チェック |
+| 図・ドキュメント等コード以外の成果物を作りたい | **pipeline**（`/task-pipeline`） | 5エージェント連鎖。drawio 等のユーザー導入スキルも呼べる |
 | 変更せず実行計画だけ立てたい（Plan/Ask 相当） | **plan-mode**（`/create-plan`） | 非プラグイン。`cp` 導入。コード以外の一般タスクにも使える |
 | 別 AI（OpenAI Codex）にレビュー/実装/相談を委譲したい | **codex-bridge**（`/codex-review` ほか） | Claude が Codex CLI を非対話で駆動。ユーザーは Codex を触らない |
 | 別 AI（Kiro）にレビュー/相談を委譲したい | **kiro-bridge**（`/kiro-review`・`/kiro-ask`） | Claude が kiro-cli を非対話・read-only で駆動。実装委譲はしない |
 | 重要な判断を複数の視点で敵対的にレビュー・討論させたい | **agent-review-panel**（`/review-panel`） | 既定3名がブラインド並列→相互批判→統合。deep で引用検証＋裁定者、codex・kiro で異種モデル混成（同時指定も可） |
 | 訂正・繰り返しからスキルや CLAUDE.md を継続改善したい | **self-improve**（`/improve-scan`・`/improve-apply`） | git 不要・承認制・ロールバック付き。kb と連携 |
 | セッション/リポジトリ横断で知見を蓄積・再利用したい | **knowledge-share**（`/kb`・`/kb-harvest`） | @import ＋フックで知見の自動読み込み・記録・回収 |
-| 要件・仕様を質問で詰めたい | **clarify**（software/task に同梱） | 単体利用も可（各プラグイン README の「単体利用」参照） |
+| 要件・仕様を質問で詰めたい | **clarify**（pipeline に同梱） | 単体利用も可（各プラグイン README の「単体利用」参照） |
 | 既存コード/成果物から仕様書を逆引きしたい | **implementation-skills**（`/spec-extract`） | 確度ラベル付き SPEC.md を生成。`/notes` で実装の経緯も記録 |
 | Opus+Sonnet や Sonnet 単独で上位モデル（Fable 5 級）並みの振る舞いに近づけたい | **model-setup** | 9ルール＋プロファイル別追補を CLAUDE.md に常設化、並列委譲・fresh 検証・自律完走のスキル/エージェント、モデル/effortガイド |
 | backlog.md 駆動で計画→実施→PR→マージまで定型ループで回したい | model-setup（`/backlog-loop`・`/pr-merge`） | Step承認ゲート付き。git なし環境は変更ファイル一覧提示で完了 |
@@ -192,9 +184,9 @@ mkdir -p ~/.claude/agents && cp -r /tmp/workbench/plugins/model-setup/agents/* ~
 | ツール | 方向 | 入力 → 出力 | いつ使う／違い |
 |--------|------|-------------|----------------|
 | `spec-extract`（implementation-skills 原本／各パイプライン連携版） | **逆方向** | 既存コード・成果物 → `SPEC.md`（確度ラベル付） | 仕様書の無いレガシーを現状固定したいとき。パイプラインの**入口**。`[確定]/[推定]/[不明]` の物証主義と生きた SPEC 更新が特徴 |
-| `feature-pipeline` / `spec-writer`（software-pipeline） | **順方向** | アイデア/ストーリー → 技術ブリーフ → コード | これから作る機能を仕様化して実装まで通す。spec-extract の逆引きと対をなす前進方向 |
-| `task-pipeline` の spec-extract 連携版 | 逆方向（成果物） | 既存成果物・規約 → 成果物 SPEC | 図/ドキュメント版。コード前提語を成果物前提に読み替えた点が software 版との違い |
-| `clarify`（software/task） | 詰める | 曖昧な要望 → 確定した要件 | 仕様を書く前に穴・前提を質問で潰す。spec-extract/spec-writer の前段。両パイプラインに同一内容で同梱（モード自動判定・正本は software-pipeline） |
+| `feature-pipeline` / `brief-writer`（pipeline） | **順方向** | アイデア/ストーリー → 技術ブリーフ → コード | これから作る機能を仕様化して実装まで通す。spec-extract の逆引きと対をなす前進方向 |
+| `task-pipeline`（成果物モード）の spec-extract | 逆方向（成果物） | 既存成果物・規約 → 成果物 SPEC | 図/ドキュメント版。コード前提語を成果物前提に読み替えた点がコードモードとの違い |
+| `clarify`（pipeline） | 詰める | 曖昧な要望 → 確定した要件 | 仕様を書く前に穴・前提を質問で潰す。spec-extract/brief-writer の前段。モード自動判定の統合版 |
 | `create-plan`（plan-mode） | 計画 | ゴール → 実行計画ファイル（変更なし） | 仕様書ではなく**実行手順**を作る。コードに限らない一般タスク向け |
 | `notes`（implementation-skills 原本／連携版） | 記録 | 実装中の判断・逸脱 → `implementation-notes.md` | あるべき姿（SPEC.md）ではなく**実装の経緯**を残す |
 
@@ -208,7 +200,7 @@ mkdir -p ~/.claude/agents && cp -r /tmp/workbench/plugins/model-setup/agents/* ~
 | tasks.md | パイプラインの Phase 連鎖＋ `status.md`（進行管理） |
 | PRD / living spec | `SPEC.md`（spec of record・Phase 7 で増分更新） |
 | spec-tracker（更新漏れ警告） | `spec-sync-reminder` フック（SessionStart/Stop） |
-| spec-validator（実装と仕様の突合） | `implementation-validator` エージェント＋ `test-verifier` |
+| spec-validator（実装と仕様の突合） | `final-reviewer` エージェント＋ `test-verifier` |
 
 本リポジトリは順方向（feature-pipeline）に加えて **`spec-extract` による逆方向（レガシー → 仕様）** を持つ点が
 spec-kit / Kiro / cc-sdd との主な違いです。運用原則として **「1 Todo = 1 Commit = 1 Spec Update」**
@@ -222,7 +214,7 @@ UI 試作では避けて軽量な `build-with-tests` を使う、です（参考
 トップレベルは **plugins/**（プラグイン導入可能）・**templates/**（コピーして使う）・**tools/**（独立ツール・配布パイプライン）・
 **docs/**（リポジトリ内ドキュメント）の4分類です（詳細なディレクトリ構成は [`CLAUDE.md`](CLAUDE.md) 参照）。
 
-### plugins/ — プラグイン導入可能な9セクション
+### plugins/ — プラグイン導入可能な7セクション
 
 #### [`plugins/model-setup/`](plugins/model-setup/)
 モデル運用テンプレート（旧名 sonnet-setup。Opus 4.8 + Sonnet 5 の私用PC / Sonnet 単独の会社PC
@@ -239,13 +231,9 @@ fresh-verifier / bulk-scanner。sonnet/haiku をタスク別にルーティン�
 プロファイル追補のみファイルコピーが必要）。
 プロンプト側の型は既存 OSS（severity1/claude-code-prompt-improver）を README で紹介しています。
 
-#### [`plugins/software-pipeline/`](plugins/software-pipeline/)
-7つの専門エージェントで機能開発を流れ作業化する「ソフトウェアパイプライン」テンプレート。
-調査 → ストーリー → 技術ブリーフ → バックエンド → フロントエンド → 受け入れテスト → 最終検証を feature-pipeline スキルが連鎖実行し、3つの人間承認チェックポイントで停止します。**プラグイン2コマンドで導入可能**（上の「導入方法」参照）。対象リポジトリを解析してパイプライン一式を自動導入する **pipeline-setup** スキル、運用実績から定義を改善する **pipeline-improve** スキル（自己改善ループ）を含むスキル7種（feature-pipeline / clarify / build-with-tests と、implementation-skills 由来の notes / spec-extract パイプライン連携版を含む）・エージェント定義7種・機密コミットブロックフック・CLAUDE.md サンプルを収録しています。ビルダーが実装中の判断を `docs/pipeline/<slug>/implementation-notes.md` に記録し、レガシーコードには `/spec-extract` で仕様を固めてから導入できます。
-
-#### [`plugins/task-pipeline/`](plugins/task-pipeline/)
-software-pipeline のパイプラインパターンをコード以外の成果物（drawio 図・ドキュメント・レポートなど）向けに汎用化した「タスクパイプライン」テンプレート。
-調査 → 成果物要件 → 作業ブリーフ → 成果物作成 → レビューを task-pipeline スキルが連鎖実行し、3つの人間承認チェックポイントで停止します。ビルダーは drawio などユーザー導入スキルを呼び出せます。出力先・成果物の種類・利用可能スキルを検出して自動導入する **task-pipeline-setup** スキル、エージェント定義5種・出力ディレクトリ外への書き込みを確認するフック・CLAUDE.md サンプルを収録しています。implementation-skills 由来の **notes / spec-extract パイプライン連携版**（成果物仕様向けに読み替え）も同梱し、既存成果物・規約を SPEC.md に逆引きして整合性の土台にできます。**プラグイン1コマンドで導入可能**（上の「導入方法」参照）。
+#### [`plugins/pipeline/`](plugins/pipeline/)
+コード開発とコード以外の成果物作成を1つに統合したパイプラインテンプレート（旧 software-pipeline / task-pipeline の後継）。
+**コードモード**は `/feature-pipeline` が 調査 → ストーリー → 技術ブリーフ → バックエンド → フロントエンド → 受け入れテスト → 最終検証 の7工程を、**成果物モード**は `/task-pipeline` が 調査 → 成果物要件 → 作業ブリーフ → 作成 → レビュー の5工程を連鎖実行し、いずれも3つの人間承認チェックポイントで停止します（成果物モードのビルダーは drawio などユーザー導入スキルを呼び出せます）。対象リポジトリを解析してモード選択つきで一式を自動導入する **pipeline-setup**、運用実績から定義を改善する **pipeline-improve**（自己改善ループ）を含むスキル8種と、モード自動判定の共有エージェント4種（researcher / requirements-writer / brief-writer / final-reviewer）+専用ビルダー等4種の計8エージェント、フック4種（機密コミットブロック・担当外/出力先外書き込みガード・仕様更新漏れ通知）・CLAUDE.md サンプル2種（コード用 / 成果物用）を収録しています。ビルダーが実装中の判断を `docs/pipeline/<slug>/implementation-notes.md` に記録し、レガシーコードには `/spec-extract` で仕様を固めてから導入できます。**プラグイン2コマンドで導入可能**（上の「導入方法」参照）。
 
 #### [`plugins/codex-bridge/`](plugins/codex-bridge/)
 コードレビュー・実装・相談を OpenAI Codex に依頼するスキル4種とサブエージェント3種。
@@ -299,7 +287,7 @@ bash 系のため Windows は Git Bash / WSL が必要・`jq` は不要）。**�
 
 #### [`templates/implementation-skills/`](templates/implementation-skills/)
 実装の文脈を残す・取り戻すスキル2種。
-実装しながら判断・逸脱・ハマりどころを implementation-notes.md に記録する **notes** と、既存コードから確度ラベル付きの仕様書を逆引き生成する **spec-extract** を収録しています。このディレクトリは単体利用向けの原本で、**software-pipeline・task-pipeline の両パイプラインにパイプライン連携版が統合済み**です。spec-extract は対話時に `[不明]/[推定]` を clarify で詰める「読むだけで終わらせない」運用と、一度作った SPEC.md を増分更新する「生きた仕様」運用に対応します。
+実装しながら判断・逸脱・ハマりどころを implementation-notes.md に記録する **notes** と、既存コードから確度ラベル付きの仕様書を逆引き生成する **spec-extract** を収録しています。このディレクトリは単体利用向けの原本で、**pipeline プラグインにパイプライン連携版（モード自動判定）が統合済み**です。spec-extract は対話時に `[不明]/[推定]` を clarify で詰める「読むだけで終わらせない」運用と、一度作った SPEC.md を増分更新する「生きた仕様」運用に対応します。
 
 #### [`templates/plan-mode/`](templates/plan-mode/)
 変更を一切加えず「実行計画」だけを作るスキル2種（Claude/Cline の Plan モード・Codex の Ask モード相当）。
@@ -322,8 +310,7 @@ Track A は implementation-skills・plan-mode に加え **model-setup・agent-re
 
 #### [`tools/skill-sync/`](tools/skill-sync/)
 リポジトリ内で重複管理しているスキル/フック（`notes`・`spec-extract` のパイプライン連携版、
-`clarify` の task-pipeline 側コピー、`create-plan`・`create-plan-calibrate` のルート `.claude/`
-ミラー、`spec-sync-reminder.{sh,ps1}` の task-pipeline 側コピー）を、原本から `sync.py` が機械生成します。
+`create-plan`・`create-plan-calibrate` のルート `.claude/` ミラー）を、原本から `sync.py` が機械生成します。
 `--check` は CI（`.github/workflows/ci.yml`）で派生の stale 化を検出する非破壊モードです。
 「手動 diff で一致を確認する」という以前の運用規約を、生成 + 機械検証に置き換えています。
 
@@ -334,7 +321,7 @@ Track A は implementation-skills・plan-mode に加え **model-setup・agent-re
 72個紹介された記事から「今すぐ使えるもの」に絞り込み、優先度別・業務タイプ別に整理しています。
 
 #### [`docs/pipeline-spec-alignment-proposal.html`](docs/pipeline-spec-alignment-proposal.html)
-software-pipeline・task-pipeline・implementation-skills の仕様抽出（spec-extract）と実装の合致性を
+旧 software-pipeline・task-pipeline（現 pipeline に統合）・implementation-skills の仕様抽出（spec-extract）と実装の合致性を
 強制化するための設計提案資料（案A/案B比較・推奨・改修リスト）。ブラウザで開いて読む単一 HTML ファイルです。
 
 ## 別リポジトリに分割したもの
@@ -359,8 +346,7 @@ Power Automate のクラウドフローから Azure AI Foundry（Azure OpenAI）
 |-----------|--------|----------------|
 | [`plugins/model-setup/`](plugins/model-setup/) | X 記事「Sonnet 5をFable 5にする方法」（[@armadillo_ai 氏](https://x.com/armadillo_ai)） | 記事の7原則を参照・要約・翻案した独自整形（コピーではない）— 帰属を README とファイル内に記載 |
 | [`docs/skills-guide/`](docs/skills-guide/) | [anthropics/skills](https://github.com/anthropics/skills)・[obra/superpowers](https://github.com/obra/superpowers)・[mattpocock/skills](https://github.com/mattpocock/skills) | リンクと独自解説のみ収録。各スキル本体は各リポジトリのライセンス（anthropics/skills は Apache 2.0 + 一部 source-available）に従う |
-| [`plugins/software-pipeline/`](plugins/software-pipeline/) | [How to Build a Software Factory with Claude Code（@sairahul1 氏）](https://x.com/sairahul1/status/2058832033628241931) | 記事のコンセプトに基づく独自実装（コピーではない）— 帰属を README に記載 |
-| [`plugins/task-pipeline/`](plugins/task-pipeline/) | [How to Build a Software Factory with Claude Code（@sairahul1 氏）](https://x.com/sairahul1/status/2058832033628241931) | 記事のコンセプトをコード以外の成果物向けに汎用化した独自実装（コピーではない）— 帰属を README に記載 |
+| [`plugins/pipeline/`](plugins/pipeline/) | [How to Build a Software Factory with Claude Code（@sairahul1 氏）](https://x.com/sairahul1/status/2058832033628241931) | 記事のコンセプト（コードモード）とそのコード以外の成果物への汎用化（成果物モード）に基づく独自実装（コピーではない）— 帰属を README に記載 |
 | [`plugins/codex-bridge/`](plugins/codex-bridge/) | [eddiearc/codex-delegator](https://github.com/eddiearc/codex-delegator)・[hamelsmu/claude-review-loop](https://github.com/hamelsmu/claude-review-loop)・[OpenAI Codex CLI ドキュメント](https://developers.openai.com/codex/) | 構成・プロンプト型のコンセプトを参考にした独自実装（コードのコピーではない） |
 | [`plugins/agent-review-panel/`](plugins/agent-review-panel/) | [wan-huiyan/agent-review-panel](https://github.com/wan-huiyan/agent-review-panel)・[makinux/adversarial-panel](https://github.com/makinux/adversarial-panel) | 多フェーズ・パネル構成（並列独立レビュー→討論→検証→裁定）／4ラウンド敵対プロトコル（ブラインド回答→相互批判→譲歩→統合）のコンセプトを参考にした独自実装（コードのコピーではない）— 帰属を README に記載 |
 | [`plugins/self-improve/`](plugins/self-improve/) | [TerenceBristol/claude-improve](https://github.com/TerenceBristol/claude-improve)・[accidentalrebel/claude-skill-session-retrospective](https://github.com/accidentalrebel/claude-skill-session-retrospective)・[takiko 氏 Zenn 記事](https://zenn.dev/takiko/articles/claude-code-skill-from-logs)・[toarusyakaijin 氏 Qiita 記事](https://qiita.com/toarusyakaijin/items/60cc81bcced532963e6a) | 記事/スキルのコンセプト（シグナル検出・ログからのスキル化6フェーズ・skills-evolve/learn 等）を参考にした独自実装（コードのコピーではない） |

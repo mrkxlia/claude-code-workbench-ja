@@ -113,7 +113,7 @@ backlog の「昇格候補」（`#promote` 付き kb エントリ等）を恒久
 
 ## 既存の自己改善系との住み分け
 
-- **pipeline-improve（software/task-pipeline）** … パイプライン運用が前提（`docs/pipeline/` の産物を読む）。
+- **pipeline-improve（pipeline プラグイン）** … パイプライン運用が前提（`docs/pipeline/` の産物を読む）。
 - **kb-harvest（knowledge-share）** … 知見メモを `~/.claude/knowledge/` に貯めるだけ（スキルは直さない）。
 - **improve-apply（本スキル）** … パイプライン不要・git 不要で、**任意リポジトリの恒久成果物を直す/作る**。
 

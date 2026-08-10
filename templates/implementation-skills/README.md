@@ -11,33 +11,21 @@ notes が残した implementation-notes.md は spec-extract の一次資料に�
 
 ---
 
-## software-pipeline との関係
+## pipeline プラグインとの関係
 
 このディレクトリは**単体利用向けの原本**です。
-**[`software-pipeline/`](../../plugins/software-pipeline/) と [`task-pipeline/`](../../plugins/task-pipeline/) の両方**に、
-この2スキルの**統合連携版**が統合されています
-（`<pipeline>/.claude/skills/notes/`・`spec-extract/`）。連携版は**両パイプラインで同一ファイル**で、
+[`pipeline/`](../../plugins/pipeline/) プラグインに、この2スキルの**統合連携版**が統合されています
+（`plugins/pipeline/skills/notes/`・`spec-extract/`）。連携版は
 連携セクションが「成果物がプログラムかそれ以外か」でコードモード（実装ノート・コード仕様の逆引き）と
 成果物モード（成果物の実装ノート・「成果物仕様」の逆引き。`F-NN`→`D-NN` 等に読み替え）を自動判定します。
 
-- **パイプラインと一緒に使う** → 各パイプライン側の統合連携版（`/…-setup` が自動配布）
+- **パイプラインと一緒に使う** → pipeline プラグイン側の統合連携版（`/pipeline-setup` が自動配布）
 - **単体で使う**（パイプラインを導入しないプロジェクト・単発の実装） → このディレクトリからコピー
 
-統合連携版は「原本の完全コピー + 末尾の `PIPELINE-INTEGRATION` マーカー以降に統合連携セクション」という
-構造です。**このディレクトリの原本を更新したら、software / task 両連携版のマーカーより上を新しい原本で
-まるごと差し替えてください**（原本1つ → 同一の連携版2つ。連携セクションを編集するときは必ず両方へ
-同じ内容をコピー）。一致確認は `PIPELINE-INTEGRATION` で切る awk 方式:
-
-```bash
-for s in notes spec-extract; do
-  orig=implementation-skills/.claude/skills/$s/SKILL.md
-  for link in software-pipeline task-pipeline; do
-    diff <(awk '/PIPELINE-INTEGRATION/{exit} {print}' "$link/.claude/skills/$s/SKILL.md") "$orig" \
-      && echo "OK  $s ($link)"
-  done
-done
-# 出力が空（OK 4件）なら一致。PowerShell 版は software-pipeline/README.md を参照
-```
+統合連携版は「原本の完全コピー + 末尾の連携セクション（`tools/skill-sync/fragments/`）」という構造で、
+`tools/skill-sync/sync.py` が原本 + fragment から機械生成します。**このディレクトリの原本
+（または fragment）を編集したら `python3 tools/skill-sync/sync.py` を実行してください**
+（一致確認は CI の `sync.py --check` が行う）。
 
 ---
 

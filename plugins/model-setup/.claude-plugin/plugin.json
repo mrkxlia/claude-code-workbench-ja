@@ -1,6 +1,6 @@
 {
   "name": "model-setup",
-  "version": "3.1.1",
+  "version": "3.1.2",
   "description": "モデル運用テンプレート（Opus 4.8 + Sonnet 5 / Sonnet 単独。旧名 sonnet-setup）。上位モデル（Fable 5 級）の振る舞いをプロファイル別に再現する。スキル6種（task-brief / backlog-loop / pr-merge / fan-out / long-run / verify-fresh）に加え、サブエージェント3種（task-worker / fresh-verifier / bulk-scanner）・プロファイル別 CLAUDE 追補2種（private / company。Plan モード起点の自動ルーティング＝AIDLC 簡易版ワークフローのルール14/15 を含む・ファイルコピー配布）・モデル/effort 選定ガイド（MODEL-GUIDE.md・Fable 5 パリティマップ／AIDLC 対応表付き）・都度貼りプロンプト集（PROMPTS.md）・CLAUDE.md テンプレート（9ルール）・settings サンプルを収録する。",
   "author": {
     "name": "mrkxlia",

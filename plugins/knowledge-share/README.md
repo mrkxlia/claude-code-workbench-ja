@@ -227,7 +227,7 @@ bash /tmp/workbench/plugins/knowledge-share/install.sh
 ## Windows での使い方
 
 - フック・スクリプトは bash 1系統のみ（PowerShell 版はありません）。**Git Bash か WSL**
-  の bash で実行してください。既存の software-pipeline / task-pipeline のフックと同じ方針です。
+  の bash で実行してください。既存の pipeline プラグインのフックと同じ方針です。
 - `~/.claude/` は Windows では `%USERPROFILE%\.claude` に解決されます。
 - `settings.json` のフックは `bash "$HOME"/.claude/hooks/...` の形で配線します
   （Git Bash があれば Claude Code は `sh -c` でこの形を実行できます）。

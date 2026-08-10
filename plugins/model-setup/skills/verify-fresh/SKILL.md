@@ -7,7 +7,7 @@ description: >-
   確認して」「フレッシュレビューして」といった依頼や、/verify-fresh [完了条件・ブリーフの
   パス | 検証対象] での手動起動で発動する。実装前のプランレビュー・壁打ちは fresh context の
   Task サブエージェント、Codex による第二の目は codex-review（codex-bridge）、feature-pipeline 実行中の
-  ギャップ検査は同パイプラインの implementation-validator に任せる — 本スキルは
+  ギャップ検査は同パイプラインの final-reviewer に任せる — 本スキルは
   任意のタスクの「成果物 vs 完了条件」の検証に使う。
 argument-hint: "[完了条件・ブリーフのパス | 検証対象]"
 ---
@@ -31,7 +31,7 @@ AIDLC 簡易版ワークフロー（`model-setup/MODEL-GUIDE.md` §9）では検
   `fan-out` の成果マージ前と `long-run` の区切りでは標準工程として呼ばれる
 - 実装**前**の計画・設計の相談 → fresh context の Task サブエージェント
 - Codex による第二の目（コードレビュー） → `codex-review`（codex-bridge）
-- feature-pipeline 実行中のストーリー/ブリーフ突き合わせ → `implementation-validator`（同パイプライン Phase 7）
+- feature-pipeline 実行中のストーリー/ブリーフ突き合わせ → `final-reviewer`（同パイプライン Phase 7）
 
 ## 中核ルール
 

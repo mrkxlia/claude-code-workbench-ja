@@ -1,0 +1,19 @@
+{
+  "name": "pipeline",
+  "version": "1.0.0",
+  "description": "コード開発（feature-pipeline・7エージェント）とコード以外の成果物（task-pipeline・5エージェント）を1つに統合したパイプラインテンプレート。/pipeline:pipeline-setup がモード選択つきで対象リポジトリを解析し、エージェント・CLAUDE.md・フックを自動導入する。旧 software-pipeline 3.x / task-pipeline 2.x の後継。",
+  "author": {
+    "name": "mrkxlia",
+    "url": "https://github.com/mrkxlia"
+  },
+  "homepage": "https://github.com/mrkxlia/claude-code-workbench-ja/tree/main/plugins/pipeline",
+  "repository": "https://github.com/mrkxlia/claude-code-workbench-ja",
+  "license": "MIT",
+  "keywords": [
+    "workflow",
+    "subagents",
+    "pipeline",
+    "deliverables",
+    "japanese"
+  ]
+}

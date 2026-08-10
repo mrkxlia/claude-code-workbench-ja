@@ -21,17 +21,14 @@
 | implementation-skills/spec-extract | 有 | 中（`/cmd`） | — | **T1** | Track A 生成（本文用語写像）＝**正本** |
 | plan-mode/create-plan | 有 | 中（ADJ/SPEC.md 参照） | — | **T1** | Track A 生成（本文用語写像＋ADJ→許可機構写像） |
 | plan-mode/create-plan-calibrate | 有（`disable-model-invocation`） | 低 | — | **T1** | Track A 生成（`disable-model-invocation: true`→Codex `allow_implicit_invocation: false`） |
-| software-pipeline/notes | 有 | 中 | **可**（上=正本同一/下=連携） | 上=**T1**(正本へ集約)／下=**T3** | 上半分は正本で代替・下半分は Track B |
-| software-pipeline/spec-extract | 有 | 中 | **可** | 同上 | 同上 |
-| task-pipeline/notes | 有 | 中 | **可** | 同上 | 同上 |
-| task-pipeline/spec-extract | 有 | 中 | **可** | 同上 | 同上 |
-| software-pipeline/clarify・task-pipeline/clarify | 有 | 高（パイプライン結合） | **不可** | **T3** | Track B。両者は**同一内容**（正本＝software-pipeline・SYNC マーカーで同期） |
-| software-pipeline/build-with-tests | 有 | 高（feature-pipeline 言及） | 不可 | **T3** | Track B（software のみ） |
-| software-pipeline/feature-pipeline | 有 | 高（7エージェント連鎖） | — | **T3** | Track B（orchestration 再実装） |
-| software-pipeline/pipeline-setup | 有（`disable-model-invocation`） | 高 | — | **T3** | Track B |
-| software-pipeline/pipeline-improve | 有（`disable-model-invocation`） | 高 | — | **T3** | Track B |
-| task-pipeline/task-pipeline | 有 | 高（5エージェント連鎖） | — | **T3** | Track B |
-| task-pipeline/task-pipeline-setup | 有（`disable-model-invocation`） | 高 | — | **T3** | Track B |
+| pipeline/notes | 有 | 中 | **可**（上=正本同一/下=連携） | 上=**T1**(正本へ集約)／下=**T3** | 上半分は正本で代替・下半分は Track B |
+| pipeline/spec-extract | 有 | 中 | **可** | 同上 | 同上 |
+| pipeline/clarify | 有 | 高（パイプライン結合） | **不可** | **T3** | Track B（モード自動判定の統合版） |
+| pipeline/build-with-tests | 有 | 高（feature-pipeline 言及） | 不可 | **T3** | Track B（コードモードのみ） |
+| pipeline/feature-pipeline | 有 | 高（7エージェント連鎖） | — | **T3** | Track B（orchestration 再実装） |
+| pipeline/task-pipeline | 有 | 高（5エージェント連鎖） | — | **T3** | Track B |
+| pipeline/pipeline-setup | 有（`disable-model-invocation`） | 高 | — | **T3** | Track B（モード選択つき統合 setup） |
+| pipeline/pipeline-improve | 有（`disable-model-invocation`） | 高 | — | **T3** | Track B |
 | knowledge-share/kb | 有 | 高（グローバルKB/@import/self-improve閉ループ） | **不可** | **T3** | Track B（knowledge-share 一式で統一） |
 | knowledge-share/kb-harvest | 有 | 高（SessionStart/jsonl 採掘） | — | **T3** | Track B（同上） |
 | self-improve/improve-scan | 有 | 高（transcript 走査） | — | **T3** | Track B |
@@ -49,12 +46,11 @@
 > **ルート除外（重複）**: `./.claude/skills/create-plan`・`create-plan-calibrate` は plan-mode と md5 一致の複製。走査対象外。
 > **サイドカー**: スキルディレクトリ内の SKILL.md 以外のファイル（personas.md・SPEC.md 等）は、生成時に同じ出力ディレクトリへ複製する（②参照）。
 
-### サブエージェント（agents/*.md・計15件）
+### サブエージェント（agents/*.md・計21件）
 
 | セクション | ファイル | ティア | 備考 |
 |---|---|---|---|
-| software-pipeline | 7件（backend/frontend-builder, codebase-researcher, spec-writer, story-writer, test-verifier, implementation-validator） | **T2** | `.md`→Codex `.toml`／Kiro `.json`。`color` 捨て・`model: inherit` 捨て/既定・`sonnet/opus`→model id・`tools:`→各ツール表現。**ただし所属パイプラインが T3 なので実体は Track B の素材** |
-| task-pipeline | 5件（brief/requirements-writer, deliverable-builder/reviewer, source-researcher） | **T2** | 同上（パイプラインは Track B） |
+| pipeline | 8件（researcher, requirements-writer, brief-writer, final-reviewer, backend/frontend-builder, test-verifier, deliverable-builder） | **T2** | `.md`→Codex `.toml`／Kiro `.json`。`color` 捨て・`model: inherit` 捨て/既定・`sonnet/opus`→model id・`tools:`→各ツール表現。**ただし所属パイプラインが T3 なので実体は Track B の素材** |
 | codex-bridge | 3件（codex-reviewer/implementer/advisor） | **Track B(Kiro版)** | Kiro `.kiro/agents/*.json` へ再実装の素材 |
 | kiro-bridge | 2件（kiro-reviewer/advisor） | **Track B(Codex版)** | Codex 側の再実装素材（対称形）。Kiro 版は自己再帰のため対象外 |
 | model-setup | 3件（task-worker/fresh-verifier=sonnet, bulk-scanner=haiku） | **T2p** | fan-out / verify-fresh スキルと対で移植。`model:` tier は Kiro=id 写像・Codex=omit（③） |
@@ -66,16 +62,16 @@
 |---|---|---|---|
 | model-setup/CLAUDE.md | **対象外** | steering(`inclusion: always`) | Claude モデルの運用ルールのため Kiro（Claude モデルを実行）でのみ有効。Codex には配らない |
 | model-setup/CLAUDE.{private,company}.md・MODEL-GUIDE.md・settings.*.json | 対象外 | 対象外 | CC の設定・モデル選定に固有 |
-| software/task-pipeline の CLAUDE.md | 対象外 | 対象外 | パイプライン前提＝Track B に含める |
+| pipeline の CLAUDE.md・CLAUDE.task.md | 対象外 | 対象外 | パイプライン前提＝Track B に含める |
 
 ### フック（T2h・`.sh`/`.ps1`/`hooks.json`）
 
 | フック | 起動契機 | ティア | Codex | Kiro |
 |---|---|---|---|---|
-| software-pipeline/block-secrets-commit | PreToolUse(Bash)＋`exit 2` | **T2h** | ほぼ非対応 | `.kiro/hooks/*.json`（PreToolUse 相当＋command action）へ意味論写像 |
-| software-pipeline/guard-builder-writes | PreToolUse | T2h | 非対応 | trigger＋matcher へ写像 |
-| software-pipeline,task-pipeline/spec-sync-reminder | SessionStart/Stop | T2h | 非対応 | SessionStart hook へ写像 |
-| task-pipeline/guard-deliverable-writes | PreToolUse | T2h | 非対応 | 同上 |
+| pipeline/block-secrets-commit | PreToolUse(Bash)＋`exit 2` | **T2h** | ほぼ非対応 | `.kiro/hooks/*.json`（PreToolUse 相当＋command action）へ意味論写像 |
+| pipeline/guard-builder-writes | PreToolUse | T2h | 非対応 | trigger＋matcher へ写像 |
+| pipeline/spec-sync-reminder | SessionStart/Stop | T2h | 非対応 | SessionStart hook へ写像 |
+| pipeline/guard-deliverable-writes | PreToolUse | T2h | 非対応 | 同上 |
 | knowledge-share/kb-session-{start,end} | SessionStart/End | T3 | 非対応 | knowledge-share 一式の再実装に含める |
 | self-improve/si-session-{start,end} | SessionStart/End | T3 | 非対応 | self-improve 再実装に含める |
 | codex-bridge/gen-agents-md, plan-to-codex | SessionStart/PostToolUse | 流用/対象外 | — | gen-agents-md は Track A の AGENTS.md 生成に流用 |

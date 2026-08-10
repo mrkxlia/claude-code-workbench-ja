@@ -5,7 +5,7 @@ description: >-
   突き合わせて「これを完了と認めない理由」を探す fresh context の検証エージェント。
   検証コマンド（テスト・ビルド・読み取り）は実行するが、修正は一切しない。
   指摘は重大度・確信度つきで自己選別せず網羅報告する。feature-pipeline 専用の
-  implementation-validator（ストーリー/ブリーフ突き合わせ）と違い、
+  final-reviewer（ストーリー/ブリーフ突き合わせ）と違い、
   任意のタスクの成果物と完了条件に使える汎用版。
 tools: Read, Grep, Glob, Bash
 # 反証には推論力が必要なため sonnet 固定。haiku は不可

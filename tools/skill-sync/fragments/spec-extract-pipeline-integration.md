@@ -3,9 +3,9 @@
      から生成する派生物。直接編集せず、原本または fragment を編集して
      `python3 tools/skill-sync/sync.py` を実行すること（`--check` は CI で検証のみ行う）。 -->
 
-## パイプライン連携（software-pipeline / task-pipeline 統合連携版）
+## パイプライン連携（pipeline プラグイン統合連携版）
 
-このコピーは software-pipeline（feature-pipeline）と task-pipeline の**両方で同一内容**の
+このコピーは pipeline プラグインの feature-pipeline（コード）と task-pipeline（成果物）の**両モード共通**の
 統合連携版。単体利用の原本は `templates/implementation-skills/.claude/skills/spec-extract/` にある。
 
 ### モード判定（成果物がプログラムかそれ以外か）
@@ -27,8 +27,8 @@ spec-extract はパイプラインの**前工程**として使う。仕様書の
 1. `/spec-extract <対象>` で現状（コードモード: 挙動 / 成果物モード: 内容・構成・表記規約）を
    SPEC.md に固定する
 2. 人間が SPEC.md をレビューし、`[不明]` の質問に答えられる範囲で答える
-3. コードモード: `/feature-pipeline <機能>` を開始 — codebase-researcher が SPEC.md を一次資料として読む。
-   成果物モード: `/task-pipeline <依頼>` を開始 — source-researcher が SPEC.md を一次資料として読む
+3. コードモード: `/feature-pipeline <機能>` を開始 — researcher が SPEC.md を一次資料として読む。
+   成果物モード: `/task-pipeline <依頼>` を開始 — researcher が SPEC.md を一次資料として読む
 
 パイプラインの**出口**（最終検証フェーズの後）では呼ばない。その時点では story.md /
 requirements.md / brief.md / api-contract.md という順方向の仕様が既に存在し、逆引きは冗長になる。

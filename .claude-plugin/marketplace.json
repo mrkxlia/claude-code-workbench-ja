@@ -6,26 +6,15 @@
   },
   "plugins": [
     {
-      "name": "software-pipeline",
-      "source": "./plugins/software-pipeline",
-      "description": "7つの専門エージェントで機能開発を流れ作業化する「ソフトウェアパイプライン」テンプレート。スキル7種（pipeline-setup / feature-pipeline / clarify / build-with-tests / notes / spec-extract / pipeline-improve）を提供する。clarify / notes / spec-extract は task-pipeline と同一内容の統合連携版（モード自動判定）。",
+      "name": "pipeline",
+      "source": "./plugins/pipeline",
+      "description": "コード開発（feature-pipeline・7エージェント連鎖）とコード以外の成果物（task-pipeline・5エージェント連鎖）を1つに統合したパイプラインテンプレート。スキル8種（pipeline-setup / feature-pipeline / task-pipeline / clarify / build-with-tests / notes / spec-extract / pipeline-improve）とエージェント8種を提供する。notes / spec-extract / clarify はモード自動判定の統合版。旧 software-pipeline / task-pipeline の後継。",
       "category": "workflow",
       "author": {
         "name": "mrkxlia"
       },
       "license": "MIT",
-      "keywords": ["workflow", "subagents", "software-pipeline", "japanese"]
-    },
-    {
-      "name": "task-pipeline",
-      "source": "./plugins/task-pipeline",
-      "description": "5つの専門エージェントでコード以外の成果物（drawio 図・ドキュメント・レポート）の作成を流れ作業化する「タスクパイプライン」テンプレート。スキル5種（task-pipeline-setup / task-pipeline / clarify / notes / spec-extract）を提供する。clarify / notes / spec-extract は software-pipeline と同一内容の統合連携版（モード自動判定）。",
-      "category": "workflow",
-      "author": {
-        "name": "mrkxlia"
-      },
-      "license": "MIT",
-      "keywords": ["workflow", "subagents", "task-pipeline", "deliverables", "japanese"]
+      "keywords": ["workflow", "subagents", "pipeline", "deliverables", "japanese"]
     },
     {
       "name": "knowledge-share",

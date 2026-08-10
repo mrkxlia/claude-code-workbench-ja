@@ -3,7 +3,7 @@
 単一の原本から派生ファイルへ機械的に同期する。
 
 対象は CLAUDE.md 規約6 に列挙された「原本1つ→派生N個」の組（notes・spec-extract・
-clarify・create-plan・create-plan-calibrate・spec-sync-reminder）。
+create-plan・create-plan-calibrate）。
 これまでは HTML コメントで「手動 diff で一致を確認せよ」と書くだけの運用だったが、
 派生を手で編集して原本と乖離する事故を防ぐため、生成 + --check の機械チェックに置き換える。
 
@@ -72,28 +72,18 @@ def build_rules() -> list[Rule]:
     T = REPO / "templates"
     rules: list[Rule] = []
 
-    # notes / spec-extract: templates/implementation-skills 原本 + 統合連携 fragment → 両パイプライン
+    # notes / spec-extract: templates/implementation-skills 原本 + 統合連携 fragment → pipeline プラグイン
     for skill, frag_name in (
         ("notes", "notes-pipeline-integration.md"),
         ("spec-extract", "spec-extract-pipeline-integration.md"),
     ):
-        src = T / "implementation-skills/.claude/skills" / skill / "SKILL.md"
-        for plugin in ("software-pipeline", "task-pipeline"):
-            rules.append(
-                Rule(
-                    source=src,
-                    dest=P / plugin / "skills" / skill / "SKILL.md",
-                    fragment=FRAGMENTS / frag_name,
-                )
+        rules.append(
+            Rule(
+                source=T / "implementation-skills/.claude/skills" / skill / "SKILL.md",
+                dest=P / "pipeline/skills" / skill / "SKILL.md",
+                fragment=FRAGMENTS / frag_name,
             )
-
-    # clarify: software-pipeline を正本として task-pipeline へ複製
-    rules.append(
-        Rule(
-            source=P / "software-pipeline/skills/clarify/SKILL.md",
-            dest=P / "task-pipeline/skills/clarify/SKILL.md",
         )
-    )
 
     # create-plan / create-plan-calibrate: templates/plan-mode 原本 → ルート .claude/skills/ へ一方向コピー
     for name, files in (
@@ -107,16 +97,6 @@ def build_rules() -> list[Rule]:
                     dest=REPO / ".claude/skills" / name / fname,
                 )
             )
-
-    # spec-sync-reminder: software-pipeline を正本として task-pipeline へ複製（.sh / .ps1）
-    for ext in (".sh", ".ps1"):
-        rules.append(
-            Rule(
-                source=P / "software-pipeline/hooks" / f"spec-sync-reminder{ext}",
-                dest=P / "task-pipeline/hooks" / f"spec-sync-reminder{ext}",
-                style="hash",
-            )
-        )
 
     return rules
 

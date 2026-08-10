@@ -3,9 +3,9 @@
      から生成する派生物。直接編集せず、原本または fragment を編集して
      `python3 tools/skill-sync/sync.py` を実行すること（`--check` は CI で検証のみ行う）。 -->
 
-## パイプライン連携（software-pipeline / task-pipeline 統合連携版）
+## パイプライン連携（pipeline プラグイン統合連携版）
 
-このコピーは software-pipeline（feature-pipeline）と task-pipeline の**両方で同一内容**の
+このコピーは pipeline プラグインの feature-pipeline（コード）と task-pipeline（成果物）の**両モード共通**の
 統合連携版。単体利用の原本は `templates/implementation-skills/.claude/skills/notes/` にある。
 パイプラインで使うとき、上記の原本ルールに以下が**優先して**加わる。
 

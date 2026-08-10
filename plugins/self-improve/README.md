@@ -29,7 +29,7 @@ SessionStart フック**を同梱します（kb-harvest と同じ「検出/通�
 | | 対象 | 起点データ | 出力 | 前提 |
 |---|---|---|---|---|
 | **kb-harvest**（knowledge-share） | 個人の横断ナレッジ | トランスクリプト jsonl | `~/.claude/knowledge/` への**メモ追記**（スキルは直さない） | なし |
-| **pipeline-improve**（software/task-pipeline） | パイプライン定義 | `LEARNINGS.md`・`status.md` 等**パイプライン産物** | 定義の改善編集 | **パイプライン運用中**（`docs/pipeline/`） |
+| **pipeline-improve**（pipeline プラグイン） | パイプライン定義 | `LEARNINGS.md`・`status.md` 等**パイプライン産物** | 定義の改善編集 | **パイプライン運用中**（`docs/pipeline/`） |
 | **self-improve（本セクション）** | 任意リポジトリのスキル/CLAUDE.md/rules/hook/agent | 直近トランスクリプト＋kb 蓄積 | 上記への**改善・新規作成**編集（承認制・`.bak`） | **パイプライン不要・git 不要** |
 
 要点: `pipeline-improve` はパイプライン運用が前提、`kb-harvest` はメモを貯めるだけ。
