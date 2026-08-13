@@ -25,11 +25,14 @@ Claude Code のサブエージェント・スキル・フックを組み合わ�
 
 > **旧 software-pipeline / task-pipeline からの移行**: 本プラグインは旧 software-pipeline 3.x と
 > 旧 task-pipeline 2.x を1つに統合した後継です（pipeline 1.0.0）。スキル名
-> （`/feature-pipeline`・`/task-pipeline`・`/clarify`・`/notes`・`/spec-extract` 等)と
+> （`/feature-pipeline`・`/task-pipeline`・`/clarify`・`/notes` 等)と
 > 中間成果物のパス（`docs/pipeline/`・`docs/task-pipeline/`）は変わらないため、導入済み
 > プロジェクトの資産・`再開 <slug>` はそのまま使えます。プラグインとして入れ直す場合は
 > `/plugin install pipeline@workbench-ja`（旧2プラグインはアンインストール）。
 > 旧 `/task-pipeline-setup` は `/pipeline-setup` のモード選択（成果物モード）に統合されました。
+> **2.0.0での変更**: `spec-extract` スキルを削除しました。レガシーコードからの仕様逆引きは
+> [daishir0/cc-rsg](https://github.com/daishir0/cc-rsg) 等の外部ツールへ委譲します
+> （下記「実装ノートと仕様逆引き」参照）。
 
 本 README は主にコードモード（feature-pipeline）を軸に説明します。成果物モード固有の内容は
 「[成果物モード（task-pipeline）](#成果物モードtask-pipeline--コード以外の成果物)」節にまとめています。
@@ -131,7 +134,7 @@ flowchart TB
 
 ```mermaid
 flowchart TB
-    spec["/spec-extract（任意）<br/>レガシーコードの仕様を逆引き"] -.->|生成| specmd["SPEC.md<br/>（リポジトリルート）"]
+    spec["cc-rsg 等（任意・外部ツール）<br/>レガシーコードの仕様を逆引き"] -.->|生成| specmd["SPEC.md<br/>（リポジトリルート）"]
     specmd -.->|一次資料| r
     r["1 researcher"] -->|出力| research
     subgraph slug["docs/pipeline/＜slug＞/ — 機能ごとの成果物"]
@@ -173,7 +176,7 @@ flowchart TD
     q0{"やりたいことは？"}
     q0 -->|"パイプラインをまだ導入していない"| setup["/pipeline-setup<br/>対象リポジトリに一式を自動導入"]
     q0 -->|"機能を end-to-end で開発"| q1{"対象コードに<br/>仕様書はある？"}
-    q1 -->|"ない（レガシー）"| se["/spec-extract<br/>現状の挙動を SPEC.md に固定"]
+    q1 -->|"ない（レガシー）"| se["cc-rsg 等（外部ツール）<br/>現状の挙動を SPEC.md に固定"]
     se --> ff["/feature-pipeline ＜機能の説明＞<br/>7エージェント + 3チェックポイント"]
     q1 -->|"ある / 新規開発"| ff
     q0 -->|"パイプラインを通すほどではない<br/>小さな実装・修正"| bwt["/build-with-tests ＜タスク＞<br/>既存パターン確認 + テスト並行"]
@@ -189,48 +192,26 @@ flowchart TD
 | `/task-pipeline <依頼の説明>` | コード以外の成果物を作る（5エージェント連鎖 + 3チェックポイント。詳細は成果物モード節） |
 | `/clarify <詰めたい要件>` | 要件・仕様を一問ずつ徹底質問で詰める（パイプライン内では Phase 2/3 の writer 起動前に自動で回る） |
 | `/build-with-tests <タスク>` | パイプラインを通すほどではない小さな実装・修正をテスト並行で行う |
-| `/spec-extract [対象パス]` | レガシーコードの仕様を逆引きして SPEC.md に固定する。**途中で要件/仕様を変えたいとき（既存 SPEC.md の改訂・更新）にも使う**（導入の前工程＋以降の維持） |
 | `/notes` | 実装ノートを手動で開始・更新する（パイプライン内ではビルダーが自動記録） |
 | `/pipeline-improve [期間や slug]` | 運用実績から失敗シグナルを検出し、エージェント定義・スキル・CLAUDE.md の改善案を提案・適用する（自己改善ループ） |
 | `/pipeline-setup` | パイプライン一式を対象リポジトリへ自動導入する（コード/成果物のモード選択つき） |
 
 ---
 
-## 実装ノートと仕様逆引き — implementation-skills との関係
-
-このテンプレートの `notes` / `spec-extract` スキルは、
-[`implementation-skills/`](../../templates/implementation-skills/) セクションのスキルの**パイプライン連携版**です。
-パイプラインの空白だった2つを埋めます:
+## 実装ノートと仕様逆引き
 
 - **notes（実装ノート）** — ビルダー3種が「ブリーフにない判断・逸脱・トレードオフ・
   ハマりどころ・積み残し」を `docs/pipeline/<slug>/implementation-notes.md` に物証つきで記録します。
   `/feature-pipeline 再開` は冒頭の Status ブロックを最初に読み、
   最終レビュー（Phase 7）では Decisions / Deferred が LEARNINGS.md のルール候補として回収されます。
-  「なぜこう書いたのか」がセッションを跨いで残ります
-- **spec-extract（仕様逆引き）** — 仕様書のないレガシーコードにパイプラインを導入する前に
-  `/spec-extract` で現状を `SPEC.md` に固定し（全記述に `[確定]/[推定]/[不明]` の確度ラベル）、
-  researcher がそれを一次資料として読みます。レガシー導入の推奨フローは
-  **`/spec-extract` → SPEC.md を人間レビュー → `/feature-pipeline`**
-
-<details>
-<summary><b>原本との同期ルール</b>（<code>tools/skill-sync</code> による機械生成）</summary>
-
-- **単体で使いたい**（パイプラインを導入しないプロジェクト・単発の実装）→ [`implementation-skills/`](../../templates/implementation-skills/) の**原本**をコピーする
-- **パイプラインで使う** → このセクションのパイプライン連携版を使う（`/pipeline-setup` が自動配布します）
-
-パイプライン連携版（`notes`・`spec-extract`）は、
-[`tools/skill-sync/sync.py`](../../tools/skill-sync/sync.py) が原本
-（[`implementation-skills/`](../../templates/implementation-skills/)）+ 連携 fragment から機械生成する派生ファイルです。**派生ファイルを直接編集しない**
-（先頭に `SYNCED by tools/skill-sync — DO NOT EDIT` の注記があります）。原本または
-`tools/skill-sync/fragments/*.md`（パイプライン連携セクション本文）を編集したら、リポジトリルートで
-以下を実行してください:
-
-```bash
-python3 tools/skill-sync/sync.py          # 原本 → 派生ファイルを再生成
-python3 tools/skill-sync/sync.py --check  # 派生が原本と同期済みかだけ検証（CI で使用）
-```
-
-</details>
+  「なぜこう書いたのか」がセッションを跨いで残ります。パイプライン非依存の単体スキルとしても
+  使えます（`.claude/skills/notes/` へそのままコピー）
+- **仕様逆引き（レガシー → SPEC.md）** — 仕様書のないレガシーコードにパイプラインを導入する前に、
+  [daishir0/cc-rsg](https://github.com/daishir0/cc-rsg) 等の外部ツールで現状の挙動を `SPEC.md` に
+  逆引き固定してから導入するのを推奨します（本プラグインは仕様逆引き機能を持たず、外部ツールへ
+  委譲します）。レガシー導入の推奨フローは
+  **cc-rsg 等で SPEC.md を生成 → 人間レビュー → `/feature-pipeline`**。
+  researcher はリポジトリに `SPEC.md` / `SPEC-recovered.md` があればそれを一次資料として読みます
 
 ---
 
@@ -261,8 +242,8 @@ python3 tools/skill-sync/sync.py --check  # 派生が原本と同期済みかだ
   出力ディレクトリ許可リスト（`ALLOWED_PREFIXES`）外への Edit/Write を `ask` で人間確認に回します
   （機密パターンはハードブロック）。CLAUDE.md の出力先・ビルダーの担当範囲・フックの許可リストは
   setup が**同じ承認済みデータ**から生成する三者一致設計です
-- **SPEC.md** — 成果物仕様（要件 ID は `D-NN`）。`/spec-extract` の成果物モードが既存の図・
-  ドキュメント・規約から逆引きします
+- **SPEC.md** — 成果物仕様（要件 ID は `D-NN`）。既存の図・ドキュメント・規約からの逆引きは
+  cc-rsg 等の外部ツールに委ねます（上記「実装ノートと仕様逆引き」参照）
 
 再開は `/task-pipeline 再開 <slug>`。承認チェックポイントの二段構え（Plan モードレビュー）や
 オーケストレーターのルールはコードモードと同一です。詳細は
@@ -293,8 +274,7 @@ pipeline/
 │   ├── task-pipeline/SKILL.md               # 成果物モードのオーケストレーター（5工程）
 │   ├── clarify/SKILL.md                     # 要件・仕様を一問ずつ詰める徹底質問スキル（dig/grill 由来）
 │   ├── build-with-tests/SKILL.md            # 小さな実装をテスト並行で行うスキル（コードモード）
-│   ├── notes/SKILL.md                       # 実装ノート（implementation-skills 由来の連携版・モード自動判定）
-│   ├── spec-extract/SKILL.md                # 仕様逆引き（implementation-skills 由来の連携版・モード自動判定）
+│   ├── notes/SKILL.md                       # 実装ノート（モード自動判定）
 │   ├── pipeline-improve/SKILL.md            # 自己改善ループ（失敗シグナル検出 → 定義の改善提案）
 │   └── pipeline-setup/                      # 一式を対象リポジトリへ自動導入（モード選択つき）
 │       ├── SKILL.md
@@ -308,7 +288,7 @@ pipeline/
     └── settings.json                        # フック配線の設定サンプル（setup がモードに応じて絞る）
 ```
 
-プラグイン化されているのは**スキル8種とエージェント8種**です（いずれもプラグイン導入で自動配信）。
+プラグイン化されているのは**スキル7種とエージェント8種**です（いずれもプラグイン導入で自動配信）。
 CLAUDE.md サンプル・フックはプロジェクトごとの差し替え（担当範囲など）が前提のため、プラグインからは
 自動配信せず、`pipeline-setup` が対象リポジトリへコピー&カスタマイズします。
 
@@ -399,7 +379,6 @@ cp -r <このリポジトリ>/plugins/pipeline/skills/feature-pipeline .claude/s
 cp -r <このリポジトリ>/plugins/pipeline/skills/clarify .claude/skills/
 cp -r <このリポジトリ>/plugins/pipeline/skills/build-with-tests .claude/skills/
 cp -r <このリポジトリ>/plugins/pipeline/skills/notes .claude/skills/
-cp -r <このリポジトリ>/plugins/pipeline/skills/spec-extract .claude/skills/
 cp -r <このリポジトリ>/plugins/pipeline/skills/pipeline-improve .claude/skills/
 ```
 
@@ -480,7 +459,8 @@ cp -r /tmp/workbench/plugins/pipeline/skills/build-with-tests ~/.claude/skills/
 
 - `clarify` / `build-with-tests` … パイプライン非依存。単体で使える。
 - `pipeline-improve` … パイプラインの運用ログ（`docs/pipeline/`）を前提にするため、単体利用には向かない。
-- `notes` / `spec-extract` … 単体で使うなら**原本**の [`implementation-skills/`](../../templates/implementation-skills/) を入れるのが推奨。
+- `notes` … パイプライン非依存。単体でそのままコピーして使える。仕様逆引きが必要な場合は
+  [daishir0/cc-rsg](https://github.com/daishir0/cc-rsg) 等の外部ツールを使う。
 
 > プロジェクト単位で導入したい場合は、上の「セットアップ → 方式C（手動セットアップ）」の
 > スキルコピー手順（`.claude/skills/` 宛）を参照してください。ここではどこでも使える
@@ -682,7 +662,7 @@ Nicholas Carlini による「16体並列で C コンパイラを書く」実験�
 
 ## スキル名の棚卸し（後方互換維持）
 
-`clarify` / `notes` / `spec-extract` は**モード自動判定の統合版**です。連携セクションが
+`clarify` / `notes` は**モード自動判定の統合版**です。連携セクションが
 「成果物がプログラムかそれ以外か」（進行中の `docs/pipeline/` / `docs/task-pipeline/`、無ければ
 成果物の種類）で**コードモード / 成果物モードを自動判定**します。
 プロジェクトへ直接コピーした場合は短い名（`/clarify` 等）で呼べます。
@@ -705,8 +685,7 @@ Nicholas Carlini による「16体並列で C コンパイラを書く」実験�
 | `build-with-tests` | 維持 | 固有名 |
 | `pipeline-improve` | 維持 | 固有名 |
 | `clarify` | モード自動判定の統合版 | 両モードに対応 |
-| `notes` | モード自動判定の統合版 | implementation-skills 原本＋連携セクション（skill-sync 生成） |
-| `spec-extract` | モード自動判定の統合版 | implementation-skills 原本＋連携セクション（skill-sync 生成） |
+| `notes` | モード自動判定の統合版 | 両モードに対応（feature-pipeline / task-pipeline 共通） |
 
 `/pipeline:task-pipeline` のようにプラグイン名とスキル名が別語になるケースも、実害が
 ないため**維持**します（後方互換優先）。
