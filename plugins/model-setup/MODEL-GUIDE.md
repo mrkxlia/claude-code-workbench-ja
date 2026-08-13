@@ -82,14 +82,16 @@ git が無い環境での代替策:
 ## 4. Opus で計画 → Sonnet で実行（「7/7まで…」前置きの恒久的な代替）
 
 `opusplan` を設定していれば、計画立案は自動的に Opus が担う。より明示的に「計画だけ確定させて
-別セッションで実行させたい」場合は、`plan-mode` の `/create-plan` で読み取り専用の実行計画
-ファイルを作成し、新しいセッション（Sonnet）でそれを読ませて実行する。
-**この用途の新しいスキルは作らない** — `create-plan` が既にこの役割を担っている。
+別セッションで実行させたい」場合は、Claude Code 本体の **Plan モード**（`/plan` またはモード切替）
+で読み取り専用の実行計画ファイルを `~/.claude/plans/` に作成し、新しいセッション（Sonnet）で
+`/plan open` から読ませて実行する。
+**この用途の追加スキルは作らない** — 本体 Plan モードが既にこの役割を担っている
+（旧 `create-plan` スキルは本体機能に統合されたため、2026-08 の OSS 差別化レビューで削除した）。
 なお `fan-out` スキルは「計画の引き継ぎ」ではなくセッション内の並列分担であり、
-この役割（create-plan）とは重ならない。
+この役割（Plan モード）とは重ならない。
 
 以前は「あなたは期間限定の高性能モデルです。Sonnet が実行できる粒度で計画を」という前置きを
-毎回書いていたが、`opusplan` 設定 + `create-plan` の組み合わせがこれを恒久的に代替する。
+毎回書いていたが、`opusplan` 設定 + 本体 Plan モードの組み合わせがこれを恒久的に代替する。
 
 ## 5. Sonnet 5 運用の要点（公式 prompting guide より）
 
@@ -183,7 +185,7 @@ Sonnet/Haiku と Opus/Fable の差は「賢さ」ではなく「構造」で埋�
 | 過剰計画の抑制（揃ったら着手） | 追補ルール11 後段 |
 | 評価と実行の境界（頼まれるまで直さない） | 追補ルール12 |
 | 結論先行・見ていない読者向けサマリ | 追補ルール13 |
-| メモリ（教訓の記録・更新） | **knowledge-share プラグイン（`kb` / `kb-harvest`）を使う — 本セクションでは新規に作らない** |
+| メモリ（教訓の記録・更新） | **Claude Code 本体の自動メモリ（auto memory）を使う — 本セクションでは新規に作らない** |
 | 長時間作業での序盤制約の保持 | `/long-run` の「ブリーフ固定＋区切り再読」＋ §7 エスカレーション（完全には埋まらない） |
 | テストへの過剰適合の回避（汎用解の実装） | `task-worker` ルール5 ＋ `fresh-verifier` 観点4（未委譲の直接実装には `PROMPTS.md` #3） |
 | 開いていないコードを推測で語らない | 追補ルール10（3点目・両プロファイル共通） |
@@ -212,9 +214,9 @@ AWS Labs [AI-DLC (aidlc-workflows)](https://github.com/awslabs/aidlc-workflows) 
 | 承認ゲート（Human in the Loop） | Plan 承認（唯一のゲート）／Step ごとに刻むなら `backlog-loop`／パイプラインの3チェックポイント |
 | Construction: 実装 | 軽微なら直接実行。機能開発 → `feature-pipeline`、非コード成果物 → `task-pipeline`、汎用実装 → `task-worker` |
 | Units of Work（並列作業単位） | `/fan-out` の分解（書き込み範囲が交わらないサブタスク）／pipelines の並列実行グループ |
-| 検証（レビュー役の分離） | `/verify-fresh`（`fresh-verifier`）を要所で自動実行。コードは `/codex-review`、設計・文書は `review-panel`・`peer`〔各導入時〕 |
+| 検証（レビュー役の分離） | `/verify-fresh`（`fresh-verifier`）を要所で自動実行。コードは `/codex-review`、設計・文書は `review-panel`〔導入時〕 |
 | 複雑度適応（adaptive execution） | 軽微な変更（1〜2ファイル・完了条件が自明）はパイプラインを通さず直接実行 |
-| 成果物の集約（aidlc-docs/ 相当） | 作業メモ（long-run）・`notes`（実装ノート）・`kb`（教訓）〔各導入時〕 — 新規の仕組みは作らない |
+| 成果物の集約（aidlc-docs/ 相当） | 作業メモ（long-run）・`notes`（実装ノート）〔導入時〕・本体自動メモリ（教訓） — 新規の仕組みは作らない |
 
 ### 簡易化で削ったもの
 

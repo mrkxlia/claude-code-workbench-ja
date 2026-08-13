@@ -59,7 +59,7 @@ CLAUDE.md・スキル・サブエージェントとして常設化するテン�
 
 いずれも自然な依頼文（「ブリーフを作って」「backlog.md に基づき実施して」「手分けして進めて」
 「最後までやり切って」「新鮮な目でチェックして」）でも自動発動します。詳細な住み分け
-（clarify・create-plan・feature-pipeline・peer・codex-review・commit-commands との境界）は
+（clarify・feature-pipeline・codex-review・commit-commands との境界）は
 各 SKILL.md 内に明記してあります。
 
 ## 3つのサブエージェント

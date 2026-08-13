@@ -1,8 +1,7 @@
 ---
 name: backlog-loop
 description: >-
-  プロジェクトのタスク backlog ファイル（既定 docs/backlog.md。self-improve の
-  improvement-backlog は対象外）を起点に、計画 → ステップ単位のユーザー承認 → 実装・検証 →
+  プロジェクトのタスク backlog ファイル（既定 docs/backlog.md）を起点に、計画 → ステップ単位のユーザー承認 → 実装・検証 →
   完了処理（git があれば pr-merge へ委譲／無ければ変更ファイル一覧の提示）→ backlog 更新 →
   次候補提示 まで を1本の定型ループで回すスキル。「backlog.md に基づき作業の計画を立てて実施」
   「バックログから次のタスクをやって」「backlog 駆動で進めて」といった、backlog ファイルへの
@@ -24,8 +23,6 @@ argument-hint: "[バックログのパス | タスク名]"
 
 1. **backlog ファイルが指定・特定できなければ、まず場所を確認する。** 既定は
    プロジェクト直下の `docs/backlog.md`（無ければ `backlog.md`）。
-   **self-improve の improvement-backlog（改善提案のキュー）は対象外** —
-   そちらは `/improve-apply` に任せる。
 2. **計画は Step に分割し、各 Step に完了条件を持たせる。** タスク仕様が曖昧なら、
    Step0 として `task-brief` 相当のブリーフ化を行ってから Step 計画を立てる。
 3. **各 Step 完了ごとに必ず停止し、承認を待つ。** 「OK」「進めて」「Step2へ」等の
@@ -72,4 +69,4 @@ argument-hint: "[バックログのパス | タスク名]"
 
 - Step0 のタスク仕様確定には `task-brief` を使う。
 - 完了処理（PR〜マージ）は `pr-merge` に委譲する（git/gh が使える環境のみ）。
-- 大きすぎるタスクは、着手前に `create-plan` で計画ファイル化することも検討する。
+- 大きすぎるタスクは、着手前に本体 **Plan モード**で計画ファイル化することも検討する。
