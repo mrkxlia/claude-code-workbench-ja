@@ -171,7 +171,6 @@ mkdir -p ~/.claude/agents && cp -r /tmp/workbench/plugins/model-setup/agents/* ~
 | 既存コード/成果物から仕様書を逆引きしたい | **implementation-skills**（`/spec-extract`） | 確度ラベル付き SPEC.md を生成。`/notes` で実装の経緯も記録 |
 | Opus+Sonnet や Sonnet 単独で上位モデル（Fable 5 級）並みの振る舞いに近づけたい | **model-setup** | 9ルール＋プロファイル別追補を CLAUDE.md に常設化、並列委譲・fresh 検証・自律完走のスキル/エージェント、モデル/effortガイド |
 | backlog.md 駆動で計画→実施→PR→マージまで定型ループで回したい | model-setup（`/backlog-loop`・`/pr-merge`） | Step承認ゲート付き。git なし環境は変更ファイル一覧提示で完了 |
-| トークン/コストを可視化したい | **[token-usage-tracker](https://github.com/mrkxlia/token-usage-tracker)**（別リポジトリ） | Claude Code 等のログを集計（独立 Python ツール） |
 | CC 資産を Codex / Kiro でも使いたい | **multi-model-dist** | 原本を変えず生成（Track A）＋SPEC 再実装（Track B）。`/export` で書き出し |
 
 > パイプラインのサブスキル（`clarify`・`build-with-tests` 等）は単体でも使えます。導入は各プラグイン README の
@@ -327,10 +326,6 @@ Track A は implementation-skills・plan-mode に加え **model-setup・agent-re
 ## 別リポジトリに分割したもの
 
 Claude Code のテーマから外れる独立ツール・サンプルは、このリポジトリではなく専用リポジトリで管理しています。
-
-### [token-usage-tracker](https://github.com/mrkxlia/token-usage-tracker)
-AIコーディングエージェントのトークン消費トラッカー（独立 Python ツール）。
-Claude Code・Codex・Cline がローカルに残すログを解析し、**リポジトリ／タスク／モデル／ツール別**にトークン・コストを集計・可視化します。CLI 集計表とローカル Web ダッシュボード（Streamlit）を提供します。パッケージ管理は uv、開発は TDD。設計の参考に ccusage / tokscale を参照しています（コードのコピーはなし）。
 
 ### [power-automate-azure-foundry](https://github.com/mrkxlia/power-automate-azure-foundry)
 Power Automate のクラウドフローから Azure AI Foundry（Azure OpenAI）の GPT を呼び出すサンプル一式。

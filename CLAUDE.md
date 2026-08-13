@@ -11,7 +11,6 @@ Claude Code をより快適に使うためのスクリプト・テンプレー�
 
 Claude Code のテーマから外れる独立ツール・サンプルは別リポジトリに分割している:
 - [power-automate-azure-foundry](https://github.com/mrkxlia/power-automate-azure-foundry) — Power Automate から Azure AI Foundry (GPT) を呼ぶサンプル一式
-- [token-usage-tracker](https://github.com/mrkxlia/token-usage-tracker) — AIエージェントのトークン消費トラッカー
 
 ---
 
