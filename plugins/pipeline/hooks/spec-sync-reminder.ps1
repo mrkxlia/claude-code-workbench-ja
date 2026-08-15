@@ -46,7 +46,7 @@ if ($changed.Count -eq 0) { exit 0 }
 $head = ($changed | Select-Object -First 3 | ForEach-Object { "     - $_" }) -join "`n"
 $msg = "📝 SPEC.md（$spec）が最後に更新されてから、$($changed.Count) 件のソース/成果物が変更されています。`n" +
        "   既存挙動を変えていれば、該当 F-NN/D-NN だけ SPEC.md を増分更新すると spec of record が陳腐化しません`n" +
-       "   （/spec-extract の「変更管理」を参照。不要なら無視して構いません）。例:`n" +
+       "   （notes スキルの『生きた SPEC.md を同期させておく』を参照。不要なら無視して構いません）。例:`n" +
        $head + "`n"
 Write-Err $msg
 exit 0

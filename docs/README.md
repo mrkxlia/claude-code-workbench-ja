@@ -10,4 +10,4 @@
 
 | ファイル | 内容 |
 |---------|------|
-| `pipeline-spec-alignment-proposal.html` | 旧 `software-pipeline` / `task-pipeline`（現 `pipeline` に統合）/ `implementation-skills` に、既存リポジトリの仕様の「吸い出し（extraction）」と以降要件の「合致性（conformance）」を強制化するための設計提案・判断材料（案A 軽量強化 / 案B steering 層新設の比較）。ブラウザで開いて読む単一ファイル HTML。 |
+| `pipeline-spec-alignment-proposal.html` | 旧 `software-pipeline` / `task-pipeline`（現 `pipeline` に統合）と、当時存在した仕様抽出スキル（`spec-extract`）に、既存リポジトリの仕様の「吸い出し（extraction）」と以降要件の「合致性（conformance）」を強制化するための設計提案・判断材料（案A 軽量強化 / 案B steering 層新設の比較、2026-06 時点）。**2026-08 のレビューで `spec-extract` は cc-rsg 等の外部ツールへの委譲に変更**（歴史的決定記録として残置）。ブラウザで開いて読む単一ファイル HTML。 |

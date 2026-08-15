@@ -79,7 +79,7 @@ npx prisma migrate dev       # マイグレーション作成・適用
 
 | ドキュメント | 内容 |
 |-------------|------|
-| `SPEC.md` | 既存仕様（spec of record）。`/spec-extract` で逆引き生成し、Phase 7 で増分更新して維持する。researcher / validator が一次参照する |
+| `SPEC.md` | 既存仕様（spec of record）。レガシー導入時は cc-rsg 等の外部ツールで逆引き生成し、Phase 7 で増分更新して維持する。researcher / validator が一次参照する |
 | `docs/architecture.md` | システム全体のアーキテクチャ |
 | `docs/billing.md` | 課金・請求まわりの仕様 |
 | `docs/pipeline/<feature>/` | feature-pipeline が生成する機能ごとの成果物（進行状況・調査・ストーリー・ブリーフ・API契約・実装ノート） |
@@ -113,7 +113,6 @@ npx prisma migrate dev       # マイグレーション作成・適用
 | `/feature-pipeline <機能の説明>` | 機能を end-to-end で開発する（7エージェント連鎖 + 3チェックポイント） |
 | `/clarify <詰めたい要件>` | 要件・仕様を一問ずつ徹底質問で詰める（パイプライン内では Phase 2/3 の writer 起動前に自動で回る） |
 | `/build-with-tests <タスク>` | パイプラインを通すほどではない小さな実装・修正をテスト並行で行う |
-| `/spec-extract [対象パス]` | レガシーコードの挙動を SPEC.md に逆引き固定する。**既存 SPEC.md の改訂・更新（要件/仕様を途中で変える）にも使う**（導入の前工程＋以降の維持） |
 | `/notes` | 実装ノートを手動で開始・更新する（パイプライン内ではビルダーが自動記録） |
 | `/pipeline-improve [期間や slug]` | 運用実績から失敗シグナルを検出し、エージェント定義・スキル・CLAUDE.md の改善案を提案・適用する |
 

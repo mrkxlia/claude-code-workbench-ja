@@ -44,7 +44,7 @@ COUNT=$(printf '%s\n' "$CHANGED" | wc -l | tr -d ' ')
 {
   echo "📝 SPEC.md（$SPEC）が最後に更新されてから、${COUNT} 件のソース/成果物が変更されています。"
   echo "   既存挙動を変えていれば、該当 F-NN/D-NN だけ SPEC.md を増分更新すると spec of record が陳腐化しません"
-  echo "   （/spec-extract の「変更管理」を参照。不要なら無視して構いません）。例:"
+  echo "   （notes スキルの『生きた SPEC.md を同期させておく』を参照。不要なら無視して構いません）。例:"
   printf '%s\n' "$CHANGED" | head -n 3 | sed 's/^/     - /'
 } >&2
 

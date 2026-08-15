@@ -65,9 +65,9 @@ CLAUDE.md の「成果物の種類と出力先」とビルダーの担当範囲�
 
 ## Step 6: スキル・フックの配置（成果物モード）
 
-### スキル（4つ）
+### スキル（3つ）
 
-`task-pipeline/`・`clarify/`・`notes/`・`spec-extract/`。
+`task-pipeline/`・`clarify/`・`notes/`。
 
 ### フック（3本）
 
@@ -94,7 +94,7 @@ settings.json のマージでは、テンプレートの `guard-builder-writes` 
 
 ```
 - [ ] .claude/agents/ にエージェント定義5ファイルがある
-- [ ] .claude/skills/ に task-pipeline / clarify / notes / spec-extract がある
+- [ ] .claude/skills/ に task-pipeline / clarify / notes がある
 - [ ] block-secrets-commit.sh / guard-deliverable-writes.sh / spec-sync-reminder.sh に実行権限がある
 - [ ] settings.json の PreToolUse に Bash（block-secrets）と Edit|Write（guard-deliverable）のエントリがある
 - [ ] CLAUDE.md の出力ディレクトリ・deliverable-builder の「担当範囲」・フックの

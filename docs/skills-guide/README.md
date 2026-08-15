@@ -11,9 +11,7 @@
 ### 私用 PC（Opus 4.8 + Sonnet 5・git あり・Codex 不使用）
 
 - settings: `plugins/model-setup/settings.private.json`（`opusplan` + `xhigh`）
-- workbench-ja のプラグイン: `model-setup`・`self-improve`・`knowledge-share`
-  （`pipeline` は必要に応じて）
-- `plan-mode`・`implementation-skills` はファイルコピーで導入（非プラグイン）
+- workbench-ja のプラグイン: `model-setup`（`pipeline` は必要に応じて）
 - 公式プラグイン: `commit-commands`・`pr-review-toolkit`・`skill-creator`・`claude-md-management`
 - `codex-bridge` は導入**しない**（Codex CLI を使っていないため）
 
@@ -38,8 +36,6 @@ cp plugins/model-setup/PROMPTS.md ~/.claude/model-setup-PROMPTS.md
 cp -r plugins/codex-bridge/skills/* ~/.claude/skills/
 cp -r plugins/codex-bridge/agents/* ~/.claude/agents/
 # bash が使えない環境ではフック（gen-agents-md.sh）は省いてよい（スキル・エージェントのみで動作する）
-
-# plan-mode / implementation-skills も同様にコピーで導入可能
 ```
 
 - `pipeline` を会社 PC で使う場合は、手動コピーではなく

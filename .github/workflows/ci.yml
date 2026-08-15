@@ -16,15 +16,6 @@ jobs:
       - name: 依存関係のインストール（PyYAML）
         run: pip install pyyaml
 
-      - name: skill-sync --check（重複派生ファイルが原本と同期済みか）
-        run: python3 tools/skill-sync/sync.py --check
-
-      - name: multi-model-dist ゴールデン/往復テスト
-        run: python3 tools/multi-model-dist/generators/lib/test_convert.py
-
-      - name: multi-model-dist reimpl テスト
-        run: python3 tools/multi-model-dist/reimpl/test_reimpl.py
-
       - name: JSON 構文検証（marketplace.json・plugin.json・hooks.json 等）
         run: |
           python3 - <<'PY'
@@ -96,7 +87,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: claude CLI のインストールを試行
         run: npm install -g @anthropic-ai/claude-code
-      - name: 9プラグイン + marketplace を検証
+      - name: 5プラグイン + marketplace を検証
         run: |
           for p in plugins/*/; do
             claude plugin validate "$p"

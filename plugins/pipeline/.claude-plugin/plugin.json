@@ -1,7 +1,7 @@
 {
   "name": "pipeline",
-  "version": "1.0.0",
-  "description": "コード開発（feature-pipeline・7エージェント）とコード以外の成果物（task-pipeline・5エージェント）を1つに統合したパイプラインテンプレート。/pipeline:pipeline-setup がモード選択つきで対象リポジトリを解析し、エージェント・CLAUDE.md・フックを自動導入する。旧 software-pipeline 3.x / task-pipeline 2.x の後継。",
+  "version": "2.0.0",
+  "description": "コード開発（feature-pipeline・7エージェント）とコード以外の成果物（task-pipeline・5エージェント）を1つに統合したパイプラインテンプレート。/pipeline:pipeline-setup がモード選択つきで対象リポジトリを解析し、エージェント・CLAUDE.md・フックを自動導入する。旧 software-pipeline 3.x / task-pipeline 2.x の後継。レガシーコードからの仕様逆引きは cc-rsg 等の外部ツールへ委譲する（2.0.0 で spec-extract スキルを削除）。",
   "author": {
     "name": "mrkxlia",
     "url": "https://github.com/mrkxlia"

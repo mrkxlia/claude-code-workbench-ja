@@ -51,7 +51,7 @@
 
 | ドキュメント | 内容 |
 |-------------|------|
-| `SPEC.md` | 既存仕様（成果物仕様の spec of record）。`/spec-extract` で逆引きし、最終承認後に増分更新して維持する。researcher / reviewer が一次参照する |
+| `SPEC.md` | 既存仕様（成果物仕様の spec of record）。レガシー導入時は cc-rsg 等の外部ツールで逆引きし、最終承認後に増分更新して維持する。researcher / reviewer が一次参照する |
 | `docs/task-pipeline/<slug>/` | task-pipeline が生成するタスクごとの中間成果物（進行状況・調査・要件・ブリーフ） |
 | `docs/task-pipeline/LEARNINGS.md` | ビルダーの「CLAUDE.md への提案」の蓄積。承認されたものはこのファイルのルール・規約に昇格する |
 
@@ -75,7 +75,6 @@
 |-------------------|-------------|
 | `/task-pipeline <依頼の説明>` | 成果物を end-to-end で作成する（5エージェント連鎖 + 3チェックポイント） |
 | `/clarify <詰めたい要件>` | 要件・構成を一問ずつ徹底質問で詰める（パイプライン内では Phase 2/3 の writer 起動前に自動で回る） |
-| `/spec-extract [対象]` | 既存成果物・規約から「成果物仕様」を SPEC.md に逆引き固定する。**既存 SPEC.md の改訂・更新（要件/構成を途中で変える）にも使う**（整合性の土台＋以降の維持） |
 | `/notes` | 成果物作成の判断・逸脱を implementation-notes.md に記録する（パイプライン内ではビルダーが自動記録） |
 
 ## AIDLC との対応
