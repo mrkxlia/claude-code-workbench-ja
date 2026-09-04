@@ -124,7 +124,7 @@ cp -r plugins/kiro-bridge/agents/*  .claude/agents/
 
 ## ライセンス・出典
 
-[MIT License](../LICENSE)。Kiro CLI の仕様（[headless モード](https://kiro.dev/docs/cli/headless/)・
+[MIT License](../../LICENSE)。Kiro CLI の仕様（[headless モード](https://kiro.dev/docs/cli/headless/)・
 [ツール権限](https://kiro.dev/docs/cli/chat/permissions/)）を参照し、本リポジトリの
 [`codex-bridge`](../codex-bridge/) と同型の構成で実装した独自実装です（コードのコピーでは
 ありません）。

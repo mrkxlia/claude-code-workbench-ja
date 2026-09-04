@@ -140,7 +140,7 @@ cp -r plugins/agent-review-panel/agents/*  .claude/agents/
 
 ## ライセンス・出典
 
-[MIT License](../LICENSE)。以下の2つのコンセプトを参考にした独自実装です
+[MIT License](../../LICENSE)。以下の2つのコンセプトを参考にした独自実装です
 （コードのコピーではありません）。
 
 - [wan-huiyan/agent-review-panel](https://github.com/wan-huiyan/agent-review-panel) —

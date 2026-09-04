@@ -26,6 +26,7 @@ claude-code-workbench-ja/
 ├── CLAUDE.md                        # このファイル
 ├── LICENSE                          # MIT License
 ├── .gitattributes                   # git 属性定義
+├── .github/workflows/ci.yml         # CI（JSON 構文検証・SKILL.md 形式検査＝必須、claude plugin validate＝任意）
 ├── .claude-plugin/
 │   └── marketplace.json             # プラグインマーケットプレイス定義（名前: workbench-ja、source は ./plugins/<name>）
 ├── plugins/                         # プラグイン導入可能な5セクション（marketplace.json 登録対象・公式標準レイアウト）
