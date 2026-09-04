@@ -27,7 +27,7 @@ Claude Code が kiro-cli を**非対話モード**（`--no-interactive --trust-t
 
 > **レビュー相手を変えたいとき**: 依存なしで Claude にレビューさせるなら内蔵 `/code-review`、
 > 実装前のプランレビューや壁打ちなら内蔵の Task サブエージェント（fresh context）、相手を
-> Codex にしたいなら [`codex-bridge`](../../../../codex-bridge/) の `/codex-review`。
+> Codex にしたいなら [`codex-bridge`](../../../codex-bridge/) の `/codex-review`。
 > kiro-review は相手が **Kiro**（`kiro-cli`）である点が違う。
 
 ## 前提

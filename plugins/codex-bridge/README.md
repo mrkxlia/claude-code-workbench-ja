@@ -185,7 +185,7 @@ Codex が読むのは CLAUDE.md ではなく `AGENTS.md` ですが、`AGENTS.md`
 
 ## ライセンス・出典
 
-[MIT License](../LICENSE)。Codex CLI の仕様および、Claude Code × Codex 連携の構成は
+[MIT License](../../LICENSE)。Codex CLI の仕様および、Claude Code × Codex 連携の構成は
 以下を参考にした独自実装です（コードのコピーではありません）。
 
 - OpenAI Codex CLI ドキュメント（non-interactive / command line options）

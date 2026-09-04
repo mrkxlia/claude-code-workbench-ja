@@ -1,7 +1,7 @@
-# model-setup — モデル運用テンプレート（Opus 4.8 + Sonnet 5 / Sonnet 単独）
+# model-setup — モデル運用テンプレート（Opus 5 + Sonnet 5 / Sonnet 単独）
 
-**Opus 4.8 と Sonnet 5 の両方**（および補助の Haiku 4.5）を対象に、上位モデル
-（Fable 5 級）の「振る舞い」—— 成功条件を先に決める・検証してから完了を名乗る・
+**Opus 5 と Sonnet 5 の両方**（および補助の Haiku 4.5）を対象に、上位モデル
+（Fable 5.1 級）の「振る舞い」—— 成功条件を先に決める・検証してから完了を名乗る・
 不確かさを隠さない・並列に委譲して fresh な目で検証する —— をプロファイル別の
 CLAUDE.md・スキル・サブエージェントとして常設化するテンプレート／プラグインです。
 「Opus+Sonnet が使える私用 PC」と「Sonnet しか使えない会社 PC」の2プロファイルを同梱します。
@@ -19,7 +19,7 @@ CLAUDE.md・スキル・サブエージェントとして常設化するテン�
 | [`CLAUDE.md`](CLAUDE.md) | コピペ用テンプレート本体（9つの行動ルール・Opus/Sonnet 共通基盤） |
 | [`CLAUDE.private.md`](CLAUDE.private.md) | プロファイル追補（Opus+Sonnet・私用PC）: 追補ルール10〜14 |
 | [`CLAUDE.company.md`](CLAUDE.company.md) | プロファイル追補（Sonnet 単独・会社PC）: 追補ルール10〜15 |
-| [`MODEL-GUIDE.md`](MODEL-GUIDE.md) | モデル仕様・effort 選定・プロファイル・Fable 5 パリティマップ・AIDLC 簡易版ワークフロー（§9） |
+| [`MODEL-GUIDE.md`](MODEL-GUIDE.md) | モデル仕様・effort 選定・プロファイル・Fable 5.1 パリティマップ・AIDLC 簡易版ワークフロー（§9）・Fable 本人にやらせる仕事（§10） |
 | [`PROMPTS.md`](PROMPTS.md) | 都度貼りプロンプト集（Plan モード用初回テンプレート＋公式スニペット翻案） |
 | [`settings.private.json`](settings.private.json) | 私用 PC 向け設定サンプル（`opusplan` + `xhigh`） |
 | [`settings.company.json`](settings.company.json) | 会社 PC 向け設定サンプル（`sonnet` + `xhigh`） |
@@ -76,7 +76,7 @@ skills/agents/hooks のいずれでもなくプラグインの自動配信対象
 （方法A）の場合もファイルコピー（下記）が必要**です。特に追補のルール14/15
 （ワークフローの既定 — Plan モード起点の自動ルーティング・AIDLC 簡易版）は本テンプレートの
 中核なので、コピーを忘れると「普通の依頼から適切なスキルが裏で呼ばれる」動きになりません。
-Fable 5 のどの挙動を何が担うかの対応は [`MODEL-GUIDE.md`](MODEL-GUIDE.md) §8 を参照。
+Fable 5.1 のどの挙動を何が担うかの対応は [`MODEL-GUIDE.md`](MODEL-GUIDE.md) §8 を参照。
 
 ## 導入手順
 
@@ -129,10 +129,10 @@ cat plugins/model-setup/CLAUDE.md plugins/model-setup/CLAUDE.company.md >> ~/.cl
 
 ## モデル・effort の選び方
 
-Opus 4.8 / Sonnet 5 / Haiku 4.5 の仕様比較、effort レベルの意味、私用・会社プロファイル、
+Fable 5.1 / Opus 5 / Sonnet 5 / Haiku 4.5 の仕様比較、effort レベルの意味、私用・会社プロファイル、
 Opus で計画→Sonnet で実行する流れ、Sonnet 5 特有の運用注意(字義どおりの実行・網羅レビュー
 指示)、LLM アプリ開発で「賢さでなく構造」で差を埋める7作法、そして
-**Fable 5 の挙動を何で再現するかのパリティマップ（§8）**までは
+**Fable 5.1 の挙動を何で再現するかのパリティマップ（§8）**までは
 [`MODEL-GUIDE.md`](MODEL-GUIDE.md) にまとめてある。
 
 ## 他の行動原則系 CLAUDE.md との併用（重複に注意）
@@ -185,7 +185,7 @@ claude plugin marketplace add severity1/severity1-marketplace
 
 - ルール1〜7: X 記事「Sonnet 5をFable 5にする方法〜Claude本人にインタビューして聞いた7つの神設定」
   （[@armadillo_ai](https://x.com/armadillo_ai) 氏）を参照・要約・翻案したものです。著作権は同氏に帰属します。
-- ルール8〜9・MODEL-GUIDE.md: Claude 公式ドキュメント（2026-07時点）に基づく。
+- ルール8〜9・MODEL-GUIDE.md: Claude 公式ドキュメント（2026-09時点。Opus 5 / Fable 5.1 の各ガイドを含む）に基づく。
   日本語版 [Prompting Claude Sonnet 5（ja）](https://platform.claude.com/docs/ja/build-with-claude/prompt-engineering/prompting-claude-sonnet-5) も参照。
 - 追補ルール14/15（ワークフローの既定）・MODEL-GUIDE §9・PROMPTS.md #0:
   AWS Labs [aidlc-workflows](https://github.com/awslabs/aidlc-workflows)（AI-DLC）の簡易化。
@@ -194,11 +194,15 @@ claude plugin marketplace add severity1/severity1-marketplace
 - PROMPTS.md #1〜#9: 公式 Prompting Claude Sonnet 5 / Prompting best practices のスニペット翻案。
 - 追補ルール10〜13・fan-out / long-run / verify-fresh スキル・パリティマップ:
   [Prompting Claude Fable 5](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5)
-  （自律実行・進捗の証拠監査・並列委譲・fresh 検証・境界の各公式スニペット）の翻案。
+  （自律実行・進捗の証拠監査・並列委譲・fresh 検証・境界の各公式スニペット）と
+  [Prompting Claude Fable 5.1](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5-1)
+  （Finish the whole task・進捗更新・変更とテストの範囲限定・コンパクション保持指示）の翻案。
+  Opus 5 実行時の読み替え（検証・委譲の抑制）は
+  [Prompting Claude Opus 5](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-opus-5) に基づく。
 - effort・モデル仕様: [Claude Code 公式 model-config](https://code.claude.com/docs/en/model-config)・
   [effort ドキュメント](https://platform.claude.com/docs/en/build-with-claude/effort)・
   [Prompting Claude Sonnet 5](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-sonnet-5)・
-  [Prompting best practices（Opus 4.8 の項を含む）](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices)
+  [Prompting best practices](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices)
 - サブエージェントの `model:` / `effort:` frontmatter:
   [Claude Code 公式 sub-agents ドキュメント](https://code.claude.com/docs/en/sub-agents)
 - CLAUDE.md 運用: [Claude Code 公式 memory ドキュメント](https://code.claude.com/docs/en/memory)

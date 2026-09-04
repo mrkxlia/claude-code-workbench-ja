@@ -569,8 +569,8 @@ git 管理されていないリポジトリでは、このフックは何もせ�
 
 ## 制限事項（知っておくべきこと）
 
-- **`tools` 制限はツール単位であり、フォルダ単位ではありません。** 「backend-builder はバックエンドのフォルダのみ」という境界は、エージェント定義のプロンプトによる制約です。実用上はよく守られますが、厳密に強制したい場合は Edit/Write のパスを検査する PreToolUse フックを追加するのが発展課題です（成果物モードの [`guard-deliverable-writes.sh`](hooks/guard-deliverable-writes.sh) が参考実装になります。BE/FE の境界はプロジェクト依存なので、許可リストを自分の構成に合わせて調整してください）
-- **並列実行時のフックが守るのは「共有ファイル衝突」だけで、「グループ境界の越境」ではありません。** 同梱の [`guard-builder-writes.sh`](.claude/hooks/guard-builder-writes.sh) は、並列フェーズ中（`docs/pipeline/<slug>/.parallel-active` が存在）に schema/マイグレーション/`package.json`/型バレル等の共有ファイルへ書き込もうとすると `ask` で確認します。一方「グループAのビルダーがグループBのサブツリーへ書く」越境はフックでは検出できない（brief の所有宣言がフックに渡らないため）ので、これは brief の所有パス宣言＋オーケストレーターの越境チェックで守ります。共有ファイル禁止リスト（`SHARED_PATTERNS`）は自分のスタックに合わせて調整してください
+- **`tools` 制限はツール単位であり、フォルダ単位ではありません。** 「backend-builder はバックエンドのフォルダのみ」という境界は、エージェント定義のプロンプトによる制約です。実用上はよく守られますが、厳密に強制したい場合は Edit/Write のパスを検査する PreToolUse フックを追加するのが発展課題です（成果物モードの [`guard-deliverable-writes.sh`](hooks/guard-deliverable-writes.sh) が参考実装になります。BE/FE の境界はプロジェクト依存なので、許可リストを自分の構成に合わせて調整してください）。2026-09 に公式 hooks 仕様で、サブエージェントの frontmatter に `hooks:` を宣言でき（そのエージェント実行中だけ有効）、PreToolUse 入力に `agent_type` が入ることを確認済み — 実装ブリーフは [`docs/backlog-2026-09.md`](../../docs/backlog-2026-09.md) B-3
+- **並列実行時のフックが守るのは「共有ファイル衝突」だけで、「グループ境界の越境」ではありません。** 同梱の [`guard-builder-writes.sh`](hooks/guard-builder-writes.sh) は、並列フェーズ中（`docs/pipeline/<slug>/.parallel-active` が存在）に schema/マイグレーション/`package.json`/型バレル等の共有ファイルへ書き込もうとすると `ask` で確認します。一方「グループAのビルダーがグループBのサブツリーへ書く」越境はフックでは検出できない（brief の所有宣言がフックに渡らないため）ので、これは brief の所有パス宣言＋オーケストレーターの越境チェックで守ります。共有ファイル禁止リスト（`SHARED_PATTERNS`）は自分のスタックに合わせて調整してください
 - **スキルは文字どおりには「一時停止」できません。** チェックポイントは「明示的承認まで次フェーズ進行禁止」という強い指示で実現しています。承認の言葉（「承認」「OK」「進めて」）は明確に伝えてください
 - **サブエージェントはサブエージェントを呼べません。** そのため feature-pipeline はメインセッションのスキルとして動き、そこから7エージェントを順番に起動する設計です
 
@@ -697,4 +697,4 @@ Nicholas Carlini による「16体並列で C コンパイラを書く」実験�
 このセクションは [@sairahul1 氏の記事](https://x.com/sairahul1/status/2058832033628241931)
 「How to Build a Software Factory with Claude Code That Ships Features While You Sleep」の
 コンセプト（7エージェント構成・3チェックポイント・CLAUDE.md の育て方）に基づく独自実装です。
-ファイルの内容はこのリポジトリで書き起こしたものであり、リポジトリの [LICENSE](../LICENSE)（MIT）に従います。
+ファイルの内容はこのリポジトリで書き起こしたものであり、リポジトリの [LICENSE](../../LICENSE)（MIT）に従います。

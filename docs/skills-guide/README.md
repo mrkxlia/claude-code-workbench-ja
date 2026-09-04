@@ -8,7 +8,7 @@
 
 「何を入れるか」を環境別にまとめたもの。個別スキルの詳細は下の各節を参照。
 
-### 私用 PC（Opus 4.8 + Sonnet 5・git あり・Codex 不使用）
+### 私用 PC（Opus 5 + Sonnet 5・git あり・Codex 不使用）
 
 - settings: `plugins/model-setup/settings.private.json`（`opusplan` + `xhigh`）
 - workbench-ja のプラグイン: `model-setup`（`pipeline` は必要に応じて）
@@ -123,7 +123,7 @@ Anthropic公式リポジトリのスキル。安定性が最も高く、今す�
 | **Scaffold Exercises** | コード演習問題・技術研修素材を自動生成 | `mattpocock/skills` |
 | **Triage** | バグ報告の分類・優先順位付けを自動化 | `mattpocock/skills` |
 | **Git Work Trees** | 複数ブランチの並列作業環境を自動構築 | `obra/superpowers` → `using-git-worktrees` |
-| **write-a-skill** | スキルの構造・description の書き方を学べる | `mattpoecraft/skills` |
+| **write-a-skill** | スキルの構造・description の書き方を学べる | `mattpocock/skills` |
 
 ---
 
