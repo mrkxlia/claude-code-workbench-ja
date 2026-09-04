@@ -15,5 +15,6 @@
 |---------|------|
 | `decisions/2026-09-03-fable-5-1-audit.md` | Fable 5.1 自身による model-setup（ルール・追補・スキル・エージェント・パリティマップ）の監査記録。各項目を (a)再現済み／(b)過剰処方（Opus 5 で逆効果）／(c)欠落 に分類し、反映した差分と意図的に変えなかったものを記録（model-setup 3.2.0） |
 | `decisions/2026-09-03-long-run-constraints-and-spec-load.md` | 「完全には埋まらない」とされてきた2件 — 長時間作業での序盤制約の保持・SPEC.md の必須ロード保証 — を Claude Code のフック仕様（SessionStart `compact`・SubagentStart の `additionalContext`）で構造化する決定記録。敵対的レビュー3名の指摘と対応つき。実装は `backlog-2026-09.md` |
+| `lessons.md` | 過去の PR から蒸留した「このリポジトリで繰り返さない判断」。作る前の3点確認（本体・公式プラグイン・著名 OSS）、重複を自動化する前に統合する、既定探索パスに従う、など8件。根拠の PR 番号つき |
 | `backlog-2026-09.md` | 2026-09-03 の Fable 5.1 セッションで着手できなかった項目を、Sonnet/Opus が単独で実行できるブリーフ（完了条件・スコープ・検証方法つき）にしたもの |
 | `pipeline-spec-alignment-proposal.html` | 旧 `software-pipeline` / `task-pipeline`（現 `pipeline` に統合）と、当時存在した仕様抽出スキル（`spec-extract`）に、既存リポジトリの仕様の「吸い出し（extraction）」と以降要件の「合致性（conformance）」を強制化するための設計提案・判断材料（案A 軽量強化 / 案B steering 層新設の比較、2026-06 時点）。**2026-08 のレビューで `spec-extract` は cc-rsg 等の外部ツールへの委譲に変更**（歴史的決定記録として残置）。ブラウザで開いて読む単一ファイル HTML。 |
