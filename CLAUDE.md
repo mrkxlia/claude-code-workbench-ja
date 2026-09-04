@@ -66,7 +66,8 @@ claude-code-workbench-ja/
 │       ├── settings.company.json    #     会社PC向け設定サンプル（sonnet + xhigh）
 │       ├── .claude-plugin/plugin.json
 │       ├── skills/                  #     6種（task-brief / backlog-loop / pr-merge / fan-out / long-run / verify-fresh）
-│       └── agents/                  #     3種（task-worker / fresh-verifier / bulk-scanner）
+│       ├── agents/                  #     3種（task-worker / fresh-verifier / bulk-scanner）
+│       └── hooks/                  #     reinject-brief（long-run の frontmatter が起動時だけ登録する opt-in。常時発火しない）
 └── docs/                            # リポジトリ内ドキュメント置き場
     ├── README.md
     ├── decisions/                   #   日付つきの決定記録・監査記録（追記のみ。覆すときは新記録を足す）
