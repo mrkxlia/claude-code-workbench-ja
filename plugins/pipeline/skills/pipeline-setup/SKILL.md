@@ -235,6 +235,11 @@ Step 3 の「空リポの初期ヒアリング」で聞いた初期仕様・受�
    他方のモード専用ビルダーはコピーしない）
 2. ビルダーの「担当範囲」セクションを、**Step 3 で承認済みのデータ**（境界／出力ディレクトリ）で
    書き換える。詳細・注意点（implementation-notes 行の保持等）は別冊参照
+3. **同じ値で、ビルダーの frontmatter の `guard-builder-paths.sh` の第1引数も書き換える**
+   （`<!-- 差し替え -->` とコメントしてある行）。担当範囲が入れ子になる場合は `!` で除外を書く
+   （例: フロントエンドが `src/app/` を持ち、`src/app/api/` はバックエンド担当 →
+   `"src/app/ !src/app/api/ src/components/ src/hooks/"`）。
+   本文の「担当範囲」とフックの引数がずれると、フックが正しい境界を守らなくなる
 
 CLAUDE.md のルールとビルダーの担当範囲は、**同じ承認済みデータ**から生成すること。
 これにより両者の不一致（越境・出力先混乱の原因）が構造的に発生しなくなる。
@@ -263,10 +268,14 @@ frontmatter の `model: inherit` を `model: opus` に書き換える（冒頭�
 
 ### 6-2. フックのコピーと実行権限
 
-別冊の「Step 6」節のコマンドでモードのフック3本（コードモード: block-secrets-commit +
-guard-builder-writes + spec-sync-reminder／成果物モード: block-secrets-commit +
-guard-deliverable-writes + spec-sync-reminder）をコピーし、`chmod +x` する。
+別冊の「Step 6」節のコマンドでモードのフック5本（両モード共通: block-secrets-commit +
+guard-builder-paths + inject-spec-summary + spec-sync-reminder／コードモードは
+guard-builder-writes、成果物モードは guard-deliverable-writes を追加）をコピーし、`chmod +x` する。
 設定変数の差し替え（`SHARED_PATTERNS`／`ALLOWED_PREFIXES`）も別冊のとおり行う。
+
+`guard-builder-paths.sh` だけは settings.json に登録しない — 各ビルダーの frontmatter から
+呼ばれ、そのサブエージェントが動いている間だけ有効になる（許可プレフィックスは Step 5 で
+「担当範囲」と同じ承認済みデータに差し替える）。
 
 （Windows ネイティブ＝bash が無い環境では、`.sh` の代わりに同梱の `.ps1` を配置し `chmod` は skip する。
 詳細は [`references/windows.md`](references/windows.md)。bash が使える Git Bash / WSL では `.sh` を使う。）

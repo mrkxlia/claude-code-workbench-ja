@@ -283,6 +283,8 @@ pipeline/
 │   ├── block-secrets-commit.{sh,ps1}        # 機密ファイルのコミットをブロックするフック（両モード）
 │   ├── guard-builder-writes.{sh,ps1}        # 並列実装中の共有ファイル衝突を ask で確認（コードモード）
 │   ├── guard-deliverable-writes.{sh,ps1}    # 出力ディレクトリ外への書き込みを ask で確認（成果物モード）
+│   ├── guard-builder-paths.{sh,ps1}         # ビルダーの担当外パスへの書き込みを exit 2 で拒否（frontmatter から）
+│   ├── inject-spec-summary.{sh,ps1}         # SPEC.md の [確定] 要件の目次を SessionStart/SubagentStart で注入
 │   └── spec-sync-reminder.{sh,ps1}          # SessionStart/Stop で SPEC.md の未同期を知らせる通知フック
 └── setup/
     └── settings.json                        # フック配線の設定サンプル（setup がモードに応じて絞る）
@@ -542,9 +544,13 @@ git 権限の設定が必要になります（定義ファイルの無人書き�
 
 ## フックについての補足
 
-同梱フックは3つ。`block-secrets-commit.sh`（`git commit` 直前に機密ファイルを検査して exit 2 でブロック）・
-`guard-builder-writes.sh`（並列実装中の共有ファイル衝突を `ask` で確認）・`spec-sync-reminder.sh`
-（SessionStart/Stop で SPEC.md の未同期をやさしく通知。非ブロッキング）。いずれも git 無し環境では素通りします。
+同梱フックは6つ（モードごとに導入されるのは5本）。`block-secrets-commit.sh`（`git commit` 直前に機密ファイルを検査して exit 2 でブロック）・
+`guard-builder-writes.sh`（並列実装中の共有ファイル衝突を `ask` で確認）・`guard-deliverable-writes.sh`
+（出力ディレクトリ外への書き込みを `ask` で確認。成果物モード）・`guard-builder-paths.sh`（ビルダーの担当外
+パスへの書き込みを exit 2 で拒否。各ビルダーの frontmatter から呼ばれ、そのエージェント実行中だけ有効）・
+`inject-spec-summary.sh`（SPEC.md の `[確定]` 要件の目次を SessionStart / SubagentStart で注入）・
+`spec-sync-reminder.sh`（SessionStart/Stop で SPEC.md の未同期をやさしく通知。非ブロッキング）。
+いずれも git 無し環境・SPEC.md 不在では素通りします。
 
 **Windows**: 実行環境は **Git Bash / WSL の bash が前提**（baseline は `.sh`）。加えて純 PowerShell 環境向けに
 同等の `.ps1` を同梱しており、`/pipeline-setup` が「`command -v bash` が使えるか」で `.sh`/`.ps1` を振り分けます
@@ -569,7 +575,9 @@ git 管理されていないリポジトリでは、このフックは何もせ�
 
 ## 制限事項（知っておくべきこと）
 
-- **`tools` 制限はツール単位であり、フォルダ単位ではありません。** 「backend-builder はバックエンドのフォルダのみ」という境界は、エージェント定義のプロンプトによる制約です。実用上はよく守られますが、厳密に強制したい場合は Edit/Write のパスを検査する PreToolUse フックを追加するのが発展課題です（成果物モードの [`guard-deliverable-writes.sh`](hooks/guard-deliverable-writes.sh) が参考実装になります。BE/FE の境界はプロジェクト依存なので、許可リストを自分の構成に合わせて調整してください）。2026-09 に公式 hooks 仕様で、サブエージェントの frontmatter に `hooks:` を宣言でき（そのエージェント実行中だけ有効）、PreToolUse 入力に `agent_type` が入ることを確認済み — 実装ブリーフは [`docs/backlog-2026-09.md`](../../docs/backlog-2026-09.md) B-3
+- **`tools` 制限はツール単位であり、フォルダ単位です（2.1.0 で機械的に強制するようになりました）。** 「backend-builder はバックエンドのフォルダのみ」という境界は、以前はエージェント定義のプロンプトによる約束でしたが、現在は [`guard-builder-paths.sh`](hooks/guard-builder-paths.sh) が各ビルダーの frontmatter から呼ばれ、担当外パスへの Edit/Write/MultiEdit を **exit 2 で拒否**します（そのサブエージェントが動いている間だけ有効）。許可プレフィックスは `pipeline-setup` が Step 5 で「担当範囲」セクションと同じ承認済みデータから書き換えます。`!` 始まりで除外を書けます（例: `src/app/ !src/app/api/`）。
+  - 既存の `guard-builder-writes.sh` との住み分け: あちらは**並列実行中の共有ファイル衝突**を全員に対して `ask` で確認するもの（メインセッションの正当な書き込みも通す必要があるため `ask`）。こちらは**担当グループの越境**をビルダー個別に拒否するもの（サブエージェント内でしか動かないので確実に止めてよい）。
+  - **限界**: プロジェクトの `.claude/agents/` に置いた frontmatter フックは、Claude Code 2.1.218 以降ではそのフォルダの workspace trust を承認したあとにのみ動きます。`claude -p`（headless）のセッションでは動きません。厳密さが要る場合は settings.json 側の `guard-builder-writes` と併用してください
 - **並列実行時のフックが守るのは「共有ファイル衝突」だけで、「グループ境界の越境」ではありません。** 同梱の [`guard-builder-writes.sh`](hooks/guard-builder-writes.sh) は、並列フェーズ中（`docs/pipeline/<slug>/.parallel-active` が存在）に schema/マイグレーション/`package.json`/型バレル等の共有ファイルへ書き込もうとすると `ask` で確認します。一方「グループAのビルダーがグループBのサブツリーへ書く」越境はフックでは検出できない（brief の所有宣言がフックに渡らないため）ので、これは brief の所有パス宣言＋オーケストレーターの越境チェックで守ります。共有ファイル禁止リスト（`SHARED_PATTERNS`）は自分のスタックに合わせて調整してください
 - **スキルは文字どおりには「一時停止」できません。** チェックポイントは「明示的承認まで次フェーズ進行禁止」という強い指示で実現しています。承認の言葉（「承認」「OK」「進めて」）は明確に伝えてください
 - **サブエージェントはサブエージェントを呼べません。** そのため feature-pipeline はメインセッションのスキルとして動き、そこから7エージェントを順番に起動する設計です

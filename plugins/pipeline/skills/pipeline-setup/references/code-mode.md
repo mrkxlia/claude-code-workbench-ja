@@ -91,15 +91,25 @@ CLAUDE.md のアーキテクチャルールとビルダーの担当範囲は、*
 `npm run typecheck   # ← プロジェクトのコマンドに差し替える` の行を
 承認済みの typecheck コマンドに置換する（typecheck が無い言語では test コマンドに置換）。
 
-### フック（3本）
+### フック（5本）
 
 ```bash
 mkdir -p .claude/hooks
 cp "$SRC/hooks/block-secrets-commit.sh" .claude/hooks/
 cp "$SRC/hooks/guard-builder-writes.sh" .claude/hooks/
+cp "$SRC/hooks/guard-builder-paths.sh" .claude/hooks/
+cp "$SRC/hooks/inject-spec-summary.sh" .claude/hooks/
 cp "$SRC/hooks/spec-sync-reminder.sh" .claude/hooks/
-chmod +x .claude/hooks/block-secrets-commit.sh .claude/hooks/guard-builder-writes.sh .claude/hooks/spec-sync-reminder.sh
+chmod +x .claude/hooks/block-secrets-commit.sh .claude/hooks/guard-builder-writes.sh .claude/hooks/guard-builder-paths.sh .claude/hooks/inject-spec-summary.sh .claude/hooks/spec-sync-reminder.sh
 ```
+
+`guard-builder-paths.sh` は各ビルダーの frontmatter から呼ばれ、担当範囲外への書き込みを
+exit 2 で拒否する（settings.json には登録しない）。許可プレフィックスは Step 5 の
+「担当範囲」書き換えと**同じ承認済みデータ**で揃える。
+
+`inject-spec-summary.sh` は SessionStart と SubagentStart の両方から呼ばれ、SPEC.md の
+`[確定]` 要件の目次を注入する（1スクリプトを2イベントで使う）。抽出規則は
+[`spec-summary.md`](spec-summary.md)。
 
 `guard-builder-writes.sh` は並列実装フェーズ中の共有ファイル衝突だけを `ask` に回すフック。
 共有ファイル禁止リスト（`SHARED_PATTERNS`）を、承認済みのスタック（Prisma/型バレル/ルーティング等）に
@@ -118,10 +128,16 @@ settings.json のマージでは、テンプレートの `guard-deliverable-writ
 - [ ] .claude/agents/ にエージェント定義（7ファイル、FE無し構成なら6）がある
 - [ ] .claude/skills/ に feature-pipeline / build-with-tests / notes / pipeline-improve / clarify がある
 - [ ] build-with-tests の typecheck コマンドが置換済みである
-- [ ] block-secrets-commit.sh / guard-builder-writes.sh / spec-sync-reminder.sh に実行権限がある
+- [ ] block-secrets-commit.sh / guard-builder-writes.sh / guard-builder-paths.sh / inject-spec-summary.sh / spec-sync-reminder.sh に実行権限がある
 - [ ] guard-builder-writes.sh のドライラン: マーカー無しで共有ファイルへの Write を流すと exit 0
       （`echo '{"tool_name":"Write","tool_input":{"file_path":"prisma/schema.prisma"}}' | bash .claude/hooks/guard-builder-writes.sh; echo $?` → 0）
 - [ ] settings.json の PreToolUse に Bash（block-secrets）と Edit|Write（guard-builder）のエントリがある
+- [ ] settings.json の SessionStart / SubagentStart に inject-spec-summary のエントリがある
+- [ ] inject-spec-summary のドライラン: `echo '{"hook_event_name":"SessionStart"}' | bash .claude/hooks/inject-spec-summary.sh`
+      で SPEC の目次（または「SPEC.md なし」の1行）が出る。`"hook_event_name":"SubagentStart"` では JSON 1行になる
+- [ ] guard-builder-paths のドライラン: 担当外パスで exit 2、担当内で exit 0
+      （`echo '{"tool_input":{"file_path":"src/components/A.tsx"}}' | bash .claude/hooks/guard-builder-paths.sh "src/server/"; echo $?` → 2）
+- [ ] ビルダー3種の frontmatter の許可プレフィックスが「担当範囲」セクションと一致している
 - [ ] CLAUDE.md のフォルダ境界とビルダー3種の「担当範囲」が一致している
 - [ ] ビルダー3種の「担当範囲」に `docs/pipeline/<slug>/implementation-notes.md` の行が残っている
 - [ ] block-secrets のドライラン: echo '{"tool_name":"Bash","tool_input":{"command":"git commit -m x"}}' を

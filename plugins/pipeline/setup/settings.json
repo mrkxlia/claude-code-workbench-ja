@@ -37,6 +37,15 @@
             "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/spec-sync-reminder.sh"
           }
         ]
+      },
+      {
+        "matcher": "startup|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/inject-spec-summary.sh"
+          }
+        ]
       }
     ],
     "Stop": [
@@ -45,6 +54,17 @@
           {
             "type": "command",
             "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/spec-sync-reminder.sh"
+          }
+        ]
+      }
+    ],
+    "SubagentStart": [
+      {
+        "matcher": "^(pipeline:)?(researcher|requirements-writer|brief-writer|final-reviewer|backend-builder|frontend-builder|deliverable-builder|test-verifier)$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/inject-spec-summary.sh"
           }
         ]
       }

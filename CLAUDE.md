@@ -35,9 +35,9 @@ claude-code-workbench-ja/
 │   │   ├── CLAUDE.md                #     コピーして使う CLAUDE.md サンプル（コードモード）
 │   │   ├── CLAUDE.task.md           #     コピーして使う CLAUDE.md サンプル（成果物モード）
 │   │   ├── .claude-plugin/plugin.json
-│   │   ├── skills/                  #     7種（feature-pipeline / task-pipeline / pipeline-setup〔モード選択・references 分冊〕/ build-with-tests / pipeline-improve / clarify / notes）
+│   │   ├── skills/                  #     7種（feature-pipeline / task-pipeline / pipeline-setup〔モード選択・references 分冊。spec-summary.md に SPEC 抽出規則〕/ build-with-tests / pipeline-improve / clarify / notes）
 │   │   ├── agents/                  #     8種（共有4: researcher / requirements-writer / brief-writer / final-reviewer＋コード専用3: backend/frontend-builder / test-verifier＋成果物専用1: deliverable-builder）
-│   │   ├── hooks/                   #     4種（block-secrets-commit・guard-builder-writes・guard-deliverable-writes・spec-sync-reminder。導入先へコピーする資材＝非自動配線）
+│   │   ├── hooks/                   #     6種（block-secrets-commit・guard-builder-writes・guard-deliverable-writes・guard-builder-paths・inject-spec-summary・spec-sync-reminder。導入先へコピーする資材＝非自動配線）
 │   │   └── setup/settings.json      #     コピー導入用テンプレート（setup がモードに応じて guard を絞る）
 │   ├── codex-bridge/                #   Codex にレビュー・実装・相談を依頼するスキル＆エージェント
 │   │   ├── README.md

@@ -69,15 +69,25 @@ CLAUDE.md の「成果物の種類と出力先」とビルダーの担当範囲�
 
 `task-pipeline/`・`clarify/`・`notes/`。
 
-### フック（3本）
+### フック（5本）
 
 ```bash
 mkdir -p .claude/hooks
 cp "$SRC/hooks/block-secrets-commit.sh" .claude/hooks/
 cp "$SRC/hooks/guard-deliverable-writes.sh" .claude/hooks/
+cp "$SRC/hooks/guard-builder-paths.sh" .claude/hooks/
+cp "$SRC/hooks/inject-spec-summary.sh" .claude/hooks/
 cp "$SRC/hooks/spec-sync-reminder.sh" .claude/hooks/
-chmod +x .claude/hooks/block-secrets-commit.sh .claude/hooks/guard-deliverable-writes.sh .claude/hooks/spec-sync-reminder.sh
+chmod +x .claude/hooks/block-secrets-commit.sh .claude/hooks/guard-deliverable-writes.sh .claude/hooks/guard-builder-paths.sh .claude/hooks/inject-spec-summary.sh .claude/hooks/spec-sync-reminder.sh
 ```
+
+`guard-builder-paths.sh` は `deliverable-builder` の frontmatter から呼ばれ、出力ディレクトリ外への
+書き込みを exit 2 で拒否する（settings.json には登録しない）。`guard-deliverable-writes.sh` が
+メインセッションを含む全体を `ask` で確認するのに対し、こちらはビルダー実行中だけ確実に止める。
+
+`inject-spec-summary.sh` は SessionStart と SubagentStart の両方から呼ばれ、SPEC.md の
+`[確定]` 要件の目次を注入する（1スクリプトを2イベントで使う）。抽出規則は
+[`spec-summary.md`](spec-summary.md)。
 
 （`block-secrets-commit.sh` は成果物プロジェクトでも無害・有益: git を使っていれば機密ファイルの
 コミットを防ぎ、非 git なら素通りする。）
@@ -95,8 +105,12 @@ settings.json のマージでは、テンプレートの `guard-builder-writes` 
 ```
 - [ ] .claude/agents/ にエージェント定義5ファイルがある
 - [ ] .claude/skills/ に task-pipeline / clarify / notes がある
-- [ ] block-secrets-commit.sh / guard-deliverable-writes.sh / spec-sync-reminder.sh に実行権限がある
+- [ ] block-secrets-commit.sh / guard-deliverable-writes.sh / guard-builder-paths.sh / inject-spec-summary.sh / spec-sync-reminder.sh に実行権限がある
 - [ ] settings.json の PreToolUse に Bash（block-secrets）と Edit|Write（guard-deliverable）のエントリがある
+- [ ] settings.json の SessionStart / SubagentStart に inject-spec-summary のエントリがある
+- [ ] inject-spec-summary のドライラン: `echo '{"hook_event_name":"SessionStart"}' | bash .claude/hooks/inject-spec-summary.sh`
+      で SPEC の目次（または「SPEC.md なし」の1行）が出る
+- [ ] deliverable-builder の frontmatter の許可プレフィックスが「担当範囲」セクションと一致している
 - [ ] CLAUDE.md の出力ディレクトリ・deliverable-builder の「担当範囲」・フックの
       ALLOWED_PREFIXES が一致している
 - [ ] CLAUDE.md の「利用可能なスキル」表のスキルが実在する（~/.claude/skills/ または .claude/skills/）

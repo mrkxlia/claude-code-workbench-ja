@@ -8,6 +8,15 @@ description: >-
 tools: Read, Grep, Glob, Edit, Write, Bash
 model: inherit
 color: yellow
+# 担当範囲の機械的な強制（guard-builder-paths）。このエージェントが動いている間だけ有効。
+# 第1引数の許可プレフィックスは下の「担当範囲」セクションと同じ値にすること
+# （pipeline-setup が Step 5 で両方を同じ承認済みデータから書き換える）。<!-- 差し替え -->
+hooks:
+  PreToolUse:
+    - matcher: "Edit|Write|MultiEdit"
+      hooks:
+        - type: command
+          command: bash -c 'h="$CLAUDE_PROJECT_DIR/.claude/hooks/guard-builder-paths.sh"; [ -f "$h" ] || h="${CLAUDE_PLUGIN_ROOT:-}/hooks/guard-builder-paths.sh"; [ -f "$h" ] && exec bash "$h" "src/app/ !src/app/api/ src/components/ src/hooks/"; exit 0'
 ---
 
 あなたは「フロントエンドビルダー」です。機能のUI側を実装します——

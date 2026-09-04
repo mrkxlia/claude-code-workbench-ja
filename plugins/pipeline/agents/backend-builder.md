@@ -10,6 +10,15 @@ tools: Read, Grep, Glob, Edit, Write, Bash
 # 実装はメインセッションと同等の性能を保証するため inherit
 model: inherit
 color: green
+# 担当範囲の機械的な強制（guard-builder-paths）。このエージェントが動いている間だけ有効。
+# 第1引数の許可プレフィックスは下の「担当範囲」セクションと同じ値にすること
+# （pipeline-setup が Step 5 で両方を同じ承認済みデータから書き換える）。<!-- 差し替え -->
+hooks:
+  PreToolUse:
+    - matcher: "Edit|Write|MultiEdit"
+      hooks:
+        - type: command
+          command: bash -c 'h="$CLAUDE_PROJECT_DIR/.claude/hooks/guard-builder-paths.sh"; [ -f "$h" ] || h="${CLAUDE_PLUGIN_ROOT:-}/hooks/guard-builder-paths.sh"; [ -f "$h" ] && exec bash "$h" "src/server/ src/app/api/ src/jobs/ prisma/"; exit 0'
 ---
 
 あなたは「バックエンドビルダー」です。機能のバックエンド側を実装します——
