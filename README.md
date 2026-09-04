@@ -262,7 +262,7 @@ bash 系のため Windows は Git Bash / WSL が必要・`jq` は不要）。**�
 ### docs/ — リポジトリ内ドキュメント
 
 #### [`docs/skills-guide/`](docs/skills-guide/)
-おすすめSkillsガイド（2026年6月動作確認済み）。
+おすすめSkillsガイド（2026-09-04 に配布元を再検証済み）。
 72個紹介された記事から「今すぐ使えるもの」に絞り込み、優先度別・業務タイプ別に整理しています。
 
 #### [`docs/decisions/`](docs/decisions/)
