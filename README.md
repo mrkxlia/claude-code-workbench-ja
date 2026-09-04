@@ -105,7 +105,7 @@ Claude Code でそのまま実行します（clone 不要）。現在5つのプ�
   （長時間自律作業の完走プロトコル）・`/verify-fresh`（fresh context 検証）が使えます。
   サブエージェント3種（task-worker / fresh-verifier / bulk-scanner。プラグイン導入で自動配信）・
   プロファイル別 CLAUDE 追補（Opus+Sonnet / Sonnet 単独）・モデル・effort 選定ガイド
-  （MODEL-GUIDE.md・Fable 5 パリティマップ付き）も同梱（プロファイル追補のみファイルコピーが必要）。
+  （MODEL-GUIDE.md・Fable 5.1 パリティマップ付き）も同梱（プロファイル追補のみファイルコピーが必要）。
   詳しくは [model-setup/README.md](plugins/model-setup/) を参照。
 
 ### 方法2: git clone してコピーする（全セクション共通）
@@ -152,7 +152,7 @@ mkdir -p ~/.claude/agents && cp -r /tmp/workbench/plugins/model-setup/agents/* ~
 | 要件・仕様を質問で詰めたい | **clarify**（pipeline に同梱） | 単体利用も可（各プラグイン README の「単体利用」参照） |
 | 実装中の判断・逸脱を記録したい | **notes**（pipeline に同梱） | 単体利用も可。物証（file:line・テスト名）つきで記録 |
 | 既存コード/成果物から仕様書を逆引きしたい | 外部ツール（[cc-rsg](https://github.com/daishir0/cc-rsg) 等） | 本リポジトリは持たず外部ツールへ委譲。生成後は pipeline の researcher が一次資料として読む |
-| Opus+Sonnet や Sonnet 単独で上位モデル（Fable 5 級）並みの振る舞いに近づけたい | **model-setup** | 9ルール＋プロファイル別追補を CLAUDE.md に常設化、並列委譲・fresh 検証・自律完走のスキル/エージェント、モデル/effortガイド |
+| Opus 5+Sonnet 5 や Sonnet 単独で上位モデル（Fable 5.1 級）並みの振る舞いに近づけたい | **model-setup** | 9ルール＋プロファイル別追補を CLAUDE.md に常設化、並列委譲・fresh 検証・自律完走のスキル/エージェント、モデル/effortガイド |
 | backlog.md 駆動で計画→実施→PR→マージまで定型ループで回したい | model-setup（`/backlog-loop`・`/pr-merge`） | Step承認ゲート付き。git なし環境は変更ファイル一覧提示で完了 |
 
 > パイプラインのサブスキル（`clarify`・`build-with-tests` 等）は単体でも使えます。導入は各プラグイン README の
@@ -205,16 +205,16 @@ UI 試作では避けて軽量な `build-with-tests` を使う、です（参考
 ### plugins/ — プラグイン導入可能な5セクション
 
 #### [`plugins/model-setup/`](plugins/model-setup/)
-モデル運用テンプレート（旧名 sonnet-setup。Opus 4.8 + Sonnet 5 の私用PC / Sonnet 単独の会社PC
+モデル運用テンプレート（旧名 sonnet-setup。Opus 5 + Sonnet 5 の私用PC / Sonnet 単独の会社PC
 の2プロファイル）。完了条件の事前定義・検証つき完了報告・確信度の明示・スコープ厳守・網羅
-レビューなど、上位モデル（Fable 5 級）の「振る舞い」を常設化する9つの行動ルールと、進捗の
+レビューなど、上位モデル（Fable 5.1 級）の「振る舞い」を常設化する9つの行動ルールと、進捗の
 証拠監査・自律完走・評価と実行の境界などを加えるプロファイル別追補（`CLAUDE.private.md` /
 `CLAUDE.company.md`）に加え、**task-brief**（最初のターンでタスク仕様をブリーフ化）・
 **backlog-loop**（backlog.md 駆動の定型ループ）・**pr-merge**（git/gh 専用）・**fan-out**
 （独立サブタスクの並列委譲＋検証マージ）・**long-run**（長時間自律作業の完走プロトコル）・
 **verify-fresh**（fresh context 検証）の6スキル、サブエージェント3種（task-worker /
 fresh-verifier / bulk-scanner。sonnet/haiku をタスク別にルーティング）、モデル・effort 選定
-ガイド（`MODEL-GUIDE.md`・Fable 5 パリティマップ付き）、settings サンプルを収録しています。
+ガイド（`MODEL-GUIDE.md`・Fable 5.1 パリティマップ付き）、settings サンプルを収録しています。
 **プラグイン1コマンドで導入可能**（上の「導入方法」参照。スキル・エージェントは自動配信、
 プロファイル追補のみファイルコピーが必要）。
 プロンプト側の型は既存 OSS（severity1/claude-code-prompt-improver）を README で紹介しています。
@@ -262,6 +262,12 @@ bash 系のため Windows は Git Bash / WSL が必要・`jq` は不要）。**�
 #### [`docs/skills-guide/`](docs/skills-guide/)
 おすすめSkillsガイド（2026年6月動作確認済み）。
 72個紹介された記事から「今すぐ使えるもの」に絞り込み、優先度別・業務タイプ別に整理しています。
+
+#### [`docs/decisions/`](docs/decisions/)
+日付つきの決定記録・監査記録。2026-09-03 に Fable 5.1（model-setup の再現対象モデル本人）が
+model-setup を監査した記録と、「完全には埋まらない」とされてきた序盤制約の保持・SPEC.md 必須ロードを
+Claude Code のフック仕様で構造化する決定記録を収録。実装待ちの項目は
+[`docs/backlog-2026-09.md`](docs/backlog-2026-09.md) にブリーフとして置いてある。
 
 #### [`docs/pipeline-spec-alignment-proposal.html`](docs/pipeline-spec-alignment-proposal.html)
 旧 software-pipeline・task-pipeline（現 pipeline に統合）と、当時存在した仕様抽出スキル（spec-extract）の

@@ -8,7 +8,7 @@
 
 「何を入れるか」を環境別にまとめたもの。個別スキルの詳細は下の各節を参照。
 
-### 私用 PC（Opus 4.8 + Sonnet 5・git あり・Codex 不使用）
+### 私用 PC（Opus 5 + Sonnet 5・git あり・Codex 不使用）
 
 - settings: `plugins/model-setup/settings.private.json`（`opusplan` + `xhigh`）
 - workbench-ja のプラグイン: `model-setup`（`pipeline` は必要に応じて）

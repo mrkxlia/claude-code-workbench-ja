@@ -29,6 +29,8 @@ AIDLC 簡易版ワークフロー（`model-setup/MODEL-GUIDE.md` §9）では検
 
 - 対象: 完了報告の前・マージの前・引き渡しの前に、成果物が完了条件を本当に満たすか確かめたいとき。
   `fan-out` の成果マージ前と `long-run` の区切りでは標準工程として呼ばれる
+- 実行モデルが Opus 5 のときは反射的に呼ばない。Opus 5 は自己検証が既定動作で、明示的な検証
+  指示は過剰検証を招く（公式ガイド）。引き渡し前の1回に限る（`MODEL-GUIDE.md` §3）
 - 実装**前**の計画・設計の相談 → fresh context の Task サブエージェント
 - Codex による第二の目（コードレビュー） → `codex-review`（codex-bridge）
 - feature-pipeline 実行中のストーリー/ブリーフ突き合わせ → `final-reviewer`（同パイプライン Phase 7）

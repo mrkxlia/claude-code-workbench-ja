@@ -54,12 +54,12 @@ claude-code-workbench-ja/
 │   │   ├── .claude-plugin/plugin.json
 │   │   ├── skills/                  #     1種（review-panel＋personas.md / report-template.md）
 │   │   └── agents/                  #     5種（panel-reviewer / panel-codex / panel-kiro / panel-verifier / panel-judge）
-│   └── model-setup/                 #   モデル運用テンプレート（旧名 sonnet-setup。Opus 4.8 + Sonnet 5 / Sonnet 単独の2プロファイル、9ルール＋追補＋スキル6種＋エージェント3種）
+│   └── model-setup/                 #   モデル運用テンプレート（旧名 sonnet-setup。Opus 5 + Sonnet 5 / Sonnet 単独の2プロファイル、9ルール＋追補＋スキル6種＋エージェント3種）
 │       ├── README.md
 │       ├── CLAUDE.md                #     コピペ用テンプレート本体（9つの行動ルール・共通基盤）
 │       ├── CLAUDE.private.md        #     プロファイル追補（Opus+Sonnet・私用PC）ルール10〜14
 │       ├── CLAUDE.company.md        #     プロファイル追補（Sonnet単独・会社PC）ルール10〜15
-│       ├── MODEL-GUIDE.md           #     モデル仕様・effort選定・プロファイル・Fable 5 パリティマップ・AIDLC 簡易版ワークフロー
+│       ├── MODEL-GUIDE.md           #     モデル仕様・effort選定・プロファイル・Fable 5.1 パリティマップ・AIDLC 簡易版・Fable 本人にやらせる仕事
 │       ├── PROMPTS.md               #     都度貼りプロンプト集（Plan モード用初回テンプレート・公式スニペット翻案）
 │       ├── settings.private.json    #     私用PC向け設定サンプル（opusplan + xhigh）
 │       ├── settings.company.json    #     会社PC向け設定サンプル（sonnet + xhigh）
@@ -68,6 +68,10 @@ claude-code-workbench-ja/
 │       └── agents/                  #     3種（task-worker / fresh-verifier / bulk-scanner）
 └── docs/                            # リポジトリ内ドキュメント置き場
     ├── README.md
+    ├── decisions/                   #   日付つきの決定記録・監査記録（追記のみ。覆すときは新記録を足す）
+    │   ├── 2026-09-03-fable-5-1-audit.md                      # Fable 5.1 自身による model-setup 監査
+    │   └── 2026-09-03-long-run-constraints-and-spec-load.md  # 序盤制約の保持・SPEC.md 必須ロードの構造解
+    ├── backlog-2026-09.md           #   Sonnet/Opus 実行用ブリーフ（完了条件・検証方法つき）
     ├── pipeline-spec-alignment-proposal.html  #   パイプラインと仕様整合の提案資料（歴史的決定記録）
     └── skills-guide/                #   おすすめSkillsガイド（優先度・業務タイプ別）
         └── README.md

@@ -30,7 +30,7 @@
     {
       "name": "model-setup",
       "source": "./plugins/model-setup",
-      "description": "モデル運用テンプレート（Opus 4.8 + Sonnet 5 / Sonnet 単独。旧名 sonnet-setup）。上位モデル（Fable 5 級）の振る舞いをプロファイル別に再現する。スキル6種（task-brief / backlog-loop / pr-merge / fan-out / long-run / verify-fresh）と、サブエージェント3種・プロファイル別 CLAUDE 追補2種・モデル/effort 選定ガイド（Fable 5 パリティマップ付き）・settings サンプルを提供する。",
+      "description": "モデル運用テンプレート（Opus 5 + Sonnet 5 / Sonnet 単独。旧名 sonnet-setup）。上位モデル（Fable 5.1 級）の振る舞いをプロファイル別に再現する。スキル6種（task-brief / backlog-loop / pr-merge / fan-out / long-run / verify-fresh）と、サブエージェント3種・プロファイル別 CLAUDE 追補2種・モデル/effort 選定ガイド（Fable 5.1 パリティマップ付き）・settings サンプルを提供する。",
       "category": "productivity",
       "author": {
         "name": "mrkxlia"
