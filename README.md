@@ -21,7 +21,10 @@ flowchart TD
 
     Existing --> E1["1. 現状を仕様化する（推奨）<br/>cc-rsg 等の外部ツールで SPEC.md を生成"]
     E1 --> E2["2. 必要ならパイプラインを導入<br/>pipeline-setup（モード選択つき）"]
-    E2 --> E3["個人の運用ルール model-setup は<br/>新規/既存どちらでも導入可"]
+    E2 --> E2b{"リポジトリが大きい？<br/>（モノレポ・数十万行以上）"}
+    E2b -->|"Yes"| E2c["3. 足場を整える<br/>codebase-setup の codebase-onboard"]
+    E2b -->|"No"| E3
+    E2c --> E3["個人の運用ルール model-setup は<br/>新規/既存どちらでも導入可"]
 ```
 
 ### 新規リポジトリ（これから作るプロジェクト）
@@ -39,7 +42,8 @@ flowchart TD
 
 1. **現状を仕様化する（推奨）** — [daishir0/cc-rsg](https://github.com/daishir0/cc-rsg) 等の外部ツールで、既存コード・成果物から確度ラベル付きの `SPEC.md` を逆引き生成する（本リポジトリはこの機能を持たず外部ツールへ委譲する）。
 2. **その後にパイプラインを導入する場合** — `pipeline-setup` を実行する。対象リポジトリのスタック・git の有無・OS を自動検出し、既存の CLAUDE.md や `.claude/settings.json` は上書きせずマージを提案する設計なので、すでに手を入れたリポジトリでも安全に走らせられる。
-3. `model-setup` は個人設定なので、新規・既存を問わずいつ導入してもよい。
+3. **リポジトリが大きい場合（数十万行以上・モノレポ・トップレベルが数十以上）は、先に足場を整える** — `codebase-setup` の `/codebase-onboard` を実行する。CLAUDE.md の階層化・生成物を読ませない設定・LSP プラグインなど、そのリポジトリで実際に効くものだけを実測に基づいて入れる（小さいリポジトリには不要）。
+4. `model-setup` は個人設定なので、新規・既存を問わずいつ導入してもよい。
 
 ## 自動で動くもの／明示的に動かすもの
 
@@ -69,13 +73,13 @@ flowchart TD
 
 > 上の表は「導入するだけで常時発火する」フックの一覧です。**model-setup にもフックが1つありますが、
 > `/long-run` を起動したときだけ登録される opt-in**（圧縮後にブリーフを文脈へ戻す）なのでここには載せていません。
-> kiro-bridge・agent-review-panel はスキルのみで完結し、フックを持ちません。
+> kiro-bridge・agent-review-panel・codebase-setup はスキルのみで完結し、フックを持ちません。
 
 ## 導入方法（クイックスタート）
 
 ### 方法1: プラグインで導入する（最も簡単）
 
-Claude Code でそのまま実行します（clone 不要）。現在5つのプラグインを配信しています:
+Claude Code でそのまま実行します（clone 不要）。現在6つのプラグインを配信しています:
 
 ```
 /plugin marketplace add mrkxlia/claude-code-workbench-ja
@@ -84,6 +88,7 @@ Claude Code でそのまま実行します（clone 不要）。現在5つのプ�
 /plugin install kiro-bridge@workbench-ja
 /plugin install agent-review-panel@workbench-ja
 /plugin install model-setup@workbench-ja
+/plugin install codebase-setup@workbench-ja
 ```
 
 - **pipeline** — 新しいセッションで `/pipeline:pipeline-setup` を実行すると、モード選択
@@ -109,6 +114,14 @@ Claude Code でそのまま実行します（clone 不要）。現在5つのプ�
   プロファイル別 CLAUDE 追補（Opus+Sonnet / Sonnet 単独）・モデル・effort 選定ガイド
   （MODEL-GUIDE.md・Fable 5.1 パリティマップ付き）も同梱（プロファイル追補のみファイルコピーが必要）。
   詳しくは [model-setup/README.md](plugins/model-setup/) を参照。
+- **codebase-setup** — 導入すると `/codebase-onboard`（大規模リポジトリを実測して CLAUDE.md の
+  階層化・生成物を読ませない `permissions.deny`・コードインテリジェンス（LSP）プラグイン・
+  ディレクトリ別スキルのうち**効くものだけ**を承認ゲート付きで導入）・`/codebase-map`
+  （1行説明つきの目次を `docs/codebase-map.md` に作成）・`/context-audit`（常時ロードされる
+  指示を5分類で棚卸しし、陳腐化・矛盾・導出可能・過剰ロードを削除／移設）が使えます。
+  読み取り専用サブエージェント2種（subtree-surveyor / instruction-auditor）に並列委譲するため、
+  大量のファイル読み込みでメインの文脈が埋まりません。詳しくは
+  [codebase-setup/README.md](plugins/codebase-setup/) を参照。
 
 ### 方法2: git clone してコピーする（全セクション共通）
 
@@ -156,6 +169,9 @@ mkdir -p ~/.claude/agents && cp -r /tmp/workbench/plugins/model-setup/agents/* ~
 | 既存コード/成果物から仕様書を逆引きしたい | 外部ツール（[cc-rsg](https://github.com/daishir0/cc-rsg) 等） | 本リポジトリは持たず外部ツールへ委譲。生成後は pipeline の researcher が一次資料として読む |
 | Opus 5+Sonnet 5 や Sonnet 単独で上位モデル（Fable 5.1 級）並みの振る舞いに近づけたい | **model-setup** | 9ルール＋プロファイル別追補を CLAUDE.md に常設化、並列委譲・fresh 検証・自律完走のスキル/エージェント、モデル/effortガイド |
 | backlog.md 駆動で計画→実施→PR→マージまで定型ループで回したい | model-setup（`/backlog-loop`・`/pr-merge`） | Step承認ゲート付き。git なし環境は変更ファイル一覧提示で完了 |
+| 巨大なリポジトリで Claude が的外れなファイルを読む／CLAUDE.md が長すぎる | **codebase-setup**（`/codebase-onboard`） | 実測して効く設定だけ入れる。ルート CLAUDE.md の生成自体は本体 `/init` に委譲 |
+| どこに何があるか分からないリポジトリの地図が欲しい | codebase-setup（`/codebase-map`） | 1行説明つきの目次。地図が要らないリポジトリには「作らない」と答える |
+| モデルを更新したので古い指示を整理したい | codebase-setup（`/context-audit`） | 「正しいか」でなく「毎回載せる価値があるか」で5分類。承認前に変更しない |
 
 > パイプラインのサブスキル（`clarify`・`build-with-tests` 等）は単体でも使えます。導入は各プラグイン README の
 > 「単体で使う（個別利用）」小節を参照してください。
@@ -204,7 +220,7 @@ UI 試作では避けて軽量な `build-with-tests` を使う、です（参考
 （コピーして使うテンプレートや独立ツールが増えたら `templates/`・`tools/` を追加する規約になっています。
 詳細なディレクトリ構成は [`CLAUDE.md`](CLAUDE.md) 参照）。
 
-### plugins/ — プラグイン導入可能な5セクション
+### plugins/ — プラグイン導入可能な6セクション
 
 #### [`plugins/model-setup/`](plugins/model-setup/)
 モデル運用テンプレート（旧名 sonnet-setup。Opus 5 + Sonnet 5 の私用PC / Sonnet 単独の会社PC
@@ -259,6 +275,22 @@ bash 系のため Windows は Git Bash / WSL が必要・`jq` は不要）。**�
 コードレビューは内蔵 `/code-review`・`/codex-review`・`/kiro-review` に任せる住み分けです。
 **プラグイン1コマンドで導入可能**（上の「導入方法」参照）。
 
+#### [`plugins/codebase-setup/`](plugins/codebase-setup/)
+大規模リポジトリ（数十万行以上・モノレポ・トップレベルが数十以上）を Claude Code から
+**読みやすく（legible）する足場**を作るスキル3種と読み取り専用サブエージェント2種。
+Claude Code はコードベースを事前インデックス化せず人間と同じようにファイルを辿って読むため、
+出力の質は「関連する文脈にたどり着けるか」に効きます。**codebase-onboard**（`/codebase-onboard`）が
+リポジトリを実測（規模・言語構成・チェックインされた生成物・既存の CLAUDE.md）したうえで、
+CLAUDE.md の階層化・`permissions.deny` による生成物の遮断・LSP プラグイン・ディレクトリ別スキル・
+`claudeMdExcludes`・`worktree.sparsePaths` のうち**そのリポジトリで効くものだけ**を2つの承認
+チェックポイント付きで導入し、最後に**設定の所有者と次回棚卸し時期**を決めます。
+**codebase-map** は1行説明つきの目次を、**context-audit** は常時ロードされる指示の棚卸し
+（陳腐化・矛盾・導出可能・過剰ロードの5分類）を担当します。ルート CLAUDE.md の生成は本体の
+`/init`、1ファイルの機械的な短縮は本体の `/doctor`、定義ジャンプは公式 LSP プラグインに委譲し、
+**再実装していません**（設計の経緯は
+[`docs/decisions/2026-09-05-large-codebase-harness.md`](docs/decisions/2026-09-05-large-codebase-harness.md)）。
+**プラグイン1コマンドで導入可能**（上の「導入方法」参照）。
+
 ### docs/ — リポジトリ内ドキュメント
 
 #### [`docs/skills-guide/`](docs/skills-guide/)
@@ -298,4 +330,5 @@ Power Automate のクラウドフローから Azure AI Foundry（Azure OpenAI）
 | [`plugins/pipeline/`](plugins/pipeline/) | [How to Build a Software Factory with Claude Code（@sairahul1 氏）](https://x.com/sairahul1/status/2058832033628241931) | 記事のコンセプト（コードモード）とそのコード以外の成果物への汎用化（成果物モード）に基づく独自実装（コピーではない）— 帰属を README に記載 |
 | [`plugins/codex-bridge/`](plugins/codex-bridge/) | [eddiearc/codex-delegator](https://github.com/eddiearc/codex-delegator)・[hamelsmu/claude-review-loop](https://github.com/hamelsmu/claude-review-loop)・[OpenAI Codex CLI ドキュメント](https://developers.openai.com/codex/) | 構成・プロンプト型のコンセプトを参考にした独自実装（コードのコピーではない） |
 | [`plugins/agent-review-panel/`](plugins/agent-review-panel/) | [wan-huiyan/agent-review-panel](https://github.com/wan-huiyan/agent-review-panel)・[makinux/adversarial-panel](https://github.com/makinux/adversarial-panel) | 多フェーズ・パネル構成（並列独立レビュー→討論→検証→裁定）／4ラウンド敵対プロトコル（ブラインド回答→相互批判→譲歩→統合）のコンセプトを参考にした独自実装（コードのコピーではない）— 帰属を README に記載 |
+| [`plugins/codebase-setup/`](plugins/codebase-setup/) | [How Claude Code works in large codebases: best practices and where to start](https://claude.com/blog/how-claude-code-works-in-large-codebases-best-practices-and-where-to-start)（Anthropic 公式ブログ・2026-09-05 取得）＋公式ドキュメント [Monorepos and large repos](https://code.claude.com/docs/en/large-codebases) ほか | 記事の設計原則（harness の7拡張点・3つの設定パターン・導入ロードマップ・所有と棚卸し）を参考にした独自実装（文章のコピーではない）。設定キー名・LSP プラグイン名などの事実は公式ドキュメントを一次情報とした — 帰属を README・決定記録に記載 |
 | 仕様駆動開発まわりの解説（本 README の早見表） | [「1 Todo=1 Commit=1 Spec Update」（Zenn / Luup Developers）](https://zenn.dev/luup_developers/articles/server-jang-20251215)・[「SPEC駆動開発ツール比較」（Qiita / kanagawa41 氏）](https://qiita.com/kanagawa41/items/ef134490b61b41675e01) | 記事のコンセプト・比較観点を参考にした独自解説（コードのコピーではない）— 帰属を本表に記載 |
