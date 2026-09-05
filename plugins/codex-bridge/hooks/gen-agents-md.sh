@@ -83,6 +83,8 @@ _expand() {
             ;;
           *)
             _imp=${_trim#@}
+            # 下の '~/' は case のパターンであり、展開させたくない（リテラルの ~/ に一致させる）
+            # shellcheck disable=SC2088
             case "$_imp" in
               '~/'*) _imp="$HOME/${_imp#~/}" ;;
               '~') _imp="$HOME" ;;
