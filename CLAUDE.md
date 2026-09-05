@@ -55,11 +55,11 @@ claude-code-workbench-ja/
 │   │   ├── .claude-plugin/plugin.json
 │   │   ├── skills/                  #     1種（review-panel＋references/{personas,report-template}.md）
 │   │   └── agents/                  #     5種（panel-reviewer / panel-codex / panel-kiro / panel-verifier / panel-judge）
-│   ├── codebase-setup/              #   大規模リポジトリを Claude Code から読みやすくする足場（実測→設計→適用→定期棚卸し）
+│   ├── codebase-setup/              #   大規模リポジトリを Claude Code から読みやすくする足場（実測→設計→適用→定期棚卸し）＋参画した案件の人間向けキャッチアップ
 │   │   ├── README.md
 │   │   ├── .claude-plugin/plugin.json
-│   │   ├── skills/                  #     3種（codebase-onboard〔明示専用・references 分冊: settings-recipes / lsp-plugins〕/ codebase-map / context-audit）
-│   │   └── agents/                  #     2種（subtree-surveyor / instruction-auditor。いずれも read-only。フックは持たない）
+│   │   ├── skills/                  #     4種（codebase-onboard〔明示専用・references 分冊: settings-recipes / lsp-plugins〕/ codebase-map / context-audit / project-catchup〔悪い例・良い例で具体度を縛り図を必須化。references 分冊: stack-probes / interview〕）
+│   │   └── agents/                  #     3種（subtree-surveyor〔面の調査〕/ instruction-auditor / flow-tracer〔線の調査〕。いずれも read-only。フックは持たない）
 │   ├── model-setup/                 #   モデル運用テンプレート（旧名 sonnet-setup。Opus 5 + Sonnet 5 / Sonnet 単独の2プロファイル、9ルール＋追補＋スキル6種＋エージェント3種）
 │   │   ├── README.md
 │   │   ├── CLAUDE.md                #     コピペ用テンプレート本体（9つの行動ルール・共通基盤）
