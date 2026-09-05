@@ -20,7 +20,7 @@ argument-hint: "[deep] [codex] [kiro] <レビュー対象（プラン本文/差�
 を務めます — サブエージェントはサブエージェントを起動できないため、ラウンド進行・匿名化・
 ゲート適用はすべてこのスキルの手順に従ってあなたが行います。
 
-パネリストの実行は **`panel-reviewer`** サブエージェント（ペルソナは `personas.md` から
+パネリストの実行は **`panel-reviewer`** サブエージェント（ペルソナは [`references/personas.md`](references/personas.md) から
 注入）に委譲し、deep モードでは **`panel-verifier`**（引用検証）と **`panel-judge`**
 （裁定者）を追加起動します。基本は**外部 CLI・git・ネットワーク不要**で動きます。
 
@@ -73,7 +73,7 @@ argument-hint: "[deep] [codex] [kiro] <レビュー対象（プラン本文/差�
 
 ## ペルソナ編成（既定）
 
-ペルソナの定義本文は同ディレクトリの `personas.md` を読み、選んだブロックを Task
+ペルソナの定義本文は [`references/personas.md`](references/personas.md) を読み、選んだブロックを Task
 プロンプトに**そのまま注入**する。悪魔の代弁者（③）は反グループシンクの核として**常設**。
 
 | 対象タイプ | light（3名） | deep（4名目に追加） |
@@ -174,7 +174,7 @@ codex・kiro のいずれか一方のみ指定時は、上記の1枠を該当エ
 根拠差し戻し）・全員一致チェック（無風なら見落とし仮説を最低1つ）・最終評決
 （承認/条件付き承認/差し戻し）。
 
-**レポート出力** — Synthesis＋検証列＋裁定セクションを `report-template.md` に沿って
+**レポート出力** — Synthesis＋検証列＋裁定セクションを [`references/report-template.md`](references/report-template.md) に沿って
 `docs/review-panel/<YYYYMMDD>-<slug>.md` に書き出し（書くのはあなた。書き込み先はこの
 1ディレクトリのみ）、会話にはサマリとパスを提示する。
 
