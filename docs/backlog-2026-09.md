@@ -126,4 +126,21 @@ Fable 5.1 が本リポジトリを監査した際に「今日やる価値が高�
 
 | 日付 | 項目 | PR / コミット |
 |---|---|---|
-| | | |
+| 2026-09-05 | B-1 model-setup: ブリーフ再注入フック | `002b02c` |
+| 2026-09-05 | B-2 pipeline: SPEC.md 要約注入フック | `5092cd0` |
+| 2026-09-05 | B-3 pipeline: ビルダーの担当外パスガード | `5092cd0` |
+| 2026-09-05 | B-4 評価基準: 主要スキルの期待挙動シナリオ | `4dcfaf3` |
+| 2026-09-05 | B-5 教訓メモリのブートストラップ | `efd31ac` |
+| 2026-09-05 | B-6 CI 拡張 | `b55074f` |
+| 2026-09-05 | B-7 skills-guide の再検証 | `b99d8d4` |
+
+## 実装時にブリーフから変更した設計判断
+
+着手時の調査で前提が覆った3点。決定記録 `decisions/2026-09-03-long-run-constraints-and-spec-load.md`
+の判断そのものは維持し、実現手段だけを変えている。
+
+| 項目 | ブリーフの前提 | 実装 | 理由 |
+|---|---|---|---|
+| B-1 の配線 | `setup/settings.json` を作り、`~/.claude/settings.json` へ手動マージ | **`long-run` スキルの frontmatter に `hooks:` を宣言**（`setup/settings.json` は作らない） | 公式仕様でスキルの frontmatter にフックを宣言でき、起動後はセッション末尾まで登録され続けることを確認。`/long-run` を叩いたときだけ武装するので「自動発火しない」方針を保ったまま、レビュー指摘（JSON 手編集で全フックが止まる・git 無し環境で復旧できない）が消える |
+| B-2 の matcher | `^researcher$` のように素の名前でアンカー | `^(pipeline:)?(researcher\|…)$` の**両形式対応** | プラグイン配信時の `agent_type` は `pipeline:researcher` の形。pipeline-setup はエージェントを `.claude/agents/` へコピーするので実運用は素の名前だが、プラグイン直利用もあり得る |
+| B-4 の形式 | `claude plugin eval` が使えればその形式 | **`docs/evals/<skill>.md`**（ブリーフが定めたフォールバック） | CLI に実装はあるが 2026-09-05 時点で early access ゲートの内側にあり、`init` も実行も拒否される。各シナリオは 1 case に移せる粒度にしてある |
