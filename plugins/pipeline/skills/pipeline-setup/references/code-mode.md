@@ -70,7 +70,7 @@ frontend-builder を導入対象から外す選択肢を Step 3 で提示する�
 
 コピーするのは次の**7ファイル**（Step 3 でフロントエンド無しと確定した場合、frontend-builder を除く6）:
 `researcher` / `requirements-writer` / `brief-writer` / `backend-builder` / `frontend-builder` /
-`test-verifier` / `final-reviewer`（`deliverable-builder` はコピーしない — 成果物モード用）。
+`test-verifier` / `final-reviewer`（`deliverable-builder` / `design-doc-checker` はコピーしない — 成果物モード用）。
 
 `backend-builder.md` / `frontend-builder.md` / `test-verifier.md` の
 「担当範囲」セクションの箇条書きを、**Step 3 で承認済みの境界**で書き換える。
