@@ -16,7 +16,7 @@ flowchart TD
     N1 --> N2{"何を作る？"}
     N2 -->|"コードで機能開発"| N3["pipeline の pipeline-setup を<br/>コードモードで実行"]
     N2 -->|"図・ドキュメント等"| N4["pipeline の pipeline-setup を<br/>成果物モードで実行"]
-    N3 --> N6["codex-bridge・kiro-bridge・<br/>agent-review-panel は<br/>いつでも追加導入可"]
+    N3 --> N6["codex-bridge・kiro-bridge・<br/>agent-review-panel・self-correct は<br/>いつでも追加導入可"]
     N4 --> N6
 
     Existing --> E1["1. 現状を仕様化する（推奨）<br/>cc-rsg 等の外部ツールで SPEC.md を生成"]
@@ -34,7 +34,7 @@ flowchart TD
 1. **個人の運用ルールを先に整える**（Claude Code のユーザー設定に一度入れれば全プロジェクトで効く）— `model-setup` を導入（9ルール＋プロファイル別追補＋`task-brief`／`backlog-loop`／`pr-merge`／`fan-out`／`long-run`／`verify-fresh`）。
 2. **プロジェクトの土台を選ぶ**（対象リポジトリに導入。何を作るかで変わる）
    - `pipeline` の `pipeline-setup` を実行（コード/成果物のモード選択つき。エージェント・CLAUDE.md・フックを対象リポジトリに自動導入）
-3. 別 AI へのレビュー委譲（`codex-bridge`・`kiro-bridge`）や多視点レビュー（`agent-review-panel`）は、上記と独立して**いつ追加してもよい**。
+3. 別 AI へのレビュー委譲（`codex-bridge`・`kiro-bridge`）、多視点レビュー（`agent-review-panel`）、自己修正ループ（`self-correct`）は、上記と独立して**いつ追加してもよい**。
 
 ### 既存リポジトリ（すでにコード・成果物がある）
 
@@ -70,6 +70,7 @@ flowchart TD
 |---|---|---|---|
 | codex-bridge | gen-agents-md | セッション開始 | CLAUDE.md 等から AGENTS.md を自動生成・同期（Codex にも同じルールを効かせる） |
 | pipeline | block-secrets-commit / guard-builder-writes / guard-deliverable-writes / guard-builder-paths / inject-spec-summary / spec-sync-reminder | コミット前／Edit・Write 前／セッション開始・サブエージェント開始・Stop | 機密のコミット防止、担当外・出力先外への書き込み防止（`guard-builder-paths` はビルダーの越境を exit 2 で拒否）、SPEC.md の確定要件の注入、仕様更新漏れの通知（guard はモードに応じて setup が配線） |
+| self-correct | loop-stop-check / guard-ground-truth | Stop／Edit・Write 前 | 自己修正ループが未完了のまま停止するのを止め、上限到達時は人間への引き継ぎを促す。判定の根拠（元資料・仕様・fixture）への書き込みを exit 2 で拒否する。**どちらも状態ファイルが ACTIVE のときだけ発火**し、ループを回していないときは素通りする |
 
 > 上の表は「導入するだけで常時発火する」フックの一覧です。**model-setup にもフックが1つありますが、
 > `/long-run` を起動したときだけ登録される opt-in**（圧縮後にブリーフを文脈へ戻す）なのでここには載せていません。
@@ -79,7 +80,7 @@ flowchart TD
 
 ### 方法1: プラグインで導入する（最も簡単）
 
-Claude Code でそのまま実行します（clone 不要）。現在6つのプラグインを配信しています:
+Claude Code でそのまま実行します（clone 不要）。現在7つのプラグインを配信しています:
 
 ```
 /plugin marketplace add mrkxlia/claude-code-workbench-ja
@@ -89,6 +90,7 @@ Claude Code でそのまま実行します（clone 不要）。現在6つのプ�
 /plugin install agent-review-panel@workbench-ja
 /plugin install model-setup@workbench-ja
 /plugin install codebase-setup@workbench-ja
+/plugin install self-correct@workbench-ja
 ```
 
 - **pipeline** — 新しいセッションで `/pipeline:pipeline-setup` を実行すると、モード選択
@@ -122,6 +124,15 @@ Claude Code でそのまま実行します（clone 不要）。現在6つのプ�
   読み取り専用サブエージェント2種（subtree-surveyor / instruction-auditor）に並列委譲するため、
   大量のファイル読み込みでメインの文脈が埋まりません。詳しくは
   [codebase-setup/README.md](plugins/codebase-setup/) を参照。
+- **self-correct** — 導入すると `/self-correct`（成果物を loop-builder に作らせ、loop-judge に
+  独立検査させ、**FAIL した箇所だけ**を直して再検査するループを、合格条件・判定の根拠
+  （Ground Truth）・最大修正回数・人間へ戻す条件つきで回す）・`/judge-eval`（**Judge 自身**を
+  正解つきサンプルで採点し本番投入の可否を決める）・`/self-correct-setup`（対象リポジトリを
+  実測して導入）が使えます。Judge はツール権限として Edit / Write を持たないため、指摘した
+  箇所を自分で直して合格させることが構造的にできません。フック2種（未完了のまま停止するのを
+  止める Stop ゲート・判定の根拠への書き込み拒否）はプラグイン導入で自動配線され、**ループを
+  回していないときは素通り**します。本体の `/goal` は再実装せず、ループ外側の完了判定として
+  併用します。詳しくは [self-correct/README.md](plugins/self-correct/) を参照。
 
 ### 方法2: git clone してコピーする（全セクション共通）
 
@@ -149,6 +160,14 @@ cp -r /tmp/workbench/plugins/model-setup/skills/task-brief /tmp/workbench/plugin
       /tmp/workbench/plugins/model-setup/skills/fan-out /tmp/workbench/plugins/model-setup/skills/long-run \
       /tmp/workbench/plugins/model-setup/skills/verify-fresh ~/.claude/skills/
 mkdir -p ~/.claude/agents && cp -r /tmp/workbench/plugins/model-setup/agents/* ~/.claude/agents/
+
+# self-correct — 自己修正ループのスキル3種＋エージェント3種＋フック2種をプロジェクトへ
+mkdir -p .claude/skills .claude/agents .claude/hooks
+cp -r /tmp/workbench/plugins/self-correct/skills/* .claude/skills/
+cp -r /tmp/workbench/plugins/self-correct/agents/* .claude/agents/
+cp /tmp/workbench/plugins/self-correct/hooks/*.sh .claude/hooks/ && chmod +x .claude/hooks/*.sh
+#   フック配線は setup/settings.json を .claude/settings.json へマージ（既存の hooks は上書きしない）
+#   導入後は対象リポジトリで /self-correct-setup を実行する
 ```
 
 各セクションのカスタマイズ方法は、それぞれの README を参照してください。私用PC・会社PCでそれぞれ
@@ -172,6 +191,8 @@ mkdir -p ~/.claude/agents && cp -r /tmp/workbench/plugins/model-setup/agents/* ~
 | 巨大なリポジトリで Claude が的外れなファイルを読む／CLAUDE.md が長すぎる | **codebase-setup**（`/codebase-onboard`） | 実測して効く設定だけ入れる。ルート CLAUDE.md の生成自体は本体 `/init` に委譲 |
 | どこに何があるか分からないリポジトリの地図が欲しい | codebase-setup（`/codebase-map`） | 1行説明つきの目次。地図が要らないリポジトリには「作らない」と答える |
 | モデルを更新したので古い指示を整理したい | codebase-setup（`/context-audit`） | 「正しいか」でなく「毎回載せる価値があるか」で5分類。承認前に変更しない |
+| 作る→検査→直す→再検査を人間が毎回指示せずに回したい | **self-correct**（`/self-correct`） | Builder と Judge を別コンテキスト・別ツール権限に分離。停止条件と Ground Truth まで設計する |
+| レビュー役（Judge）自体が信用できるか確かめたい | self-correct（`/judge-eval`） | 正解つきサンプルで見逃し・過検出・重大度誤り・根拠欠落を採点。本番投入前の必須項目 |
 
 > パイプラインのサブスキル（`clarify`・`build-with-tests` 等）は単体でも使えます。導入は各プラグイン README の
 > 「単体で使う（個別利用）」小節を参照してください。
@@ -220,7 +241,7 @@ UI 試作では避けて軽量な `build-with-tests` を使う、です（参考
 （コピーして使うテンプレートや独立ツールが増えたら `templates/`・`tools/` を追加する規約になっています。
 詳細なディレクトリ構成は [`CLAUDE.md`](CLAUDE.md) 参照）。
 
-### plugins/ — プラグイン導入可能な6セクション
+### plugins/ — プラグイン導入可能な7セクション
 
 #### [`plugins/model-setup/`](plugins/model-setup/)
 モデル運用テンプレート（旧名 sonnet-setup。Opus 5 + Sonnet 5 の私用PC / Sonnet 単独の会社PC
@@ -289,6 +310,28 @@ CLAUDE.md の階層化・`permissions.deny` による生成物の遮断・LSP �
 `/init`、1ファイルの機械的な短縮は本体の `/doctor`、定義ジャンプは公式 LSP プラグインに委譲し、
 **再実装していません**（設計の経緯は
 [`docs/decisions/2026-09-05-large-codebase-harness.md`](docs/decisions/2026-09-05-large-codebase-harness.md)）。
+**プラグイン1コマンドで導入可能**（上の「導入方法」参照）。
+
+#### [`plugins/self-correct/`](plugins/self-correct/)
+成果物を**作る役**と**検査する役**に分け、FAIL した箇所だけを直して再検査する**自己修正ループ**
+（Evaluator-Optimizer 型）のスキル3種とサブエージェント3種、フック2種。
+最初に間違えた Claude が同じ文脈・同じ基準で「見直しました、問題ありません」と言っても、
+同じ盲点をもう一度見逃します。そこで **`loop-builder`（作る・Edit/Write あり）** と
+**`loop-judge`（検査する・Edit/Write なし）** を別コンテキスト・別ツール権限に分離し、
+判定には成果物の外にある根拠（**Ground Truth** — 元資料・テスト結果・公式ページ）を持たせます。
+**`/self-correct`** が Define（目的・評価基準・Ground Truth・変更禁止範囲・最大回数を確定して承認）
+→ Build → Judge → Decide（Critical/Major があれば RETRY、同じ指摘が2回連続または上限到達で
+ESCALATE）→ Retry（**指摘された箇所だけ**修正）→ Stop を回し、**`/judge-eval`** が
+**Judge 自身**を正解つきサンプル（合格例・不合格例）で採点して見逃し・過検出・重大度誤り・
+根拠欠落を集計します（Judge が間違えばループ全体が静かに壊れるため、本番投入前の必須項目）。
+**`/self-correct-setup`** は対象リポジトリを実測して Ground Truth の候補・評価基準の雛形・
+CLAUDE.md の行動ルールを承認ゲート付きで導入します。フックは
+`loop-stop-check`（ループ未完了のまま停止するのを止める Stop ゲート）と
+`guard-ground-truth`（判定の根拠への書き込みを exit 2 で拒否）の2種で、いずれも
+**状態ファイルが ACTIVE のときだけ発火**します。本体の `/goal` は**再実装せず**、ループ外側の
+完了判定として併用します（`/goal` の評価器はツールを持たず実ファイル・テスト結果を見られないため、
+根拠に基づく検査は `loop-judge` が担当。設計の経緯は
+[`docs/decisions/2026-09-05-self-correction-loop.md`](docs/decisions/2026-09-05-self-correction-loop.md)）。
 **プラグイン1コマンドで導入可能**（上の「導入方法」参照）。
 
 ### docs/ — リポジトリ内ドキュメント
