@@ -4,9 +4,11 @@ description: >-
   コードレビューを OpenAI Codex に依頼するスキル。ユーザー自身は Codex を操作せず、
   Claude Code が Codex CLI を非対話モードで駆動し、差分または指定ファイルを Codex に
   レビューさせて重大度つきの指摘を要約する。「Codex にレビューして」「codex でレビュー」
-  「コーデックスにレビューさせて」「別の AI にレビューさせて」「セカンドレビュー」
-  といった依頼や、/codex-review [スコープ] での手動起動で発動する。Codex に第三者
-  視点のコードレビューを任せたいときに使う。
+  「コーデックスにレビューさせて」「OpenAI にレビューさせて」のように Codex を名指しした
+  依頼や、/codex-review [スコープ] での手動起動で発動する。相手を名指ししない
+  「セカンドレビューして」「別の AI にレビューさせて」では発動しない — 本体の
+  /code-review に任せる。Kiro を名指しした依頼は kiro-review、複数ペルソナの敵対的
+  レビューは review-panel に任せる。
 argument-hint: "uncommitted | base [branch] | [paths]"
 ---
 

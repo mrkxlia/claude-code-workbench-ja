@@ -4,9 +4,11 @@ description: >-
   コードレビューを Kiro に依頼するスキル。ユーザー自身は Kiro を操作せず、Claude Code
   が kiro-cli を非対話モードで駆動し、差分または指定ファイルを Kiro にレビューさせて
   重大度つきの指摘を要約する。「Kiro にレビューして」「kiro でレビュー」「キロにレビュー
-  させて」「別の AI にレビューさせて」「セカンドレビュー」といった依頼や、
-  /kiro-review uncommitted | base [branch] | [paths] での手動起動で発動する。
-  Kiro に第三者視点のコードレビューを任せたいときに使う。
+  させて」「kiro-cli でレビューして」のように Kiro を名指しした依頼や、
+  /kiro-review [スコープ] での手動起動で発動する。相手を名指ししない
+  「セカンドレビューして」「別の AI にレビューさせて」では発動しない — 本体の
+  /code-review に任せる。Codex を名指しした依頼は codex-review、複数ペルソナの敵対的
+  レビューは review-panel に任せる。
 argument-hint: "uncommitted | base [branch] | [paths]"
 ---
 
