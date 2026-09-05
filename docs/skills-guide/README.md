@@ -104,6 +104,13 @@ Anthropic公式リポジトリのスキル。安定性が最も高く、今す�
 | **Theme Factory** | 10種プリセットからカラー・フォントを資料全体に統一適用 | `theme-factory@skills` |
 | **Brand Guidelines** | 自社ブランドカラー・フォントをアーティファクトに自動適用 | `brand-guidelines@skills` |
 
+> **フロントエンド周りをまとめて見たいとき**:
+> [wilwaldon/Claude-Code-Frontend-Design-Toolkit](https://github.com/wilwaldon/Claude-Code-Frontend-Design-Toolkit)
+> — Claude Code で「見栄えのする UI」を出すためのスキル・MCP・テーマ・アニメーション・
+> Figma 連携などを10分類・70点超にまとめたリンク集（README 1枚。スキル本体は同梱していない）。
+> 上表の Frontend Design / Canvas Design もここに含まれる。**未検証のリンク集として置いてある**だけで、
+> 個々のツールの生存確認は本リポジトリでは行っていない（最終更新 2026-02・MIT）。
+
 ### 開発者向け
 
 | スキル | 用途 | リポジトリ | 現在の名前 |
@@ -145,6 +152,7 @@ Anthropic公式リポジトリのスキル。安定性が最も高く、今す�
 | [mattpocock/skills](https://github.com/mattpocock/skills) | 249.2k | 実務向けの小さく組み合わせやすいスキル集。`skills/{engineering,productivity,misc,in-progress}/` の入れ子構成 |
 | [obra/superpowers](https://github.com/obra/superpowers) | 281.7k | エンジニアリング全般。`skills/` 直下に14スキル |
 | [skillsmp.com](https://skillsmp.com) | — | 2,000,000+スキルのマーケットプレイス。発見用に使う |
+| [wilwaldon/Claude-Code-Frontend-Design-Toolkit](https://github.com/wilwaldon/Claude-Code-Frontend-Design-Toolkit) | 1.1k | フロントエンドのデザイン品質向けリンク集（スキル・MCP・テーマ・アニメーション・Figma 連携ほか10分類/70点超）。スキル本体は同梱せず README 1枚で各配布元へ誘導する。**2026-09-05 時点で未検証**（スター数・最終更新 2026-02 は同日に確認） |
 
 ---
 
