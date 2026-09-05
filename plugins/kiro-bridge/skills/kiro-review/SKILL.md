@@ -4,10 +4,12 @@ description: >-
   コードレビューを Kiro に依頼するスキル。ユーザー自身は Kiro を操作せず、Claude Code
   が kiro-cli を非対話モードで駆動し、差分または指定ファイルを Kiro にレビューさせて
   重大度つきの指摘を要約する。「Kiro にレビューして」「kiro でレビュー」「キロにレビュー
-  させて」「別の AI にレビューさせて」「セカンドレビュー」といった依頼や、
-  /kiro-review [uncommitted | base <branch> | <paths>] での手動起動で発動する。
-  Kiro に第三者視点のコードレビューを任せたいときに使う。
-argument-hint: "[uncommitted | base <branch> | <paths>]"
+  させて」「kiro-cli でレビューして」のように Kiro を名指しした依頼や、
+  /kiro-review [スコープ] での手動起動で発動する。相手を名指ししない
+  「セカンドレビューして」「別の AI にレビューさせて」では発動しない — 本体の
+  /code-review に任せる。Codex を名指しした依頼は codex-review、複数ペルソナの敵対的
+  レビューは review-panel に任せる。
+argument-hint: "uncommitted | base [branch] | [paths]"
 ---
 
 # kiro-review — Kiro にコードレビューを依頼する（/kiro-review）
@@ -34,6 +36,16 @@ Claude Code が kiro-cli を**非対話モード**（`--no-interactive --trust-t
 
 `kiro-cli` が導入・認証済みであること（`kiro-bridge/README.md` の「前提」参照）。
 未導入・未認証の場合、サブエージェントが日本語で案内して終了します。
+
+## Common Issues
+
+| 症状 | 原因 | 対処 |
+|---|---|---|
+| 「kiro-cli が見つかりません」／認証エラー | 未導入・未認証 | README の「前提」を案内する。実行を強行しない。急ぐなら本体の `/code-review` を提案する |
+| レビュー対象が空 | 未コミット差分が無い／指定パスが存在しない | スコープを確認する（`uncommitted` → `base [branch]` への切り替え、パスの綴り）。空のまま Kiro を起動しない |
+| 応答が返らない・途中で切れる | 同梱した差分が大きすぎる | 「全文 → 関連抜粋 → diff → パス名指し」の順に降格する |
+| ファイルが書き換わっていた | `--trust-tools=read` が効いていない | **即座に停止して報告する。** このプラグインは read-only 専用であり、書き込みは仕様違反 |
+| 指摘が的外れに多い | スコープが広すぎる | 対象を絞って再実行する。低優先度の大量指摘は要約にとどめ、判断をユーザーに委ねる |
 
 ## フロー
 

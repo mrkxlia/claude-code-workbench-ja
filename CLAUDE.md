@@ -26,7 +26,7 @@ claude-code-workbench-ja/
 ├── CLAUDE.md                        # このファイル
 ├── LICENSE                          # MIT License
 ├── .gitattributes                   # git 属性定義
-├── .github/workflows/ci.yml         # CI（JSON 構文・SKILL.md 形式・agent frontmatter・shellcheck・.ps1 の BOM・version 差分・内部リンク＝必須、claude plugin validate＝任意）
+├── .github/workflows/ci.yml         # CI（JSON 構文・SKILL.md 形式〔公式ガイド準拠〕・agent frontmatter・shellcheck・.ps1 の BOM・version 差分・内部リンク＝必須、claude plugin validate＝任意）
 ├── .claude-plugin/
 │   └── marketplace.json             # プラグインマーケットプレイス定義（名前: workbench-ja、source は ./plugins/<name>）
 ├── plugins/                         # プラグイン導入可能な5セクション（marketplace.json 登録対象・公式標準レイアウト）
@@ -53,7 +53,7 @@ claude-code-workbench-ja/
 │   ├── agent-review-panel/          #   複数ペルソナの敵対的パネルレビュー（codex / kiro 混成 opt-in）
 │   │   ├── README.md
 │   │   ├── .claude-plugin/plugin.json
-│   │   ├── skills/                  #     1種（review-panel＋personas.md / report-template.md）
+│   │   ├── skills/                  #     1種（review-panel＋references/{personas,report-template}.md）
 │   │   └── agents/                  #     5種（panel-reviewer / panel-codex / panel-kiro / panel-verifier / panel-judge）
 │   └── model-setup/                 #   モデル運用テンプレート（旧名 sonnet-setup。Opus 5 + Sonnet 5 / Sonnet 単独の2プロファイル、9ルール＋追補＋スキル6種＋エージェント3種）
 │       ├── README.md
@@ -74,6 +74,7 @@ claude-code-workbench-ja/
     │   ├── 2026-09-03-fable-5-1-audit.md                      # Fable 5.1 自身による model-setup 監査
     │   └── 2026-09-03-long-run-constraints-and-spec-load.md  # 序盤制約の保持・SPEC.md 必須ロードの構造解
     ├── lessons.md                   #   過去 PR から蒸留した「繰り返さない判断」（根拠の PR 番号つき）
+    ├── skill-authoring.md           #   スキルの書き方（公式ガイド準拠。frontmatter 規約・分冊基準・監査結果）
     ├── evals/                       #   主要スキルの期待挙動シナリオ（Sonnet 5 / Opus 5 のパリティ実測用）
     │   ├── README.md                #     走らせ方・結果記録表・Markdown 形式である理由
     │   └── {task-brief,verify-fresh,long-run,review-panel}.md

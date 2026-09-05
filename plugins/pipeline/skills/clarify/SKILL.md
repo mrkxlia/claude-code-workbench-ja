@@ -8,7 +8,7 @@ description: >-
   feature-pipeline の Phase 2（ストーリー）/ Phase 3（ブリーフ）、task-pipeline の Phase 2（要件）/
   Phase 3（ブリーフ）でも、writer 起動前にオーケストレーターがこのプロトコルで要件・仕様・構成を
   詰めるために使う。
-argument-hint: <詰めたい要件・プラン・設計・成果物の方針>
+argument-hint: "[詰めたい要件・プラン・設計・成果物の方針]"
 ---
 
 <!-- NOTE: この clarify は pipeline プラグインの両モード（feature-pipeline / task-pipeline）で

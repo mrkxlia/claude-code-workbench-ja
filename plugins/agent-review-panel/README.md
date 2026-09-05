@@ -28,7 +28,7 @@
   サブエージェントを起動できないため、ラウンド進行・匿名化・ゲート適用は SKILL.md の手順として
   メインが担います。SKILL.md がプロトコルの正本です。
 - **パネリストは1定義＋ペルソナ注入**: エージェント定義は `panel-reviewer` の1つだけで、
-  視点の違いは `personas.md` の6ペルソナ（正確性ホーク・セキュリティ監査役・悪魔の代弁者・
+  視点の違いは `skills/review-panel/references/personas.md` の6ペルソナ（正確性ホーク・セキュリティ監査役・悪魔の代弁者・
   明晰性エディタ・実現可能性アナリスト・コスト保守モデラー）をプロンプト注入して作ります。
   サブエージェントの独立性は「定義ファイルが別か」ではなく「fresh context か・他者の回答を
   渡されていないか」で決まるため、定義を6つに分けても品質は上がらず保守だけが増えます。
@@ -85,8 +85,9 @@ agent-review-panel/
 ├── skills/
 │   └── review-panel/
 │       ├── SKILL.md               # /review-panel（プロトコル正本・ファシリテーター手順）
-│       ├── personas.md            # ペルソナ6種（Task プロンプトへ注入するテンプレート）
-│       └── report-template.md     # deep モードのレポート雛形
+│       └── references/
+│           ├── personas.md        # ペルソナ6種（Task プロンプトへ注入するテンプレート）
+│           └── report-template.md # deep モードのレポート雛形
 └── agents/
     ├── panel-reviewer.md          # 汎用パネリスト（ペルソナ注入型・read-only）
     ├── panel-codex.md             # 外部パネリスト（codex CLI を read-only 非対話で駆動）

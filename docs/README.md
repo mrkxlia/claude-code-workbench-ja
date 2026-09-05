@@ -9,12 +9,13 @@
 ## ファイル一覧
 
 `decisions/` には日付つきの決定記録・監査記録（変更しない。覆すときは新しい記録を足す）、
-直下には提案資料・バックログを置く。
+直下には提案資料・バックログ・執筆ガイドを置く。
 
 | ファイル | 内容 |
 |---------|------|
 | `decisions/2026-09-03-fable-5-1-audit.md` | Fable 5.1 自身による model-setup（ルール・追補・スキル・エージェント・パリティマップ）の監査記録。各項目を (a)再現済み／(b)過剰処方（Opus 5 で逆効果）／(c)欠落 に分類し、反映した差分と意図的に変えなかったものを記録（model-setup 3.2.0） |
 | `decisions/2026-09-03-long-run-constraints-and-spec-load.md` | 「完全には埋まらない」とされてきた2件 — 長時間作業での序盤制約の保持・SPEC.md の必須ロード保証 — を Claude Code のフック仕様（SessionStart `compact`・SubagentStart の `additionalContext`）で構造化する決定記録。敵対的レビュー3名の指摘と対応つき。実装は `backlog-2026-09.md` |
+| `skill-authoring.md` | 公式ガイド「The Complete Guide to Building Skills for Claude」（2026-09-05 取得）に沿ってスキルを書くための指針。3段階の開示・frontmatter のキー採否・山括弧禁止・別冊に切る基準・CI が守っている項目。末尾に全20スキルの監査結果（変更しなかったものも全件）と積み残し。**どのスキルを入れるか**は `skills-guide/` |
 | `lessons.md` | 過去の PR から蒸留した「このリポジトリで繰り返さない判断」。作る前の3点確認（本体・公式プラグイン・著名 OSS）、重複を自動化する前に統合する、既定探索パスに従う、など8件。根拠の PR 番号つき |
 | `evals/` | 主要スキル（task-brief / verify-fresh / long-run / review-panel）の「期待挙動」シナリオ15件。Sonnet 5 と Opus 5 のパリティを実測する物差し。`claude plugin eval` が early access のため Markdown 形式（ゲートが開いたら `case.yaml` へ機械化する）。追補ルール14 の分岐が実効を持つかを verify-fresh S-3/S-4 で検出する |
 | `backlog-2026-09.md` | 2026-09-03 の Fable 5.1 セッションで着手できなかった項目を、Sonnet/Opus が単独で実行できるブリーフ（完了条件・スコープ・検証方法つき）にしたもの |
