@@ -65,9 +65,11 @@ flowchart TD
 | プラグイン | フック | 発火タイミング | 効果 |
 |---|---|---|---|
 | codex-bridge | gen-agents-md | セッション開始 | CLAUDE.md 等から AGENTS.md を自動生成・同期（Codex にも同じルールを効かせる） |
-| pipeline | block-secrets-commit / guard-builder-writes / guard-deliverable-writes / spec-sync-reminder | コミット前／Edit・Write 前／セッション開始・Stop | 機密のコミット防止、担当外・出力先外への書き込み防止、仕様更新漏れの通知（guard はモードに応じて setup が配線） |
+| pipeline | block-secrets-commit / guard-builder-writes / guard-deliverable-writes / guard-builder-paths / inject-spec-summary / spec-sync-reminder | コミット前／Edit・Write 前／セッション開始・サブエージェント開始・Stop | 機密のコミット防止、担当外・出力先外への書き込み防止（`guard-builder-paths` はビルダーの越境を exit 2 で拒否）、SPEC.md の確定要件の注入、仕様更新漏れの通知（guard はモードに応じて setup が配線） |
 
-> フックは一覧の2プラグインのみが持ちます。他のプラグイン（model-setup・kiro-bridge・agent-review-panel 等）はスキルのみで完結し、常駐フックはありません。
+> 上の表は「導入するだけで常時発火する」フックの一覧です。**model-setup にもフックが1つありますが、
+> `/long-run` を起動したときだけ登録される opt-in**（圧縮後にブリーフを文脈へ戻す）なのでここには載せていません。
+> kiro-bridge・agent-review-panel はスキルのみで完結し、フックを持ちません。
 
 ## 導入方法（クイックスタート）
 
@@ -260,7 +262,7 @@ bash 系のため Windows は Git Bash / WSL が必要・`jq` は不要）。**�
 ### docs/ — リポジトリ内ドキュメント
 
 #### [`docs/skills-guide/`](docs/skills-guide/)
-おすすめSkillsガイド（2026年6月動作確認済み）。
+おすすめSkillsガイド（2026-09-04 に配布元を再検証済み）。
 72個紹介された記事から「今すぐ使えるもの」に絞り込み、優先度別・業務タイプ別に整理しています。
 
 #### [`docs/decisions/`](docs/decisions/)

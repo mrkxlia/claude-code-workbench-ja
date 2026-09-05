@@ -30,6 +30,7 @@ CLAUDE.md・スキル・サブエージェントとして常設化するテン�
 | `skills/long-run/` | 長時間自律作業の完走プロトコル（停止条件の閉じた列挙・証拠つき区切り報告） |
 | `skills/verify-fresh/` | 成果物を fresh context の検証エージェントに反証させるスキル |
 | `agents/` | サブエージェント3種（task-worker / fresh-verifier / bulk-scanner） |
+| `hooks/` | `reinject-brief.{sh,ps1}` — `/long-run` 起動時だけ武装する opt-in フック（下記「フック」節） |
 | `.claude-plugin/plugin.json` | プラグインマニフェスト |
 
 ## 9つのルールと、それぞれが塞ぐ失敗モード
@@ -70,7 +71,7 @@ CLAUDE.md・スキル・サブエージェントとして常設化するテン�
 | `fresh-verifier` | 成果物と完了条件だけを受け取り「完了と認めない理由」を反証的に探す検証専用（修正不可） | sonnet |
 | `bulk-scanner` | 一覧化・分類・一次スクリーニングなど機械的な大量スキャン（読み取り専用） | haiku |
 
-サブエージェント（`agents/`）はスキルと同じくプラグイン導入だけで自動配信されます。
+サブエージェント（`agents/`）とフック（`hooks/`）はスキルと同じくプラグイン導入だけで自動配信されます。
 プロファイル追補（`CLAUDE.private.md` / `CLAUDE.company.md`）と `PROMPTS.md` は
 skills/agents/hooks のいずれでもなくプラグインの自動配信対象外のため、**プラグイン導入
 （方法A）の場合もファイルコピー（下記）が必要**です。特に追補のルール14/15
@@ -116,6 +117,9 @@ cp -r plugins/model-setup/skills/verify-fresh ~/.claude/skills/
 # サブエージェントを配置
 mkdir -p ~/.claude/agents && cp -r plugins/model-setup/agents/* ~/.claude/agents/
 
+# フックを配置（long-run のブリーフ再注入。下記「フック」節を参照）
+mkdir -p ~/.claude/hooks && cp plugins/model-setup/hooks/reinject-brief.sh ~/.claude/hooks/
+
 # CLAUDE.md に追記（共通ルール + 会社プロファイル追補。既存ファイルがあれば末尾へ）
 cat plugins/model-setup/CLAUDE.md plugins/model-setup/CLAUDE.company.md >> ~/.claude/CLAUDE.md
 
@@ -126,6 +130,49 @@ cat plugins/model-setup/CLAUDE.md plugins/model-setup/CLAUDE.company.md >> ~/.cl
 私用 PC で git がある場合は `settings.private.json` と `CLAUDE.private.md`、会社 PC では
 `settings.company.json` と `CLAUDE.company.md` を使う（追補はどちらか一方だけ）。
 どちらのプロファイルを選ぶ根拠・effort の考え方は [`MODEL-GUIDE.md`](MODEL-GUIDE.md) を参照。
+
+## フック（`hooks/reinject-brief.{sh,ps1}`）
+
+長時間作業の途中でコンテキストが自動圧縮されると、`CLAUDE.md`（恒久ルール）は再ロードされますが、
+**そのタスク固有のブリーフ（完了条件・スコープ・制約）は要約に溶けて薄れます**。このフックは、
+`/long-run` が固定したブリーフファイル（`docs/long-run/brief.md`、無ければ `.claude/long-run-brief.md`）を
+圧縮直後の文脈へ戻します。ブリーフファイルが無ければ何も出力しません。
+
+**このプラグインは常時発火するフックを持ちません。** 上記フックは `long-run` スキルの frontmatter に
+宣言してあり、**`/long-run` を起動したときだけ登録**され、セッションが終われば外れます。
+そのため `settings.json` を編集する必要はありません（bash が使える環境の場合）。
+
+| 導入経路 | フックを動かすために必要なこと |
+|---|---|
+| A. プラグイン | **なし**。`hooks/` は自動配信され、frontmatter が `${CLAUDE_PLUGIN_ROOT}` 経由で見つけます |
+| B. ファイルコピー | 上記 B の `cp` で `~/.claude/hooks/reinject-brief.sh` に置くだけ。frontmatter がそこにフォールバックします |
+| bash が無い純 PowerShell | frontmatter のフックは動きません。下記のとおり `.ps1` を `settings.json` に配線してください |
+
+### bash が無い Windows 環境（`.ps1` を settings.json に配線する）
+
+`~/.claude/hooks/` に `reinject-brief.ps1` を置き、`~/.claude/settings.json` の `hooks.SessionStart` に
+次のエントリを追記します（既存のキー・エントリは消さないこと）。
+
+```json
+{"hooks":{"SessionStart":[{"matcher":"compact",
+  "hooks":[{"type":"command","command":"powershell -NoProfile -ExecutionPolicy Bypass -File .claude/hooks/reinject-brief.ps1"}]}]}}
+```
+
+- PowerShell 7 がある環境では `powershell` の代わりに `pwsh` を使ってかまいません。
+- `.ps1` は **UTF-8 BOM 付き**のまま配置してください（BOM を外すと PowerShell 5.1 で日本語が文字化けします）。
+- **`settings.json` を手で編集する前にバックアップを取り、編集後に構文を検証してください。**
+  JSON が壊れると、そのファイルのフックがすべて止まります。
+
+```bash
+cp ~/.claude/settings.json ~/.claude/settings.json.bak
+python3 -c "import json;json.load(open('$HOME/.claude/settings.json'));print('JSON OK')"
+```
+
+### 既に導入済みの場合（更新手順）
+
+プラグイン導入なら `claude plugin update model-setup` で `hooks/` も更新されます。
+ファイルコピー導入なら、`skills/long-run` と `hooks/reinject-brief.sh` の2つを上書きコピーしてください
+（frontmatter にフック宣言が入ったのは 3.3.0 からです)。
 
 ## モデル・effort の選び方
 

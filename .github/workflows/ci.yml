@@ -10,6 +10,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # version 差分検査で base ブランチと比較するため全履歴が要る
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
@@ -76,6 +79,149 @@ jobs:
               print("\n".join(bad))
               sys.exit(1)
           print(f"OK: SKILL.md {checked} 件")
+          PY
+
+      - name: agent frontmatter 検査（name/description/tools/model/color の存在と型）
+        run: |
+          python3 - <<'PY'
+          import pathlib
+          import sys
+
+          import yaml
+
+          REQUIRED = ("name", "description", "tools", "model", "color")
+          OPTIONAL = ("hooks",)   # サブエージェント実行中だけ有効なフック宣言（任意）
+          EXCLUDE_PARTS = {"examples", "reimpl", "build", "dist", "node_modules"}
+          bad = []
+          checked = 0
+          for p in sorted(pathlib.Path(".").glob("**/agents/*.md")):
+              if EXCLUDE_PARTS & set(p.parts):
+                  continue
+              checked += 1
+              text = p.read_text(encoding="utf-8")
+              if not text.startswith("---\n"):
+                  bad.append(f"{p}: frontmatter が先頭にない")
+                  continue
+              end = text.find("\n---", 4)
+              if end == -1:
+                  bad.append(f"{p}: frontmatter の終端 '---' が見つからない")
+                  continue
+              try:
+                  meta = yaml.safe_load(text[4:end]) or {}
+              except Exception as e:
+                  bad.append(f"{p}: frontmatter パース失敗: {e}")
+                  continue
+              for key in REQUIRED:
+                  if key not in meta:
+                      bad.append(f"{p}: 必須キー '{key}' がない")
+                  elif not isinstance(meta[key], str) or not meta[key].strip():
+                      bad.append(f"{p}: '{key}' が空でない文字列でない")
+              for key in meta:
+                  if key not in REQUIRED + OPTIONAL:
+                      bad.append(f"{p}: 未知のキー '{key}'（許可: {REQUIRED + OPTIONAL}）")
+          if bad:
+              print("\n".join(bad))
+              sys.exit(1)
+          print(f"OK: agent {checked} 件")
+          PY
+
+      - name: shellcheck（plugins 配下の .sh）
+        run: |
+          # ubuntu-latest には shellcheck がプリインストールされている。
+          # SC2086（未クォート変数）は info 扱いだが実バグ種別なので拾いたい。よって severity=info とし、
+          # 唯一の既知の誤検出 SC1003（`tr '\\' '/'` を「単一引用符のエスケープ忘れ」と誤報告する）だけ除外する。
+          files=$(find plugins -name '*.sh' | sort)
+          echo "対象: $(echo "$files" | wc -l) 件"
+          shellcheck --severity=info --exclude=SC1003 $files
+
+      - name: BOM 検査（.ps1 は UTF-8 BOM 必須・.sh は BOM 禁止）
+        run: |
+          python3 - <<'PY'
+          import pathlib
+          import sys
+
+          BOM = b"\xef\xbb\xbf"
+          bad = []
+          n_ps1 = n_sh = 0
+          for p in sorted(pathlib.Path("plugins").rglob("*.ps1")):
+              n_ps1 += 1
+              if not p.read_bytes().startswith(BOM):
+                  bad.append(f"{p}: UTF-8 BOM がない（PowerShell 5.1 で日本語が文字化けする）")
+          for p in sorted(pathlib.Path("plugins").rglob("*.sh")):
+              n_sh += 1
+              if p.read_bytes().startswith(BOM):
+                  bad.append(f"{p}: UTF-8 BOM がある（bash が shebang を認識できなくなる）")
+          if bad:
+              print("\n".join(bad))
+              sys.exit(1)
+          print(f"OK: .ps1 {n_ps1} 件 / .sh {n_sh} 件")
+          PY
+
+      - name: plugin.json version 差分検査（規約5 の機械化）
+        if: github.event_name == 'pull_request'
+        run: |
+          python3 - <<'PY'
+          import os
+          import subprocess
+          import sys
+
+          base = os.environ["GITHUB_BASE_REF"]
+          subprocess.run(["git", "fetch", "--quiet", "origin", base], check=True)
+          changed = subprocess.run(
+              ["git", "diff", "--name-only", f"origin/{base}...HEAD"],
+              capture_output=True, text=True, check=True,
+          ).stdout.split()
+
+          # skills/ agents/ hooks/ は既定探索パス＝プラグイン導入で自動配信される（規約5）
+          DELIVERED = ("skills/", "agents/", "hooks/")
+          need, bumped = set(), set()
+          for f in changed:
+              parts = f.split("/")
+              if len(parts) < 3 or parts[0] != "plugins":
+                  continue
+              plugin, rest = parts[1], "/".join(parts[2:])
+              if rest.startswith(DELIVERED):
+                  need.add(plugin)
+              if rest == ".claude-plugin/plugin.json":
+                  bumped.add(plugin)
+
+          missing = sorted(need - bumped)
+          if missing:
+              for m in missing:
+                  print(f"plugins/{m}: skills/agents/hooks を変更したのに "
+                        f".claude-plugin/plugin.json の version を上げていない（規約5）")
+              sys.exit(1)
+          print(f"OK: version bump が要るプラグイン {len(need)} 件すべて更新済み")
+          PY
+
+      - name: 内部リンク切れ検査（Markdown の相対リンク）
+        run: |
+          python3 - <<'PY'
+          import pathlib
+          import re
+          import sys
+          import urllib.parse
+
+          EXCLUDE_PARTS = {"node_modules", "build", "dist", ".git"}
+          bad = []
+          checked = 0
+          for p in sorted(pathlib.Path(".").rglob("*.md")):
+              if EXCLUDE_PARTS & set(p.parts):
+                  continue
+              checked += 1
+              for m in re.finditer(r"\[[^\]]*\]\(([^)]+)\)", p.read_text(encoding="utf-8")):
+                  target = m.group(1).strip().split()[0]
+                  if target.startswith(("http://", "https://", "mailto:", "#", "<")):
+                      continue
+                  path = urllib.parse.unquote(target.split("#")[0])
+                  if not path:
+                      continue
+                  if not (p.parent / path).exists():
+                      bad.append(f"{p}: リンク先が存在しない -> {target}")
+          if bad:
+              print("\n".join(bad))
+              sys.exit(1)
+          print(f"OK: Markdown {checked} 件の相対リンク")
           PY
 
   plugin-validate:

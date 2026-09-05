@@ -26,7 +26,7 @@ claude-code-workbench-ja/
 ├── CLAUDE.md                        # このファイル
 ├── LICENSE                          # MIT License
 ├── .gitattributes                   # git 属性定義
-├── .github/workflows/ci.yml         # CI（JSON 構文検証・SKILL.md 形式検査＝必須、claude plugin validate＝任意）
+├── .github/workflows/ci.yml         # CI（JSON 構文・SKILL.md 形式・agent frontmatter・shellcheck・.ps1 の BOM・version 差分・内部リンク＝必須、claude plugin validate＝任意）
 ├── .claude-plugin/
 │   └── marketplace.json             # プラグインマーケットプレイス定義（名前: workbench-ja、source は ./plugins/<name>）
 ├── plugins/                         # プラグイン導入可能な5セクション（marketplace.json 登録対象・公式標準レイアウト）
@@ -35,9 +35,9 @@ claude-code-workbench-ja/
 │   │   ├── CLAUDE.md                #     コピーして使う CLAUDE.md サンプル（コードモード）
 │   │   ├── CLAUDE.task.md           #     コピーして使う CLAUDE.md サンプル（成果物モード）
 │   │   ├── .claude-plugin/plugin.json
-│   │   ├── skills/                  #     7種（feature-pipeline / task-pipeline / pipeline-setup〔モード選択・references 分冊〕/ build-with-tests / pipeline-improve / clarify / notes）
+│   │   ├── skills/                  #     7種（feature-pipeline / task-pipeline / pipeline-setup〔モード選択・references 分冊。spec-summary.md に SPEC 抽出規則〕/ build-with-tests / pipeline-improve / clarify / notes）
 │   │   ├── agents/                  #     8種（共有4: researcher / requirements-writer / brief-writer / final-reviewer＋コード専用3: backend/frontend-builder / test-verifier＋成果物専用1: deliverable-builder）
-│   │   ├── hooks/                   #     4種（block-secrets-commit・guard-builder-writes・guard-deliverable-writes・spec-sync-reminder。導入先へコピーする資材＝非自動配線）
+│   │   ├── hooks/                   #     6種（block-secrets-commit・guard-builder-writes・guard-deliverable-writes・guard-builder-paths・inject-spec-summary・spec-sync-reminder。導入先へコピーする資材＝非自動配線）
 │   │   └── setup/settings.json      #     コピー導入用テンプレート（setup がモードに応じて guard を絞る）
 │   ├── codex-bridge/                #   Codex にレビュー・実装・相談を依頼するスキル＆エージェント
 │   │   ├── README.md
@@ -66,12 +66,17 @@ claude-code-workbench-ja/
 │       ├── settings.company.json    #     会社PC向け設定サンプル（sonnet + xhigh）
 │       ├── .claude-plugin/plugin.json
 │       ├── skills/                  #     6種（task-brief / backlog-loop / pr-merge / fan-out / long-run / verify-fresh）
-│       └── agents/                  #     3種（task-worker / fresh-verifier / bulk-scanner）
+│       ├── agents/                  #     3種（task-worker / fresh-verifier / bulk-scanner）
+│       └── hooks/                  #     reinject-brief（long-run の frontmatter が起動時だけ登録する opt-in。常時発火しない）
 └── docs/                            # リポジトリ内ドキュメント置き場
     ├── README.md
     ├── decisions/                   #   日付つきの決定記録・監査記録（追記のみ。覆すときは新記録を足す）
     │   ├── 2026-09-03-fable-5-1-audit.md                      # Fable 5.1 自身による model-setup 監査
     │   └── 2026-09-03-long-run-constraints-and-spec-load.md  # 序盤制約の保持・SPEC.md 必須ロードの構造解
+    ├── lessons.md                   #   過去 PR から蒸留した「繰り返さない判断」（根拠の PR 番号つき）
+    ├── evals/                       #   主要スキルの期待挙動シナリオ（Sonnet 5 / Opus 5 のパリティ実測用）
+    │   ├── README.md                #     走らせ方・結果記録表・Markdown 形式である理由
+    │   └── {task-brief,verify-fresh,long-run,review-panel}.md
     ├── backlog-2026-09.md           #   Sonnet/Opus 実行用ブリーフ（完了条件・検証方法つき）
     ├── pipeline-spec-alignment-proposal.html  #   パイプラインと仕様整合の提案資料（歴史的決定記録）
     └── skills-guide/                #   おすすめSkillsガイド（優先度・業務タイプ別）

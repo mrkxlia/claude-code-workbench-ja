@@ -1,6 +1,8 @@
 # Claude Code おすすめSkills ガイド
 
-> 2026年6月時点の動作確認済み情報をもとに整理。72個紹介された記事から「今すぐ使えるもの」に絞り込み。
+> **2026-09-04 に外部リポジトリを再検証**（初版は2026年6月。72個紹介された記事から「今すぐ使えるもの」に絞り込み）。
+> スター数・スキル名はこの日に各リポジトリで実際に確認した値。**配布元の改名・移動は頻繁に起きる**ため、
+> 導入前に `/plugin` かリポジトリのファイル一覧で現在の名前を確認すること。
 
 ---
 
@@ -82,10 +84,13 @@ Anthropic公式リポジトリのスキル。安定性が最も高く、今す�
 |--------|------|-----------|
 | **Brainstorming** | アイデア→設計書を9ステップで構造化。承認まで実装しない | `obra/superpowers` |
 | **Grill Me** | 計画の穴を質問攻めで事前に全部潰す | `mattpocock/skills` → `grill-me` |
-| **to-prd** | 会話の文脈から企画書(PRD)を自動生成 | `mattpocock/skills` → `to-prd` |
+| **to-spec** | 会話の文脈から仕様書を自動生成 | `mattpocock/skills` → `skills/engineering/to-spec` |
 | **Doc Co-Authoring** | 情報収集→ドラフト→読者テストの3段階で文書作成 | `doc-coauthoring@skills` |
 
-> **旧名称に注意**: 記事では `Write a PRD` と紹介されているが、現在は `to-prd` に改名済み。
+> **旧名称に注意**: 記事の `Write a PRD` → 一時 `to-prd` → **現在は `to-spec`**（2026-09-04 確認）。
+> mattpocock/skills は 2026-09 時点で `skills/{engineering,productivity,misc,in-progress}/` の入れ子構成に
+> なっている。`misc/` は「作者が手元に残しているが plugin では配布しない」、`in-progress/` は
+> 「ベータ。予告なく変わる・消える」と明記されているので、常用するなら engineering / productivity から選ぶ。
 
 ### デザイン・資料作成が多い人
 
@@ -100,15 +105,15 @@ Anthropic公式リポジトリのスキル。安定性が最も高く、今す�
 
 | スキル | 用途 | リポジトリ | 現在の名前 |
 |--------|------|-----------|-----------|
-| **TDD** | テスト駆動開発のRed-Green-Refactorループを自動化 | `mattpocock/skills` | `tdd` |
+| **TDD** | テスト駆動開発のRed-Green-Refactorループを自動化 | `mattpocock/skills` | `engineering/tdd`（superpowers 版は `test-driven-development`） |
 | **Systematic Debugging** | バグを4フェーズで体系的に解決（3回失敗でアーキテクチャ見直し） | `obra/superpowers` | `systematic-debugging` |
 | **Code Review** | レビュー送る側・受ける側の両観点を構造化 | `obra/superpowers` | `requesting/receiving-code-review` |
-| **Improve Codebase Architecture** | ADRを参照しながら設計品質を改善 | `mattpocock/skills` | `improve-codebase-architecture` |
-| **Setup Pre-Commit** | コミット前の品質チェックを自動設定 | `mattpocock/skills` | `setup-pre-commit` |
-| **Git Guardrails** | 危険なGitコマンド防止・ブランチ保護ルールを自動構築 | `mattpocock/skills` | `git-guardrails-claude-code` |
+| **Improve Codebase Architecture** | ADRを参照しながら設計品質を改善 | `mattpocock/skills` | `engineering/improve-codebase-architecture` |
+| **Setup Pre-Commit** | コミット前の品質チェックを自動設定 | `mattpocock/skills` | `misc/setup-pre-commit`（**plugin では配布されない**。手動コピーで使う） |
+| **Git Guardrails** | 危険なGitコマンド防止・ブランチ保護ルールを自動構築 | `mattpocock/skills` | `misc/git-guardrails-claude-code`（**plugin では配布されない**） |
 | **Web Artifacts Builder** | React/TypeScript/TailwindでWebアプリをHTMLとして生成 | `web-artifacts-builder@skills` | — |
 | **Ralph Wiggum** | 完了するまで同じプロンプトを stop-hook で再投入する自走ループ（数時間規模のタスクリスト消化向け。最大反復回数を必ず指定する） | `anthropics/claude-code` → `plugins/ralph-wiggum` | `ralph-loop` |
-| **Superpowers（一括）** | 上記含む14スキルをまとめて導入 | `obra/superpowers` v5.1.0 | — |
+| **Superpowers（一括）** | 上記含む14スキルをまとめて導入 | `obra/superpowers` | 14スキルであることは 2026-09-04 に確認（版数は未確認） |
 
 ---
 
@@ -117,24 +122,26 @@ Anthropic公式リポジトリのスキル。安定性が最も高く、今す�
 | スキル | 用途 | 入手先 |
 |--------|------|-------|
 | **Algorithmic Art** | p5.jsでインタラクティブなアートを生成 | `algorithmic-art@skills` |
-| **to-issues** | 企画書をタスクチケットに自動変換（垂直スライス設計） | `mattpocock/skills` |
+| **to-tickets** | 仕様をタスクチケットに自動変換（垂直スライス設計）。旧 `to-issues` | `mattpocock/skills` → `engineering/to-tickets` |
 | **writing-plans** | 企画書から2〜5分単位の実行計画を自動生成 | `obra/superpowers` |
-| **Migrate to Shoehorn** | フレームワーク移行の計画・実行ガイド | `mattpocock/skills` |
-| **Scaffold Exercises** | コード演習問題・技術研修素材を自動生成 | `mattpocock/skills` |
-| **Triage** | バグ報告の分類・優先順位付けを自動化 | `mattpocock/skills` |
+| **Migrate to Shoehorn** | フレームワーク移行の計画・実行ガイド | `mattpocock/skills` → `misc/migrate-to-shoehorn`（plugin 非配布） |
+| **Scaffold Exercises** | コード演習問題・技術研修素材を自動生成 | `mattpocock/skills` → `misc/scaffold-exercises`（plugin 非配布） |
+| **Triage** | バグ報告の分類・優先順位付けを自動化 | `mattpocock/skills` → `engineering/triage` |
 | **Git Work Trees** | 複数ブランチの並列作業環境を自動構築 | `obra/superpowers` → `using-git-worktrees` |
-| **write-a-skill** | スキルの構造・description の書き方を学べる | `mattpocock/skills` |
+| **writing-skills** | スキルの構造・description の書き方を学べる。mattpocock の `write-a-skill` は消滅したため superpowers 版に差し替え | `obra/superpowers` → `writing-skills` |
 
 ---
 
 ## 入手先リポジトリ
 
+スター数は **2026-09-04 に確認した値**（変動が速いので、参考値として見ること）。
+
 | リポジトリ | スター数 | 特徴 |
 |-----------|---------|------|
-| [anthropics/skills](https://github.com/anthropics/skills) | 121k+ | Anthropic公式。安定性最高 |
-| [mattpocock/skills](https://github.com/mattpocock/skills) | 16.5k+ | 実務向けの小さく組み合わせやすいスキル集 |
-| [obra/superpowers](https://github.com/obra/superpowers) | 219k+ | エンジニアリング全般。v5.1.0（2026年5月）も更新中 |
-| [skillsmp.com](https://skillsmp.com) | — | 96,000+スキルのマーケットプレイス。発見用に使う |
+| [anthropics/skills](https://github.com/anthropics/skills) | 173.9k | Anthropic公式。安定性最高。`skills/` 直下にフラットに19スキル |
+| [mattpocock/skills](https://github.com/mattpocock/skills) | 249.2k | 実務向けの小さく組み合わせやすいスキル集。`skills/{engineering,productivity,misc,in-progress}/` の入れ子構成 |
+| [obra/superpowers](https://github.com/obra/superpowers) | 281.7k | エンジニアリング全般。`skills/` 直下に14スキル |
+| [skillsmp.com](https://skillsmp.com) | — | 2,000,000+スキルのマーケットプレイス。発見用に使う |
 
 ---
 
@@ -143,10 +150,15 @@ Anthropic公式リポジトリのスキル。安定性が最も高く、今す�
 | スキル | 問題 |
 |--------|------|
 | Auto-Commit Messages（anthropics/skills） | フォルダが存在しない。リンク切れ |
-| Request Refactor Plan（mattpocock） | 公式で deprecated。`diagnose` / `zoom-out` を使う |
+| Request Refactor Plan（mattpocock） | 削除済み。後継は `engineering/diagnosing-bugs`（旧称 `diagnose`）。`zoom-out` は現在どのフォルダにも無い |
 | edit-article（mattpocock） | 現在のリポジトリに存在しない |
 | design-an-interface（mattpocock） | 現在のリポジトリに存在しない |
 | obsidian-vault（mattpocock） | 現在のリポジトリに存在しない |
+| write-a-skill（mattpocock） | 2026-09-04 時点で存在しない。`obra/superpowers` の `writing-skills` を使う |
+| to-prd / to-issues / diagnose / zoom-out（mattpocock） | 改名または削除（→ `to-spec` / `to-tickets` / `diagnosing-bugs` / 該当なし） |
+
+> mattpocock/skills の `deprecated/` は空で、README に「引退したスキルは削除し、削除の変更履歴で
+> 後継を示す」と書かれている。つまり**名前が消えていたら改名か廃止**であり、リポジトリに残らない。
 
 ---
 

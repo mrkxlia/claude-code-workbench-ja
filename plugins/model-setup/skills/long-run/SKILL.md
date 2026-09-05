@@ -8,6 +8,15 @@ description: >-
   （承認は着手時の1回だけ。backlog-loop 起動中はそちらの承認ゲートが優先）。
   計画ファイルだけ作って停止するのは本体 Plan モードに任せる。
 argument-hint: "<タスク内容>"
+# 圧縮でブリーフが薄れるのを防ぐフック。このスキルを起動したときだけ登録され、
+# セッション終了時に外れる（settings.json の編集は不要）。詳細は中核ルール5。
+# プラグイン導入なら ${CLAUDE_PLUGIN_ROOT}、コピー導入なら ~/.claude/hooks/ の順に探す。
+hooks:
+  SessionStart:
+    - matcher: "compact"
+      hooks:
+        - type: command
+          command: bash -c 'h="${CLAUDE_PLUGIN_ROOT:-}/hooks/reinject-brief.sh"; [ -f "$h" ] || h="$HOME/.claude/hooks/reinject-brief.sh"; [ -f "$h" ] && exec bash "$h"; exit 0'
 ---
 
 # long-run — 長時間自律作業の完走プロトコル
@@ -67,10 +76,13 @@ argument-hint: "<タスク内容>"
    消える）に固定し、**各区切りで再読してから**次の作業に進む。長い作業では序盤の制約が
    薄れるため、構造で保持する。作業中に制約が増えたら、その場でメモファイルを更新する（ルール8）。
    コンテキストの自動圧縮が起きても、CLAUDE.md は再ロードされるがブリーフは再ロードされない。
-   手動で `/compact` するときは `PROMPTS.md` #10 の保持指示を渡す（**自動圧縮には効かない**）。
-   圧縮後にメモファイルを自動で再注入する SessionStart フック（`matcher: compact`）は設計済み
-   （`docs/decisions/2026-09-03-long-run-constraints-and-spec-load.md`）だが**未実装**（backlog B-1）。
-   実装されるまでは、区切りごとの再読がこのルールの主手段。
+   手動で `/compact` するときは `PROMPTS.md` #10 の保持指示を渡す。
+   **自動圧縮に対しては、このスキルの frontmatter が `SessionStart`（`matcher: compact`）フックを
+   登録し、圧縮直後にメモファイルを文脈へ戻す**（`hooks/reinject-brief.sh`。スキルを起動したときだけ
+   武装し、settings.json の編集は不要）。メモファイルが無ければ何もしないので、固定を怠ると効かない。
+   bash が無い純 PowerShell 環境ではこのフックが動かないため、`reinject-brief.ps1` を settings.json に
+   配線する（model-setup/README.md「フック」節）。設計の経緯は
+   `docs/decisions/2026-09-03-long-run-constraints-and-spec-load.md`。
 
 6. **最終サマリは経過を見ていない読者向けに書く。** 結論（何が完了し、何が残ったか）を
    先頭に、完全な文で。作業中に自分が作った略語・ラベル・矢印つなぎを持ち込まない。
