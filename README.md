@@ -70,6 +70,7 @@ flowchart TD
 |---|---|---|---|
 | codex-bridge | gen-agents-md | セッション開始 | CLAUDE.md 等から AGENTS.md を自動生成・同期（Codex にも同じルールを効かせる） |
 | pipeline | block-secrets-commit / guard-builder-writes / guard-deliverable-writes / guard-builder-paths / inject-spec-summary / spec-sync-reminder | コミット前／Edit・Write 前／セッション開始・サブエージェント開始・Stop | 機密のコミット防止、担当外・出力先外への書き込み防止（`guard-builder-paths` はビルダーの越境を exit 2 で拒否）、SPEC.md の確定要件の注入、仕様更新漏れの通知（guard はモードに応じて setup が配線） |
+| feedback-rules | feedback-hook（inject / guard / stop-check の3モード） | プロンプト送信時／Bash・Edit・Write 前／Stop | 繰り返し指摘された確定ルール（count 3 以上）を毎ターン注入し、違反しそうなツール実行を count に応じて ask / deny で止め、直すまでターンを終わらせない。**ルールが1件も無い間は素通り**する |
 | self-correct | loop-stop-check / guard-ground-truth | Stop／Edit・Write 前 | 自己修正ループが未完了のまま停止するのを止め、上限到達時は人間への引き継ぎを促す。判定の根拠（元資料・仕様・fixture）への書き込みを exit 2 で拒否する。**どちらも状態ファイルが ACTIVE のときだけ発火**し、ループを回していないときは素通りする |
 
 > 上の表は「導入するだけで常時発火する」フックの一覧です。**model-setup にもフックが1つありますが、
@@ -80,7 +81,7 @@ flowchart TD
 
 ### 方法1: プラグインで導入する（最も簡単）
 
-Claude Code でそのまま実行します（clone 不要）。現在7つのプラグインを配信しています:
+Claude Code でそのまま実行します（clone 不要）。現在8つのプラグインを配信しています:
 
 ```
 /plugin marketplace add mrkxlia/claude-code-workbench-ja
@@ -91,6 +92,7 @@ Claude Code でそのまま実行します（clone 不要）。現在7つのプ�
 /plugin install model-setup@workbench-ja
 /plugin install codebase-setup@workbench-ja
 /plugin install self-correct@workbench-ja
+/plugin install feedback-rules@workbench-ja
 ```
 
 - **pipeline** — 新しいセッションで `/pipeline:pipeline-setup` を実行すると、モード選択
@@ -133,6 +135,13 @@ Claude Code でそのまま実行します（clone 不要）。現在7つのプ�
   止める Stop ゲート・判定の根拠への書き込み拒否）はプラグイン導入で自動配線され、**ループを
   回していないときは素通り**します。本体の `/goal` は再実装せず、ループ外側の完了判定として
   併用します。詳しくは [self-correct/README.md](plugins/self-correct/) を参照。
+- **feedback-rules** — 導入すると `/feedback-rule`（人間の指摘を `~/.claude/feedback/` の1ファイルにして
+  count を1つ上げ、機械的に検知できる形に翻訳）・`/feedback-audit`（違反ログを集計して形骸化ルール・
+  誤検知・昇格候補を棚卸し）・`/feedback-setup`（導入）が使えます。**同じ指摘の回数（count）が
+  そのまま強制力**になり、1〜2回目は warn、3回目から ask / block、5回目で deny に自動で上がります
+  （count を上げられるのは人間だけで、フックは違反をログに記録するだけ）。フック3種はプラグイン
+  導入で自動配線され、**ルールが1件も無い間は素通り**します。詳しくは
+  [feedback-rules/README.md](plugins/feedback-rules/) を参照。
 
 ### 方法2: git clone してコピーする（全セクション共通）
 
@@ -168,6 +177,16 @@ cp -r /tmp/workbench/plugins/self-correct/agents/* .claude/agents/
 cp /tmp/workbench/plugins/self-correct/hooks/*.sh .claude/hooks/ && chmod +x .claude/hooks/*.sh
 #   フック配線は setup/settings.json を .claude/settings.json へマージ（既存の hooks は上書きしない）
 #   導入後は対象リポジトリで /self-correct-setup を実行する
+
+# feedback-rules — 指摘の永続化と段階的強制のスキル3種＋エージェント1種＋フックをプロジェクトへ
+mkdir -p .claude/skills .claude/agents .claude/hooks
+cp -r /tmp/workbench/plugins/feedback-rules/skills/* .claude/skills/
+cp -r /tmp/workbench/plugins/feedback-rules/agents/* .claude/agents/
+cp /tmp/workbench/plugins/feedback-rules/hooks/feedback-hook.sh \
+   /tmp/workbench/plugins/feedback-rules/hooks/feedback_rules.py .claude/hooks/
+chmod +x .claude/hooks/feedback-hook.sh
+#   フック配線は setup/settings.json を .claude/settings.json へマージ（既存の hooks は上書きしない）
+#   導入後は /feedback-setup で置き場所を決め、/feedback-rule で最初のルールを作る
 ```
 
 各セクションのカスタマイズ方法は、それぞれの README を参照してください。私用PC・会社PCでそれぞれ
@@ -193,6 +212,8 @@ cp /tmp/workbench/plugins/self-correct/hooks/*.sh .claude/hooks/ && chmod +x .cl
 | どこに何があるか分からないリポジトリの地図が欲しい | codebase-setup（`/codebase-map`） | 1行説明つきの目次。地図が要らないリポジトリには「作らない」と答える |
 | モデルを更新したので古い指示を整理したい | codebase-setup（`/context-audit`） | 「正しいか」でなく「毎回載せる価値があるか」で5分類。承認前に変更しない |
 | 作る→検査→直す→再検査を人間が毎回指示せずに回したい | **self-correct**（`/self-correct`） | Builder と Judge を別コンテキスト・別ツール権限に分離。停止条件と Ground Truth まで設計する |
+| 同じ指摘を何度もしている／CLAUDE.md に書いても守られない | **feedback-rules**（`/feedback-rule`） | 指摘をファイル化し、指摘回数に応じて warn → ask → deny と強制力が上がる。count を上げるのは人間だけ |
+| ルールが増えすぎた／どのルールが効いているか分からない | feedback-rules（`/feedback-audit`） | 発火ログを集計して形骸化・誤検知・昇格候補を仕分け。削除より無効化を優先し記録を残す |
 | レビュー役（Judge）自体が信用できるか確かめたい | self-correct（`/judge-eval`） | 正解つきサンプルで見逃し・過検出・重大度誤り・根拠欠落を採点。本番投入前の必須項目 |
 
 > パイプラインのサブスキル（`clarify`・`build-with-tests` 等）は単体でも使えます。導入は各プラグイン README の
@@ -242,7 +263,7 @@ UI 試作では避けて軽量な `build-with-tests` を使う、です（参考
 （コピーして使うテンプレートや独立ツールが増えたら `templates/`・`tools/` を追加する規約になっています。
 詳細なディレクトリ構成は [`CLAUDE.md`](CLAUDE.md) 参照）。
 
-### plugins/ — プラグイン導入可能な7セクション
+### plugins/ — プラグイン導入可能な8セクション
 
 #### [`plugins/model-setup/`](plugins/model-setup/)
 モデル運用テンプレート（旧名 sonnet-setup。Opus 5 + Sonnet 5 の私用PC / Sonnet 単独の会社PC
@@ -334,6 +355,24 @@ CLAUDE.md の行動ルールを承認ゲート付きで導入します。フッ�
 根拠に基づく検査は `loop-judge` が担当。設計の経緯は
 [`docs/decisions/2026-09-05-self-correction-loop.md`](docs/decisions/2026-09-05-self-correction-loop.md)）。
 **プラグイン1コマンドで導入可能**（上の「導入方法」参照）。
+
+#### [`plugins/feedback-rules/`](plugins/feedback-rules/)
+人間からの**指摘そのものをファイルとして永続化**し、同じ指摘を受けた回数（`count`）に応じて
+フックの強制力を段階的に上げる基盤。スキル3種・サブエージェント1種・フック3種。
+CLAUDE.md に書いたルールはセッションが長くなると効き目が薄れ、そもそも「何回言ったか」が
+どこにも残りません。そこで 1指摘 = 1ファイル（`~/.claude/feedback/[topic].md`）で記録し、
+frontmatter の `count` から severity を自動決定します（**1〜2回目は warn＝記録するが縛らない、
+3〜4回目は ask / block、5回目以降は deny**）。フックは3段構えで、`inject`（UserPromptSubmit）が
+確定ルールを count 降順・3000字予算で注入して**読ませ**、`guard`（PreToolUse）が Bash・
+ファイル編集を**やらせず**、`stop-check`（Stop）が変更ファイルを検査して**直させます**。
+**違反を検知しても count は自動で上がりません**（`.violations.jsonl` に記録するだけ）。
+「Claude がルールを破ろうとした」ことと「人間がもう一度指摘した」ことは別であり、ルールの
+重み付けの権限は人間側に残すためです。誤検知の逃がし道として `unless`・`severity` 明示・
+`enabled: false`・`expires` を用意し、`stats` が発火ゼロの形骸化ルールと昇格候補を提案します。
+確定ルールは `sync-rules` で本体ネイティブの `.claude/rules/`（`paths` frontmatter で対象
+ファイルに触るときだけ読まれる）へ書き出せます。**プラグイン1コマンドで導入可能**（上の
+「導入方法」参照。設計の経緯と先行事例の調査は
+[`docs/decisions/2026-09-05-feedback-rules.md`](docs/decisions/2026-09-05-feedback-rules.md)）。
 
 ### docs/ — リポジトリ内ドキュメント
 

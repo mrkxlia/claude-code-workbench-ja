@@ -16,7 +16,7 @@
 ### 私用 PC（Opus 5 + Sonnet 5・git あり・Codex 不使用）
 
 - settings: `plugins/model-setup/settings.private.json`（`opusplan` + `xhigh`）
-- workbench-ja のプラグイン: `model-setup`（`pipeline` は必要に応じて）
+- workbench-ja のプラグイン: `model-setup`（`pipeline` は必要に応じて）。同じ指摘を繰り返している自覚があるなら `feedback-rules` も（指摘をファイル化し、回数に応じて hook が段階的に止める）
 - 公式プラグイン: `commit-commands`・`pr-review-toolkit`・`skill-creator`・`claude-md-management`
 - `codex-bridge` は導入**しない**（Codex CLI を使っていないため）
 
