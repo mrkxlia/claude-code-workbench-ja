@@ -16,7 +16,7 @@ Claude Code のテーマから外れる独立ツール・サンプルは別リ�
 
 ## ディレクトリ構成
 
-トップレベルは **plugins/**（プラグイン導入可能な6セクション）・**docs/**（リポジトリ内ドキュメント）の2分類。
+トップレベルは **plugins/**（プラグイン導入可能な7セクション）・**docs/**（リポジトリ内ドキュメント）の2分類。
 コピーして使うテンプレートや独立ツールが増えたら `templates/`・`tools/` を追加する（規約1）。
 ルートの `.claude-plugin/` は分類対象外（規約1の例外、現位置維持）。
 
@@ -29,7 +29,7 @@ claude-code-workbench-ja/
 ├── .github/workflows/ci.yml         # CI（JSON 構文・SKILL.md 形式〔公式ガイド準拠〕・agent frontmatter・shellcheck・.ps1 の BOM・version 差分・内部リンク＝必須、claude plugin validate＝任意）
 ├── .claude-plugin/
 │   └── marketplace.json             # プラグインマーケットプレイス定義（名前: workbench-ja、source は ./plugins/<name>）
-├── plugins/                         # プラグイン導入可能な6セクション（marketplace.json 登録対象・公式標準レイアウト）
+├── plugins/                         # プラグイン導入可能な7セクション（marketplace.json 登録対象・公式標準レイアウト）
 │   ├── pipeline/                    #   コード開発（feature-pipeline）と成果物作成（task-pipeline）を統合したパイプラインテンプレート
 │   │   ├── README.md
 │   │   ├── CLAUDE.md                #     コピーして使う CLAUDE.md サンプル（コードモード）
@@ -60,25 +60,34 @@ claude-code-workbench-ja/
 │   │   ├── .claude-plugin/plugin.json
 │   │   ├── skills/                  #     3種（codebase-onboard〔明示専用・references 分冊: settings-recipes / lsp-plugins〕/ codebase-map / context-audit）
 │   │   └── agents/                  #     2種（subtree-surveyor / instruction-auditor。いずれも read-only。フックは持たない）
-│   └── model-setup/                 #   モデル運用テンプレート（旧名 sonnet-setup。Opus 5 + Sonnet 5 / Sonnet 単独の2プロファイル、9ルール＋追補＋スキル6種＋エージェント3種）
+│   ├── model-setup/                 #   モデル運用テンプレート（旧名 sonnet-setup。Opus 5 + Sonnet 5 / Sonnet 単独の2プロファイル、9ルール＋追補＋スキル6種＋エージェント3種）
+│   │   ├── README.md
+│   │   ├── CLAUDE.md                #     コピペ用テンプレート本体（9つの行動ルール・共通基盤）
+│   │   ├── CLAUDE.private.md        #     プロファイル追補（Opus+Sonnet・私用PC）ルール10〜14
+│   │   ├── CLAUDE.company.md        #     プロファイル追補（Sonnet単独・会社PC）ルール10〜15
+│   │   ├── MODEL-GUIDE.md           #     モデル仕様・effort選定・プロファイル・Fable 5.1 パリティマップ・AIDLC 簡易版・Fable 本人にやらせる仕事
+│   │   ├── PROMPTS.md               #     都度貼りプロンプト集（Plan モード用初回テンプレート・公式スニペット翻案）
+│   │   ├── settings.private.json    #     私用PC向け設定サンプル（opusplan + xhigh）
+│   │   ├── settings.company.json    #     会社PC向け設定サンプル（sonnet + xhigh）
+│   │   ├── .claude-plugin/plugin.json
+│   │   ├── skills/                  #     6種（task-brief / backlog-loop / pr-merge / fan-out / long-run / verify-fresh）
+│   │   ├── agents/                  #     3種（task-worker / fresh-verifier / bulk-scanner）
+│   │   └── hooks/                  #     reinject-brief（long-run の frontmatter が起動時だけ登録する opt-in。常時発火しない）
+│   └── self-correct/                #   自己修正ループ（作る役と検査する役を分離し、FAIL 箇所だけ直して再検査する）
 │       ├── README.md
-│       ├── CLAUDE.md                #     コピペ用テンプレート本体（9つの行動ルール・共通基盤）
-│       ├── CLAUDE.private.md        #     プロファイル追補（Opus+Sonnet・私用PC）ルール10〜14
-│       ├── CLAUDE.company.md        #     プロファイル追補（Sonnet単独・会社PC）ルール10〜15
-│       ├── MODEL-GUIDE.md           #     モデル仕様・effort選定・プロファイル・Fable 5.1 パリティマップ・AIDLC 簡易版・Fable 本人にやらせる仕事
-│       ├── PROMPTS.md               #     都度貼りプロンプト集（Plan モード用初回テンプレート・公式スニペット翻案）
-│       ├── settings.private.json    #     私用PC向け設定サンプル（opusplan + xhigh）
-│       ├── settings.company.json    #     会社PC向け設定サンプル（sonnet + xhigh）
+│       ├── CLAUDE.md                #     コピーして使う CLAUDE.md サンプル（行動ルール・停止ルール）
 │       ├── .claude-plugin/plugin.json
-│       ├── skills/                  #     6種（task-brief / backlog-loop / pr-merge / fan-out / long-run / verify-fresh）
-│       ├── agents/                  #     3種（task-worker / fresh-verifier / bulk-scanner）
-│       └── hooks/                  #     reinject-brief（long-run の frontmatter が起動時だけ登録する opt-in。常時発火しない）
+│       ├── skills/                  #     3種（self-correct〔references 分冊: ground-truth / criteria / handoff〕/ judge-eval / self-correct-setup〔明示専用〕）
+│       ├── agents/                  #     3種（loop-builder / loop-judge〔Edit・Write を持たない〕/ judge-auditor）
+│       ├── hooks/                   #     2種（loop-stop-check〔Stop〕・guard-ground-truth〔PreToolUse〕。hooks.json で自動配線・状態ファイルが ACTIVE のときだけ効く）
+│       └── setup/settings.json      #     コピー導入用のフック配線サンプル
 └── docs/                            # リポジトリ内ドキュメント置き場
     ├── README.md
     ├── decisions/                   #   日付つきの決定記録・監査記録（追記のみ。覆すときは新記録を足す）
     │   ├── 2026-09-03-fable-5-1-audit.md                      # Fable 5.1 自身による model-setup 監査
     │   ├── 2026-09-03-long-run-constraints-and-spec-load.md  # 序盤制約の保持・SPEC.md 必須ロードの構造解
     │   ├── 2026-09-05-large-codebase-harness.md               # 大規模コードベース向け足場を codebase-setup として実装した決定
+    │   ├── 2026-09-05-self-correction-loop.md                 # 自己修正ループを self-correct として実装した決定（/goal を再実装しない線引き）
     │   └── 2026-09-05-design-doc-subagents.md                 # 設計書サブエージェントを既存流用＋2点追加に絞った決定
     ├── lessons.md                   #   過去 PR から蒸留した「繰り返さない判断」（根拠の PR 番号つき）
     ├── skill-authoring.md           #   スキルの書き方（公式ガイド準拠。frontmatter 規約・分冊基準・監査結果）
@@ -99,7 +108,7 @@ claude-code-workbench-ja/
 2. **各ディレクトリには README.md を置く** — セクションの目的・使い方・ファイル構成を説明する README.md を必ず用意する。
 3. **リポジトリ全体の言語は日本語** — README.md・CLAUDE.md など、このリポジトリ自体のドキュメントは日本語で記述する。
 4. **マーケットプレイス定義はルートの `.claude-plugin/` に置く** — Claude Code プラグイン仕様上の必須配置であり、規約1の例外。
-5. **プラグイン配下を変更したら version を上げる（plugin.json のみに書く）** — `plugins/` 配下の6プラグイン（pipeline・codex-bridge・kiro-bridge・agent-review-panel・model-setup・codebase-setup）の配信対象ファイル（`skills/`・`agents/`・`hooks/` 配下。これらは既定探索パスのためプラグイン導入で自動配信される）を変更したら、該当する `plugins/<name>/.claude-plugin/plugin.json` の `version` をセマンティックバージョニングで更新する。**version は plugin.json のみに書く**（`.claude-plugin/marketplace.json` 側には書かない — plugin.json が優先されるため二重管理は非推奨、公式仕様）。CLAUDE.md / CLAUDE.task.md サンプル・`setup/settings.json` は setup スキルがコピー配布するため version 対象外。
+5. **プラグイン配下を変更したら version を上げる（plugin.json のみに書く）** — `plugins/` 配下の7プラグイン（pipeline・codex-bridge・kiro-bridge・agent-review-panel・model-setup・codebase-setup・self-correct）の配信対象ファイル（`skills/`・`agents/`・`hooks/` 配下。これらは既定探索パスのためプラグイン導入で自動配信される）を変更したら、該当する `plugins/<name>/.claude-plugin/plugin.json` の `version` をセマンティックバージョニングで更新する。**version は plugin.json のみに書く**（`.claude-plugin/marketplace.json` 側には書かない — plugin.json が優先されるため二重管理は非推奨、公式仕様）。CLAUDE.md / CLAUDE.task.md サンプル・`setup/settings.json` は setup スキルがコピー配布するため version 対象外。
 6. **プラグインの skills/agents/hooks は公式標準レイアウト（プラグインルート直下）に置く** — `<plugin>/skills/`・`<plugin>/agents/`・`<plugin>/hooks/hooks.json` が既定探索パスであり、plugin.json に `skills`/`hooks` フィールドを明示しない（宣言と実体の二重管理を避ける）。コピー導入用の `settings.json` サンプルはプラグインルート直下に置けない（Claude Code の予約パス）ため `<plugin>/setup/settings.json` に置く。pipeline の `hooks/` は導入先リポジトリへコピーする資材であり、この配置自体はプラグインとして自動発火しない（pipeline-setup が対象リポジトリの `.claude/hooks/` へコピーし `.claude/settings.json` に配線する）。
 
 ---

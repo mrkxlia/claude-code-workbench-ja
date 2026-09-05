@@ -70,6 +70,17 @@
       },
       "license": "MIT",
       "keywords": ["kiro", "review", "subagents", "delegation", "japanese"]
+    },
+    {
+      "name": "self-correct",
+      "source": "./plugins/self-correct",
+      "description": "成果物を「作る役（loop-builder）」と「検査する役（loop-judge）」に分離し、FAIL した箇所だけを直して再検査する自己修正ループ（Evaluator-Optimizer 型）。スキル3種（self-correct / judge-eval / self-correct-setup）とサブエージェント3種、状態ファイル駆動の決定的な停止ゲート（Stop フック）と Ground Truth 保護フックを提供する。Judge はツール権限として Edit / Write を持たないため、指摘した箇所を自分で直して合格させられない。本体の /goal は再実装せずループ外側の完了判定として併用する（/goal の評価器はツールを持たず実ファイル・テスト結果を見られないため、根拠に基づく検査は loop-judge が担当）。Judge 自身を正解つきサンプルで採点する judge-eval を持つのが他のレビュー系との違い。",
+      "category": "workflow",
+      "author": {
+        "name": "mrkxlia"
+      },
+      "license": "MIT",
+      "keywords": ["self-correction", "evaluator-optimizer", "judge", "ground-truth", "goal", "subagents", "japanese"]
     }
   ]
 }
