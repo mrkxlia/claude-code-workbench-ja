@@ -153,6 +153,7 @@ Anthropic公式リポジトリのスキル。安定性が最も高く、今す�
 | [obra/superpowers](https://github.com/obra/superpowers) | 281.7k | エンジニアリング全般。`skills/` 直下に14スキル |
 | [skillsmp.com](https://skillsmp.com) | — | 2,000,000+スキルのマーケットプレイス。発見用に使う |
 | [wilwaldon/Claude-Code-Frontend-Design-Toolkit](https://github.com/wilwaldon/Claude-Code-Frontend-Design-Toolkit) | 1.1k | フロントエンドのデザイン品質向けリンク集（スキル・MCP・テーマ・アニメーション・Figma 連携ほか10分類/70点超）。スキル本体は同梱せず README 1枚で各配布元へ誘導する。**2026-09-05 時点で未検証**（スター数・最終更新 2026-02 は同日に確認） |
+| [microsoft/SkillOpt](https://github.com/microsoft/SkillOpt) | 16.7k | スキル自体を「凍結したLLMエージェント向けの再利用可能な自然言語プログラム」として扱い、軌跡駆動の編集＋検証ゲートで段階的に改善するテキスト空間オプティマイザ。`best_skill.md` を成果物として生成し、Claude Code / Codex / Copilot / Devin など複数の実行環境に対応。既存スキルの品質改善に使えそうだが、**2026-09-05 時点で未検証**（スター数は同日確認） |
 
 ---
 
