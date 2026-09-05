@@ -41,15 +41,39 @@ jobs:
           print(f"OK: JSON {sum(1 for _ in pathlib.Path('.').rglob('*.json'))} 件")
           PY
 
-      - name: SKILL.md 検査（description+when_to_use<=1536字・本文<=500行・frontmatter妥当性）
+      - name: "SKILL.md 検査（公式ガイド準拠 — 山括弧禁止・name・キー集合・レイアウト・字数・行数）"
         run: |
           python3 - <<'PY'
           import pathlib
+          import re
           import sys
 
           import yaml
 
+          # 公式ガイド "The Complete Guide to Building Skills for Claude" の技術要件を機械化する。
+          # 機械化していない項目（description の質など）は docs/skill-authoring.md を参照。
+          ALLOWED_KEYS = {
+              # ガイドの必須・任意フィールド
+              "name", "description", "license", "compatibility", "metadata", "allowed-tools",
+              # Claude Code 固有（ガイドには出てこないが正当なキー）
+              "argument-hint", "disable-model-invocation", "hooks",
+          }
+          # システムプロンプトに載る＝山括弧を禁止する対象
+          # （hooks はシェルのリダイレクト > が正当に現れるうえ、システムプロンプトに載らないので除く）
+          PROMPT_KEYS = ("name", "description", "argument-hint", "compatibility", "license", "metadata")
+          NAME_RE = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
           EXCLUDE_PARTS = {"examples", "reimpl", "build", "dist"}
+
+          def has_angle(v):
+              """文字列・リスト・辞書を再帰的に走査して < > を探す。"""
+              if isinstance(v, str):
+                  return "<" in v or ">" in v
+              if isinstance(v, dict):
+                  return any(has_angle(x) for x in v.values())
+              if isinstance(v, list):
+                  return any(has_angle(x) for x in v)
+              return False
+
           bad = []
           checked = 0
           for p in sorted(pathlib.Path(".").glob("**/skills/*/SKILL.md")):
@@ -69,14 +93,69 @@ jobs:
               except Exception as e:
                   bad.append(f"{p}: frontmatter パース失敗: {e}")
                   continue
-              desc_len = len(str(meta.get("description", ""))) + len(str(meta.get("when_to_use", "")))
+
+              # name: 必須・kebab-case・ディレクトリ名と一致・予約語を含まない
+              name = meta.get("name")
+              if not isinstance(name, str) or not name.strip():
+                  bad.append(f"{p}: name が無い（必須）")
+              else:
+                  if not NAME_RE.match(name):
+                      bad.append(f"{p}: name が kebab-case でない: {name!r}")
+                  if name != p.parent.name:
+                      bad.append(f"{p}: name がディレクトリ名と違う（name={name!r} dir={p.parent.name!r}）")
+                  if "claude" in name or "anthropic" in name:
+                      bad.append(f"{p}: name に予約語（claude/anthropic）が入っている: {name!r}")
+
+              # description: 必須
+              if not isinstance(meta.get("description"), str) or not str(meta.get("description")).strip():
+                  bad.append(f"{p}: description が無い（必須）")
+
+              # 未知のキー（打ち間違いが無言で無効化されるのを防ぐ）
+              for key in meta:
+                  if key not in ALLOWED_KEYS:
+                      bad.append(f"{p}: 未知のキー {key!r}（許可: {sorted(ALLOWED_KEYS)}）")
+
+              # 山括弧の禁止（ガイドの security restriction。frontmatter はシステムプロンプトに載る）
+              for key in PROMPT_KEYS:
+                  if key in meta and has_angle(meta[key]):
+                      bad.append(f"{p}: {key} に山括弧 < > がある（禁止）。プレースホルダは [] を使う")
+
+              # argument-hint はクオートしないと [] が YAML リストになり型が変わる
+              hint = meta.get("argument-hint")
+              if hint is not None and not isinstance(hint, str):
+                  bad.append(
+                      f"{p}: argument-hint が {type(hint).__name__}（クオート漏れ）。"
+                      'ダブルクオートで囲む: argument-hint: "[引数]"'
+                  )
+
+              # 字数・行数
+              desc_len = len(str(meta.get("description", "")))
               if desc_len > 1536:
-                  bad.append(f"{p}: description+when_to_use が1536字超（{desc_len}字）")
+                  bad.append(f"{p}: description が1536字超（{desc_len}字）")
               nlines = len(text.splitlines())
               if nlines > 500:
                   bad.append(f"{p}: 本文が500行超（{nlines}行）")
+
+              # レイアウト: スキル直下は SKILL.md のみ（他の .md は references/ へ）
+              for q in sorted(p.parent.glob("*.md")):
+                  if q.name != "SKILL.md":
+                      bad.append(f"{q}: スキル直下に SKILL.md 以外の .md がある。references/ へ移すこと")
+
+              # references/ の死蔵防止。SKILL.md から直接、または他の references/ 経由で
+              # 到達できること（分冊が分冊を参照する形も正当な段階的開示なので許す）
+              refs = sorted(p.parent.glob("references/*.md"))
+              corpus = text + "".join(r.read_text(encoding="utf-8") for r in refs)
+              for q in refs:
+                  # 自分自身の本文に出てくる名前は参照とみなさない
+                  others = text + "".join(
+                      r.read_text(encoding="utf-8") for r in refs if r != q
+                  )
+                  if q.name not in others:
+                      bad.append(f"{q}: SKILL.md からも他の references/ からも参照されていない")
+
           if bad:
               print("\n".join(bad))
+              print("\n解説と背景: docs/skill-authoring.md")
               sys.exit(1)
           print(f"OK: SKILL.md {checked} 件")
           PY
