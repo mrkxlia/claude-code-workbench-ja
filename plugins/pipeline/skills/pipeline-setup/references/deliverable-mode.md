@@ -52,9 +52,12 @@ frontmatter（name / description）から、成果物作成に使えそうなス
 
 ## Step 5: エージェントの配置（成果物モード）
 
-コピーするのは次の**5ファイル**:
-`researcher` / `requirements-writer` / `brief-writer` / `deliverable-builder` / `final-reviewer`
-（`backend-builder` / `frontend-builder` / `test-verifier` はコピーしない — コードモード用）。
+コピーするのは次の**6ファイル**:
+`researcher` / `requirements-writer` / `brief-writer` / `deliverable-builder` / `final-reviewer` /
+`design-doc-checker`（`backend-builder` / `frontend-builder` / `test-verifier` はコピーしない — コードモード用）。
+
+`design-doc-checker` は設計書（要件定義・基本設計・詳細設計・DB設計・図表）を作る予定が無ければ
+省いてよい。省いた場合は CLAUDE.md のエージェント表からも該当行を削る。
 
 `deliverable-builder.md` の「担当範囲」セクションの箇条書きを、
 **Step 3 で承認済みの出力ディレクトリ**で書き換える。
@@ -103,7 +106,7 @@ settings.json のマージでは、テンプレートの `guard-builder-writes` 
 ## Step 7: 検証チェックリスト（成果物モード固有分）
 
 ```
-- [ ] .claude/agents/ にエージェント定義5ファイルがある
+- [ ] .claude/agents/ にエージェント定義6ファイルがある（design-doc-checker を省いた場合は5）
 - [ ] .claude/skills/ に task-pipeline / clarify / notes がある
 - [ ] block-secrets-commit.sh / guard-deliverable-writes.sh / guard-builder-paths.sh / inject-spec-summary.sh / spec-sync-reminder.sh に実行権限がある
 - [ ] settings.json の PreToolUse に Bash（block-secrets）と Edit|Write（guard-deliverable）のエントリがある

@@ -35,8 +35,8 @@ claude-code-workbench-ja/
 │   │   ├── CLAUDE.md                #     コピーして使う CLAUDE.md サンプル（コードモード）
 │   │   ├── CLAUDE.task.md           #     コピーして使う CLAUDE.md サンプル（成果物モード）
 │   │   ├── .claude-plugin/plugin.json
-│   │   ├── skills/                  #     7種（feature-pipeline / task-pipeline / pipeline-setup〔モード選択・references 分冊。spec-summary.md に SPEC 抽出規則〕/ build-with-tests / pipeline-improve / clarify / notes）
-│   │   ├── agents/                  #     8種（共有4: researcher / requirements-writer / brief-writer / final-reviewer＋コード専用3: backend/frontend-builder / test-verifier＋成果物専用1: deliverable-builder）
+│   │   ├── skills/                  #     8種（feature-pipeline / task-pipeline / pipeline-setup〔モード選択・references 分冊。spec-summary.md に SPEC 抽出規則〕/ build-with-tests / pipeline-improve / clarify / notes / design-docs〔設計書5フェーズの章立て。references 分冊: templates / consistency〕）
+│   │   ├── agents/                  #     9種（共有4: researcher / requirements-writer / brief-writer / final-reviewer＋コード専用3: backend/frontend-builder / test-verifier＋成果物専用2: deliverable-builder / design-doc-checker）
 │   │   ├── hooks/                   #     6種（block-secrets-commit・guard-builder-writes・guard-deliverable-writes・guard-builder-paths・inject-spec-summary・spec-sync-reminder。導入先へコピーする資材＝非自動配線）
 │   │   └── setup/settings.json      #     コピー導入用テンプレート（setup がモードに応じて guard を絞る）
 │   ├── codex-bridge/                #   Codex にレビュー・実装・相談を依頼するスキル＆エージェント
@@ -95,6 +95,7 @@ claude-code-workbench-ja/
     │   ├── 2026-09-03-long-run-constraints-and-spec-load.md  # 序盤制約の保持・SPEC.md 必須ロードの構造解
     │   ├── 2026-09-05-large-codebase-harness.md               # 大規模コードベース向け足場を codebase-setup として実装した決定
     │   ├── 2026-09-05-self-correction-loop.md                 # 自己修正ループを self-correct として実装した決定（/goal を再実装しない線引き）
+    │   ├── 2026-09-05-design-doc-subagents.md                 # 設計書サブエージェントを既存流用＋2点追加に絞った決定
     │   └── 2026-09-05-feedback-rules.md                       # 指摘の永続化と段階的強制を feedback-rules として実装した決定（先行事例の調査つき）
     ├── lessons.md                   #   過去 PR から蒸留した「繰り返さない判断」（根拠の PR 番号つき）
     ├── skill-authoring.md           #   スキルの書き方（公式ガイド準拠。frontmatter 規約・分冊基準・監査結果）

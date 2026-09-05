@@ -190,6 +190,7 @@ flowchart TD
 |-------------------|-------------|
 | `/feature-pipeline <機能の説明>` | 機能を end-to-end で開発する（7エージェント連鎖 + 3チェックポイント） |
 | `/task-pipeline <依頼の説明>` | コード以外の成果物を作る（5エージェント連鎖 + 3チェックポイント。詳細は成果物モード節） |
+| `/design-docs <フェーズ> <対象>` | 設計書（要件定義/基本設計/詳細設計/DB設計/図表）を章立てを固定して書く。単発でも task-pipeline に乗せても使える |
 | `/clarify <詰めたい要件>` | 要件・仕様を一問ずつ徹底質問で詰める（パイプライン内では Phase 2/3 の writer 起動前に自動で回る） |
 | `/build-with-tests <タスク>` | パイプラインを通すほどではない小さな実装・修正をテスト並行で行う |
 | `/notes` | 実装ノートを手動で開始・更新する（パイプライン内ではビルダーが自動記録） |
@@ -249,6 +250,29 @@ flowchart TD
 オーケストレーターのルールはコードモードと同一です。詳細は
 [`skills/task-pipeline/SKILL.md`](skills/task-pipeline/SKILL.md) を参照してください。
 
+### 設計書を書く場合（design-docs）
+
+設計書は「フェーズごとに読者と粒度が違うのに、毎回ゼロから章立てを指示し直す」ことでブレる成果物です。
+[`skills/design-docs/SKILL.md`](skills/design-docs/SKILL.md) がその型を供給します。
+
+| フェーズ | 主な読者 | 書く粒度 |
+|---|---|---|
+| 要件定義 | 発注者・PM | 業務要件・機能要件・非機能要件 |
+| 基本設計 | PM・リードエンジニア | システム構成・機能一覧・画面遷移の概要 |
+| 詳細設計 | 実装担当エンジニア | 処理フロー・クラス/メソッド・入出力仕様 |
+| DB設計 | 実装担当エンジニア | テーブル定義・制約・ER図 |
+| 図表 | 全員 | シーケンス図・フローチャート（Mermaid） |
+
+- **フェーズ別のエージェントは作っていません。** 章立てが違うだけで、書き込み範囲も許可ツールも
+  同じになるため、既存の `deliverable-builder` に
+  [`references/templates.md`](skills/design-docs/references/templates.md) の章立てを渡す形に統合しています
+  （経緯は [`docs/decisions/2026-09-05-design-doc-subagents.md`](../../docs/decisions/2026-09-05-design-doc-subagents.md)）
+- **フェーズ間の整合だけは専用エージェント**（[`agents/design-doc-checker.md`](agents/design-doc-checker.md)）が
+  read-only で検査します。前段設計書との矛盾・用語ゆれ・実コードとの乖離・未回収の `【要確認】`・
+  テンプレ逸脱の5点。`final-reviewer`（要件・ブリーフとの照合）とは検査対象が違うので、両方を回します
+- **用語集は導入先の CLAUDE.md に1か所だけ置きます**（[`CLAUDE.task.md`](CLAUDE.task.md) の「用語集」節）。
+  設計書側に複写しないことで、フェーズ間の表記ズレを構造的に防ぎます
+
 ---
 
 ## ファイル構成
@@ -260,7 +284,7 @@ pipeline/
 ├── CLAUDE.task.md                           # コピーして使う CLAUDE.md サンプル（成果物モード）
 ├── .claude-plugin/
 │   └── plugin.json                          # プラグインマニフェスト（プラグイン導入用）
-├── agents/                                  # 8種の専門エージェント定義（共有4 + コード専用3 + 成果物専用1）
+├── agents/                                  # 9種の専門エージェント定義（共有4 + コード専用3 + 成果物専用2）
 │   ├── researcher.md                        #   共有: 調査（モード自動判定）
 │   ├── requirements-writer.md               #   共有: ストーリー/成果物要件
 │   ├── brief-writer.md                      #   共有: 技術/作業ブリーフ
@@ -268,10 +292,14 @@ pipeline/
 │   ├── backend-builder.md                   #   コード専用
 │   ├── frontend-builder.md                  #   コード専用
 │   ├── test-verifier.md                     #   コード専用
-│   └── deliverable-builder.md               #   成果物専用（Skill ツールで drawio 等を呼べる）
+│   ├── deliverable-builder.md               #   成果物専用（Skill ツールで drawio 等を呼べる）
+│   └── design-doc-checker.md                #   成果物専用: 設計書のフェーズ間整合を検査（read-only）
 ├── skills/
 │   ├── feature-pipeline/SKILL.md            # コードモードのオーケストレーター（7工程）
 │   ├── task-pipeline/SKILL.md               # 成果物モードのオーケストレーター（5工程）
+│   ├── design-docs/                         # 設計書の章立てを固定する（5フェーズ）
+│   │   ├── SKILL.md
+│   │   └── references/                      #   templates.md（フェーズ別章立て）/ consistency.md（整合）
 │   ├── clarify/SKILL.md                     # 要件・仕様を一問ずつ詰める徹底質問スキル（dig/grill 由来）
 │   ├── build-with-tests/SKILL.md            # 小さな実装をテスト並行で行うスキル（コードモード）
 │   ├── notes/SKILL.md                       # 実装ノート（モード自動判定）
@@ -290,7 +318,7 @@ pipeline/
     └── settings.json                        # フック配線の設定サンプル（setup がモードに応じて絞る）
 ```
 
-プラグイン化されているのは**スキル7種とエージェント8種**です（いずれもプラグイン導入で自動配信）。
+プラグイン化されているのは**スキル8種とエージェント9種**です（いずれもプラグイン導入で自動配信）。
 CLAUDE.md サンプル・フックはプロジェクトごとの差し替え（担当範囲など）が前提のため、プラグインからは
 自動配信せず、`pipeline-setup` が対象リポジトリへコピー&カスタマイズします。
 
