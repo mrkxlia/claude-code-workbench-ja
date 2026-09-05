@@ -192,8 +192,10 @@ description: ... /long-run [タスク内容] での手動起動で発動する�
 
 全20スキルを上記の基準で照合した。**変更しなかったものも全件挙げる**（model-setup ルール9）。
 
-> 監査後に追加した `design-docs`（pipeline 2.3.0）は、この監査基準に沿って新規作成した
-> （山括弧なし・`argument-hint` クオート済み・条件付き分冊2本）。監査表そのものは記録として当時のまま残す。
+> 監査後に追加した `design-docs`（pipeline 2.3.0）・`deep-understand`（learning-coach 0.1.0）は、
+> この監査基準に沿って新規作成した（山括弧なし・`argument-hint` クオート済み。`design-docs` は
+> 条件付き分冊2本、`deep-understand` は全節を順に読むため分冊なし）。
+> 監査表そのものは記録として当時のまま残す。
 
 ### (b) 違反 — 修正した
 

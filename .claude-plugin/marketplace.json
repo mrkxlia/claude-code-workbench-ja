@@ -81,6 +81,17 @@
       },
       "license": "MIT",
       "keywords": ["self-correction", "evaluator-optimizer", "judge", "ground-truth", "goal", "subagents", "japanese"]
+    },
+    {
+      "name": "learning-coach",
+      "source": "./plugins/learning-coach",
+      "description": "変更・コード・設計判断を、ユーザー自身が人に説明できる状態になるまで段階的に教える学習コーチ。スキル1種（deep-understand）。教師役の Claude が、問題／解決／広い文脈の3層チェックリストを常時維持し、先にユーザーの現在の理解を述べさせてギャップを埋め、AskUserQuestion のクイズ（正解位置を毎回変える・全問の回答が返るまで答えを明かさない）で理解を実証させてから次の段階へ進む。ELI5 / ELI14 / ELII の粒度指定に対応し、全項目が実証されるまでセッションを終えない。他プラグインが「Claude に良い仕事をさせる」ためのものであるのに対し、これは人間の側の理解を作ることだけを担当する。",
+      "category": "productivity",
+      "author": {
+        "name": "mrkxlia"
+      },
+      "license": "MIT",
+      "keywords": ["learning", "teaching", "onboarding", "handover", "quiz", "comprehension", "japanese"]
     }
   ]
 }

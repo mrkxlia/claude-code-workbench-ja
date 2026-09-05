@@ -16,7 +16,7 @@ flowchart TD
     N1 --> N2{"何を作る？"}
     N2 -->|"コードで機能開発"| N3["pipeline の pipeline-setup を<br/>コードモードで実行"]
     N2 -->|"図・ドキュメント等"| N4["pipeline の pipeline-setup を<br/>成果物モードで実行"]
-    N3 --> N6["codex-bridge・kiro-bridge・<br/>agent-review-panel・self-correct は<br/>いつでも追加導入可"]
+    N3 --> N6["codex-bridge・kiro-bridge・<br/>agent-review-panel・self-correct・<br/>learning-coach は<br/>いつでも追加導入可"]
     N4 --> N6
 
     Existing --> E1["1. 現状を仕様化する（推奨）<br/>cc-rsg 等の外部ツールで SPEC.md を生成"]
@@ -34,7 +34,7 @@ flowchart TD
 1. **個人の運用ルールを先に整える**（Claude Code のユーザー設定に一度入れれば全プロジェクトで効く）— `model-setup` を導入（9ルール＋プロファイル別追補＋`task-brief`／`backlog-loop`／`pr-merge`／`fan-out`／`long-run`／`verify-fresh`）。
 2. **プロジェクトの土台を選ぶ**（対象リポジトリに導入。何を作るかで変わる）
    - `pipeline` の `pipeline-setup` を実行（コード/成果物のモード選択つき。エージェント・CLAUDE.md・フックを対象リポジトリに自動導入）
-3. 別 AI へのレビュー委譲（`codex-bridge`・`kiro-bridge`）、多視点レビュー（`agent-review-panel`）、自己修正ループ（`self-correct`）は、上記と独立して**いつ追加してもよい**。
+3. 別 AI へのレビュー委譲（`codex-bridge`・`kiro-bridge`）、多視点レビュー（`agent-review-panel`）、自己修正ループ（`self-correct`）、変更内容を自分が理解するための学習コーチ（`learning-coach`）は、上記と独立して**いつ追加してもよい**。
 
 ### 既存リポジトリ（すでにコード・成果物がある）
 
@@ -61,7 +61,7 @@ flowchart TD
 | 種別 | 動き方 | 呼び出し方 | 入れると何が嬉しいか | 代表例 |
 |---|---|---|---|---|
 | 🔁 フック（完全自動） | プラグイン導入直後から、SessionStart/SessionEnd/PreToolUse 等のイベントで**頼まなくても毎回発火**する | 不要（無効化しない限り常時ON） | 「言い忘れ」「やり忘れ」を構造的に防げる。導入するだけで効果が始まる | AGENTS.md の自動生成・同期、機密コミット防止、担当外/出力先外書き込みガード、仕様更新漏れの通知（下表） |
-| 💬 スキル（自然文トリガー） | 自然文の依頼を Claude が判断し、**自動的に適切なスキルを選ぶ**（`/スキル名` での明示起動も可） | 「〜して」と頼む、または `/スキル名` | 手順や合言葉を覚えていなくても、思った通りに頼めば正しい型が起動する | `task-brief`・`backlog-loop`・`pr-merge`・`feature-pipeline`・`task-pipeline`・`clarify`・`notes`・`codex-review` など大半のスキル |
+| 💬 スキル（自然文トリガー） | 自然文の依頼を Claude が判断し、**自動的に適切なスキルを選ぶ**（`/スキル名` での明示起動も可） | 「〜して」と頼む、または `/スキル名` | 手順や合言葉を覚えていなくても、思った通りに頼めば正しい型が起動する | `task-brief`・`backlog-loop`・`pr-merge`・`feature-pipeline`・`task-pipeline`・`clarify`・`notes`・`codex-review`・`deep-understand` など大半のスキル |
 | 🎯 明示専用スキル | 自然文では発火せず、**`/スキル名` で名指ししたときだけ**動く（`disable-model-invocation: true`） | `/スキル名` のみ | 導入・較正など一度きり／影響の大きい操作を誤発動させない | `pipeline-setup`・`pipeline-improve` |
 
 ### 🔁 自動フック一覧（導入するだけで効果が始まるもの）
@@ -74,13 +74,13 @@ flowchart TD
 
 > 上の表は「導入するだけで常時発火する」フックの一覧です。**model-setup にもフックが1つありますが、
 > `/long-run` を起動したときだけ登録される opt-in**（圧縮後にブリーフを文脈へ戻す）なのでここには載せていません。
-> kiro-bridge・agent-review-panel・codebase-setup はスキルのみで完結し、フックを持ちません。
+> kiro-bridge・agent-review-panel・codebase-setup・learning-coach はスキルのみで完結し、フックを持ちません。
 
 ## 導入方法（クイックスタート）
 
 ### 方法1: プラグインで導入する（最も簡単）
 
-Claude Code でそのまま実行します（clone 不要）。現在7つのプラグインを配信しています:
+Claude Code でそのまま実行します（clone 不要）。現在8つのプラグインを配信しています:
 
 ```
 /plugin marketplace add mrkxlia/claude-code-workbench-ja
@@ -91,6 +91,7 @@ Claude Code でそのまま実行します（clone 不要）。現在7つのプ�
 /plugin install model-setup@workbench-ja
 /plugin install codebase-setup@workbench-ja
 /plugin install self-correct@workbench-ja
+/plugin install learning-coach@workbench-ja
 ```
 
 - **pipeline** — 新しいセッションで `/pipeline:pipeline-setup` を実行すると、モード選択
@@ -133,6 +134,12 @@ Claude Code でそのまま実行します（clone 不要）。現在7つのプ�
   止める Stop ゲート・判定の根拠への書き込み拒否）はプラグイン導入で自動配線され、**ループを
   回していないときは素通り**します。本体の `/goal` は再実装せず、ループ外側の完了判定として
   併用します。詳しくは [self-correct/README.md](plugins/self-correct/) を参照。
+- **learning-coach** — 導入すると `/deep-understand` で、Claude が**教師役**になり、ある変更・
+  コード・設計判断を**あなた自身が人に説明できる状態**になるまで段階的に教えます（問題／解決／
+  広い文脈の3層チェックリストを維持し、先にあなたの現在の理解を述べさせてギャップを埋め、
+  クイズで実証してから次へ進む。ELI5 / ELI14 / ELII の粒度指定に対応）。他プラグインが
+  「Claude に良い仕事をさせる」ためのものであるのに対し、これは**人間の側の理解を作る**
+  ためのものです。詳しくは [learning-coach/README.md](plugins/learning-coach/) を参照。
 
 ### 方法2: git clone してコピーする（全セクション共通）
 
@@ -168,6 +175,9 @@ cp -r /tmp/workbench/plugins/self-correct/agents/* .claude/agents/
 cp /tmp/workbench/plugins/self-correct/hooks/*.sh .claude/hooks/ && chmod +x .claude/hooks/*.sh
 #   フック配線は setup/settings.json を .claude/settings.json へマージ（既存の hooks は上書きしない）
 #   導入後は対象リポジトリで /self-correct-setup を実行する
+
+# learning-coach — 学習コーチのスキル1種をパーソナルスキル化（どのリポジトリでも /deep-understand が使える）
+mkdir -p ~/.claude/skills && cp -r /tmp/workbench/plugins/learning-coach/skills/* ~/.claude/skills/
 ```
 
 各セクションのカスタマイズ方法は、それぞれの README を参照してください。私用PC・会社PCでそれぞれ
@@ -194,6 +204,7 @@ cp /tmp/workbench/plugins/self-correct/hooks/*.sh .claude/hooks/ && chmod +x .cl
 | モデルを更新したので古い指示を整理したい | codebase-setup（`/context-audit`） | 「正しいか」でなく「毎回載せる価値があるか」で5分類。承認前に変更しない |
 | 作る→検査→直す→再検査を人間が毎回指示せずに回したい | **self-correct**（`/self-correct`） | Builder と Judge を別コンテキスト・別ツール権限に分離。停止条件と Ground Truth まで設計する |
 | レビュー役（Judge）自体が信用できるか確かめたい | self-correct（`/judge-eval`） | 正解つきサンプルで見逃し・過検出・重大度誤り・根拠欠落を採点。本番投入前の必須項目 |
+| Claude に書かせた変更を、自分でも説明できるようになりたい | **learning-coach**（`/deep-understand`） | 教師役が3層チェックリストで段階指導。先に自分の理解を述べさせ、クイズで実証するまで次へ進まない |
 
 > パイプラインのサブスキル（`clarify`・`build-with-tests` 等）は単体でも使えます。導入は各プラグイン README の
 > 「単体で使う（個別利用）」小節を参照してください。
@@ -242,7 +253,7 @@ UI 試作では避けて軽量な `build-with-tests` を使う、です（参考
 （コピーして使うテンプレートや独立ツールが増えたら `templates/`・`tools/` を追加する規約になっています。
 詳細なディレクトリ構成は [`CLAUDE.md`](CLAUDE.md) 参照）。
 
-### plugins/ — プラグイン導入可能な7セクション
+### plugins/ — プラグイン導入可能な8セクション
 
 #### [`plugins/model-setup/`](plugins/model-setup/)
 モデル運用テンプレート（旧名 sonnet-setup。Opus 5 + Sonnet 5 の私用PC / Sonnet 単独の会社PC
@@ -335,6 +346,20 @@ CLAUDE.md の行動ルールを承認ゲート付きで導入します。フッ�
 [`docs/decisions/2026-09-05-self-correction-loop.md`](docs/decisions/2026-09-05-self-correction-loop.md)）。
 **プラグイン1コマンドで導入可能**（上の「導入方法」参照）。
 
+#### [`plugins/learning-coach/`](plugins/learning-coach/)
+**人間の側の理解を作る**学習コーチ。スキル1種（**`/deep-understand`**）。エージェント・フックは
+持ちません。Claude を教師役に固定し、ある変更・コード・設計判断を、あなた自身が人に説明できる
+状態になるまで段階的に教えます。核は4点で、いずれも「説明を出力して終わり」を防ぐためのものです:
+(1) **診断が先、講義は後** — まずあなたに現在の理解を述べさせ、その差分だけを埋める、
+(2) **3層チェックリスト**（①問題＝なぜ起きたか・取りえた別解 ②解決＝なぜその方法か・設計判断・
+エッジケース ③広い文脈＝なぜ重要か・何に影響するか。**①の理解を最優先**）を毎ターン更新して提示、
+(3) **クイズで実証** — `AskUserQuestion` で出題し、**全問の回答が返るまで答えを明かさない**・
+**正解の位置は毎回変える**、(4) **全項目が実証されるまでセッションを終えない**（「わかりました」は
+実証ではなく、再説明・転移・エッジケースの予測の3点で判定）。`ELI5` / `ELI14` / `ELII` の粒度指定に
+対応します。本体の `/goal` は再実装せず、外側の完了ゲートとして併用します（設計の経緯は
+[`docs/decisions/2026-09-05-learning-prompt-as-skill.md`](docs/decisions/2026-09-05-learning-prompt-as-skill.md)）。
+**プラグイン1コマンドで導入可能**（上の「導入方法」参照）。
+
 ### docs/ — リポジトリ内ドキュメント
 
 #### [`docs/skills-guide/`](docs/skills-guide/)
@@ -375,4 +400,5 @@ Power Automate のクラウドフローから Azure AI Foundry（Azure OpenAI）
 | [`plugins/codex-bridge/`](plugins/codex-bridge/) | [eddiearc/codex-delegator](https://github.com/eddiearc/codex-delegator)・[hamelsmu/claude-review-loop](https://github.com/hamelsmu/claude-review-loop)・[OpenAI Codex CLI ドキュメント](https://developers.openai.com/codex/) | 構成・プロンプト型のコンセプトを参考にした独自実装（コードのコピーではない） |
 | [`plugins/agent-review-panel/`](plugins/agent-review-panel/) | [wan-huiyan/agent-review-panel](https://github.com/wan-huiyan/agent-review-panel)・[makinux/adversarial-panel](https://github.com/makinux/adversarial-panel) | 多フェーズ・パネル構成（並列独立レビュー→討論→検証→裁定）／4ラウンド敵対プロトコル（ブラインド回答→相互批判→譲歩→統合）のコンセプトを参考にした独自実装（コードのコピーではない）— 帰属を README に記載 |
 | [`plugins/codebase-setup/`](plugins/codebase-setup/) | [How Claude Code works in large codebases: best practices and where to start](https://claude.com/blog/how-claude-code-works-in-large-codebases-best-practices-and-where-to-start)（Anthropic 公式ブログ・2026-09-05 取得）＋公式ドキュメント [Monorepos and large repos](https://code.claude.com/docs/en/large-codebases) ほか | 記事の設計原則（harness の7拡張点・3つの設定パターン・導入ロードマップ・所有と棚卸し）を参考にした独自実装（文章のコピーではない）。設定キー名・LSP プラグイン名などの事実は公式ドキュメントを一次情報とした — 帰属を README・決定記録に記載 |
+| [`plugins/learning-coach/`](plugins/learning-coach/) | 2026-08-11 に共有された Anthropic メンバーの「仕事の学習用プロンプト」（日本語訳） | プロンプトの規範（診断が先・3層・クイズで実証・全項目が済むまで終えない）を本リポジトリのスキル規約に載せ替えた独自実装（コピーではない）— 帰属を README・決定記録に記載 |
 | 仕様駆動開発まわりの解説（本 README の早見表） | [「1 Todo=1 Commit=1 Spec Update」（Zenn / Luup Developers）](https://zenn.dev/luup_developers/articles/server-jang-20251215)・[「SPEC駆動開発ツール比較」（Qiita / kanagawa41 氏）](https://qiita.com/kanagawa41/items/ef134490b61b41675e01) | 記事のコンセプト・比較観点を参考にした独自解説（コードのコピーではない）— 帰属を本表に記載 |
