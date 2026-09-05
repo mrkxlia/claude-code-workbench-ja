@@ -5,9 +5,9 @@ description: >-
   操作せず、Claude Code が Codex CLI を非対話モード（read-only）で駆動し、自由形式の質問
   （設計の是非・代替案・デバッグ方針・トレードオフ）に Codex を答えさせて要約する。
   「Codex に相談して」「codex の意見を聞いて」「コーデックスに聞いて」「別の AI の意見も」
-  「セカンドオピニオン」といった依頼や、/codex-ask <相談内容> での手動起動で発動する。
+  「セカンドオピニオン」といった依頼や、/codex-ask [相談内容] での手動起動で発動する。
   コードは書き換えず、助言だけがほしいときに使う。
-argument-hint: "<相談内容>"
+argument-hint: "[相談内容]"
 ---
 
 # codex-ask — Codex に相談する／セカンドオピニオン（/codex-ask）

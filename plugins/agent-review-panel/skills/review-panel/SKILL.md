@@ -6,10 +6,10 @@ description: >-
   deep 指定で引用検証と裁定者による最終裁定を追加する。codex 指定・kiro 指定で外部パネリスト
   （OpenAI Codex／Kiro）を混成できる（任意・両方同時指定も可・未導入なら内部のみで続行）。
   「パネルレビューして」「複数の視点で徹底的にレビューして」「レビュー会議にかけて」
-  「敵対的にレビューして」といった依頼や、/review-panel [deep] [codex] [kiro] <対象> での
+  「敵対的にレビューして」といった依頼や、/review-panel [deep] [codex] [kiro] [対象] での
   手動起動で発動する。単独のセカンドオピニオンは内蔵の Task サブエージェント、単独の
   コードレビューは /code-review・/codex-review・/kiro-review に任せる。
-argument-hint: "[deep] [codex] [kiro] <レビュー対象（プラン本文/差分/@ファイル/ドキュメント）>"
+argument-hint: "[deep] [codex] [kiro] [レビュー対象（プラン本文/差分/@ファイル/ドキュメント）]"
 ---
 
 # review-panel — 敵対的パネルレビュー（/review-panel）

@@ -5,8 +5,8 @@ description: >-
   Codex CLI を非対話モード（workspace-write）で駆動し、Codex にファイルを直接編集させてから
   Claude が差分とテストを検証する。「Codex に実装させて」「codex で実装して」「コーデックスに
   作らせて」「これを Codex にやらせて」「別の AI に実装させて」といった依頼や、
-  /codex-implement <タスク> での手動起動で発動する。実装を Codex に委譲したいときに使う。
-argument-hint: "<実装タスクの説明>"
+  /codex-implement [タスク] での手動起動で発動する。実装を Codex に委譲したいときに使う。
+argument-hint: "[実装タスクの説明]"
 ---
 
 # codex-implement — Codex に実装を依頼する（/codex-implement）

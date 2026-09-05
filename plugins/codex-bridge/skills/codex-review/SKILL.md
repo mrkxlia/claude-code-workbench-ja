@@ -7,7 +7,7 @@ description: >-
   「コーデックスにレビューさせて」「別の AI にレビューさせて」「セカンドレビュー」
   といった依頼や、/codex-review [スコープ] での手動起動で発動する。Codex に第三者
   視点のコードレビューを任せたいときに使う。
-argument-hint: "[uncommitted | base <branch> | <paths>]"
+argument-hint: "uncommitted | base [branch] | [paths]"
 ---
 
 # codex-review — Codex にコードレビューを依頼する（/codex-review）

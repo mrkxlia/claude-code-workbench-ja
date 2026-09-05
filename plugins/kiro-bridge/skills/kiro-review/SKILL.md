@@ -5,9 +5,9 @@ description: >-
   が kiro-cli を非対話モードで駆動し、差分または指定ファイルを Kiro にレビューさせて
   重大度つきの指摘を要約する。「Kiro にレビューして」「kiro でレビュー」「キロにレビュー
   させて」「別の AI にレビューさせて」「セカンドレビュー」といった依頼や、
-  /kiro-review [uncommitted | base <branch> | <paths>] での手動起動で発動する。
+  /kiro-review uncommitted | base [branch] | [paths] での手動起動で発動する。
   Kiro に第三者視点のコードレビューを任せたいときに使う。
-argument-hint: "[uncommitted | base <branch> | <paths>]"
+argument-hint: "uncommitted | base [branch] | [paths]"
 ---
 
 # kiro-review — Kiro にコードレビューを依頼する（/kiro-review）
