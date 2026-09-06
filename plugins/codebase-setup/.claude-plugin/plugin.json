@@ -1,7 +1,7 @@
 {
   "name": "codebase-setup",
-  "version": "0.1.0",
-  "description": "大規模リポジトリを Claude Code から読みやすく（legible）するスキル3種（codebase-onboard / codebase-map / context-audit）とサブエージェント2種。CLAUDE.md の階層化・permissions.deny による生成物の遮断・コードインテリジェンス（LSP）プラグイン・ディレクトリ別スキルを実測に基づいて設計・適用し、常時ロードされる指示の陳腐化（モデルドリフト）を定期的に棚卸しする。公式ブログ「How Claude Code works in large codebases」と公式ドキュメント Monorepos and large repos に基づく独自実装。",
+  "version": "0.2.0",
+  "description": "大規模リポジトリを Claude Code から読みやすく（legible）し、参画した案件を人がキャッチアップするためのスキル4種（codebase-onboard / codebase-map / context-audit / project-catchup）とサブエージェント3種。CLAUDE.md の階層化・permissions.deny による生成物の遮断・コードインテリジェンス（LSP）プラグイン・ディレクトリ別スキルを実測に基づいて設計・適用し、常時ロードされる指示の陳腐化（モデルドリフト）を定期的に棚卸しする。project-catchup は「悪い例／良い例」で具体度の下限を縛り、構成・経路・データモデルに図を必須化した引き継ぎレポートを書く。公式ブログ「How Claude Code works in large codebases」と公式ドキュメント Monorepos and large repos に基づく独自実装。",
   "author": {
     "name": "mrkxlia",
     "url": "https://github.com/mrkxlia"
@@ -9,5 +9,5 @@
   "homepage": "https://github.com/mrkxlia/claude-code-workbench-ja/tree/main/plugins/codebase-setup",
   "repository": "https://github.com/mrkxlia/claude-code-workbench-ja",
   "license": "MIT",
-  "keywords": ["large-codebase", "monorepo", "claude-md", "lsp", "context", "japanese"]
+  "keywords": ["large-codebase", "monorepo", "claude-md", "lsp", "context", "onboarding", "japanese"]
 }
