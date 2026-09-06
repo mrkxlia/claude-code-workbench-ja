@@ -94,6 +94,17 @@
       "keywords": ["feedback", "hooks", "enforcement", "rules", "memory", "japanese"]
     },
     {
+      "name": "adoption-review",
+      "source": "./plugins/adoption-review",
+      "description": "外部の技術（OSS・AI ツール・SaaS・開発手法・論文・スライド・X ポスト・記事）を Web の一次情報から敵対的にレビューし、「実務で採用する価値があるか」だけを判定するスキル1種（adoption-review）とサブエージェント2種。良い点より先に採用しない理由を探し、代替手段（既存 OSS・本体機能・何もしない）と導入/運用/学習/撤退コストまで見てから、7択の結論・6択の採用判断・検証手順・8観点のスコアを返す。証拠収集は adoption-researcher に1スコープ1体（一次情報／運用情報／外部評価の最大3体）で並列委譲し、結論の向きで検証を分岐する（肯定寄りなら adoption-challenger に採用しない論拠だけを構築させ、否定寄りなら「確認できなかったことを減点に使っていないか」を自己点検する）。確認できなかったことは推測で埋めず、減点の根拠にもしない。自分の成果物のレビューは agent-review-panel・本体の code-review に譲る。",
+      "category": "workflow",
+      "author": {
+        "name": "mrkxlia"
+      },
+      "license": "MIT",
+      "keywords": ["adoption", "review", "adversarial", "evaluation", "research", "japanese"]
+    },
+    {
       "name": "learning-coach",
       "source": "./plugins/learning-coach",
       "description": "変更・コード・設計判断を、ユーザー自身が人に説明できる状態になるまで段階的に教える学習コーチ。スキル1種（deep-understand）。教師役の Claude が、問題／解決／広い文脈の3層チェックリストを常時維持し、先にユーザーの現在の理解を述べさせてギャップを埋め、AskUserQuestion のクイズ（正解位置を毎回変える・全問の回答が返るまで答えを明かさない）で理解を実証させてから次の段階へ進む。ELI5 / ELI14 / ELII の粒度指定に対応し、全項目が実証されるまでセッションを終えない。他プラグインが「Claude に良い仕事をさせる」ためのものであるのに対し、これは人間の側の理解を作ることだけを担当する。",
