@@ -16,7 +16,7 @@ Claude Code のテーマから外れる独立ツール・サンプルは別リ�
 
 ## ディレクトリ構成
 
-トップレベルは **plugins/**（プラグイン導入可能な8セクション）・**docs/**（リポジトリ内ドキュメント）の2分類。
+トップレベルは **plugins/**（プラグイン導入可能な9セクション）・**docs/**（リポジトリ内ドキュメント）の2分類。
 コピーして使うテンプレートや独立ツールが増えたら `templates/`・`tools/` を追加する（規約1）。
 ルートの `.claude-plugin/` は分類対象外（規約1の例外、現位置維持）。
 
@@ -29,7 +29,7 @@ claude-code-workbench-ja/
 ├── .github/workflows/ci.yml         # CI（JSON 構文・SKILL.md 形式〔公式ガイド準拠〕・agent frontmatter・shellcheck・.ps1 の BOM・version 差分・内部リンク＝必須、claude plugin validate＝任意）
 ├── .claude-plugin/
 │   └── marketplace.json             # プラグインマーケットプレイス定義（名前: workbench-ja、source は ./plugins/<name>）
-├── plugins/                         # プラグイン導入可能な8セクション（marketplace.json 登録対象・公式標準レイアウト）
+├── plugins/                         # プラグイン導入可能な9セクション（marketplace.json 登録対象・公式標準レイアウト）
 │   ├── pipeline/                    #   コード開発（feature-pipeline）と成果物作成（task-pipeline）を統合したパイプラインテンプレート
 │   │   ├── README.md
 │   │   ├── CLAUDE.md                #     コピーして使う CLAUDE.md サンプル（コードモード）
@@ -81,13 +81,17 @@ claude-code-workbench-ja/
 │   │   ├── agents/                  #     3種（loop-builder / loop-judge〔Edit・Write を持たない〕/ judge-auditor）
 │   │   ├── hooks/                   #     2種（loop-stop-check〔Stop〕・guard-ground-truth〔PreToolUse〕。hooks.json で自動配線・状態ファイルが ACTIVE のときだけ効く）
 │   │   └── setup/settings.json      #     コピー導入用のフック配線サンプル
-│   └── feedback-rules/              #   指摘を1指摘1ファイルで永続化し、指摘回数（count）で強制力を段階的に上げる
+│   ├── feedback-rules/              #   指摘を1指摘1ファイルで永続化し、指摘回数（count）で強制力を段階的に上げる
+│   │   ├── README.md
+│   │   ├── .claude-plugin/plugin.json
+│   │   ├── skills/                  #     3種（feedback-rule〔references 分冊: rule-format〕/ feedback-audit / feedback-setup〔明示専用〕）
+│   │   ├── agents/                  #     1種（feedback-auditor。read-only・提案のみ）
+│   │   ├── hooks/                   #     3種の入口（hooks.json で自動配線。feedback-hook.sh がシム、feedback_rules.py が本体。ルールが無ければ素通り）
+│   │   └── setup/settings.json      #     コピー導入用のフック配線サンプル
+│   └── learning-coach/              #   人間の側の理解を作る学習コーチ（教師役・3層チェックリスト・クイズで実証）
 │       ├── README.md
 │       ├── .claude-plugin/plugin.json
-│       ├── skills/                  #     3種（feedback-rule〔references 分冊: rule-format〕/ feedback-audit / feedback-setup〔明示専用〕）
-│       ├── agents/                  #     1種（feedback-auditor。read-only・提案のみ）
-│       ├── hooks/                   #     3種の入口（hooks.json で自動配線。feedback-hook.sh がシム、feedback_rules.py が本体。ルールが無ければ素通り）
-│       └── setup/settings.json      #     コピー導入用のフック配線サンプル
+│       └── skills/                  #     1種（deep-understand。エージェント・フックは持たない）
 └── docs/                            # リポジトリ内ドキュメント置き場
     ├── README.md
     ├── decisions/                   #   日付つきの決定記録・監査記録（追記のみ。覆すときは新記録を足す）
@@ -96,7 +100,8 @@ claude-code-workbench-ja/
     │   ├── 2026-09-05-large-codebase-harness.md               # 大規模コードベース向け足場を codebase-setup として実装した決定
     │   ├── 2026-09-05-self-correction-loop.md                 # 自己修正ループを self-correct として実装した決定（/goal を再実装しない線引き）
     │   ├── 2026-09-05-design-doc-subagents.md                 # 設計書サブエージェントを既存流用＋2点追加に絞った決定
-    │   └── 2026-09-05-feedback-rules.md                       # 指摘の永続化と段階的強制を feedback-rules として実装した決定（先行事例の調査つき）
+    │   ├── 2026-09-05-feedback-rules.md                       # 指摘の永続化と段階的強制を feedback-rules として実装した決定（先行事例の調査つき）
+    │   └── 2026-09-05-learning-prompt-as-skill.md             # 学習用プロンプトを learning-coach として実装した決定（/goal を再実装しない線引き）
     ├── lessons.md                   #   過去 PR から蒸留した「繰り返さない判断」（根拠の PR 番号つき）
     ├── skill-authoring.md           #   スキルの書き方（公式ガイド準拠。frontmatter 規約・分冊基準・監査結果）
     ├── evals/                       #   主要スキルの期待挙動シナリオ（Sonnet 5 / Opus 5 のパリティ実測用）
@@ -116,7 +121,7 @@ claude-code-workbench-ja/
 2. **各ディレクトリには README.md を置く** — セクションの目的・使い方・ファイル構成を説明する README.md を必ず用意する。
 3. **リポジトリ全体の言語は日本語** — README.md・CLAUDE.md など、このリポジトリ自体のドキュメントは日本語で記述する。
 4. **マーケットプレイス定義はルートの `.claude-plugin/` に置く** — Claude Code プラグイン仕様上の必須配置であり、規約1の例外。
-5. **プラグイン配下を変更したら version を上げる（plugin.json のみに書く）** — `plugins/` 配下の8プラグイン（pipeline・codex-bridge・kiro-bridge・agent-review-panel・model-setup・codebase-setup・self-correct・feedback-rules）の配信対象ファイル（`skills/`・`agents/`・`hooks/` 配下。これらは既定探索パスのためプラグイン導入で自動配信される）を変更したら、該当する `plugins/<name>/.claude-plugin/plugin.json` の `version` をセマンティックバージョニングで更新する。**version は plugin.json のみに書く**（`.claude-plugin/marketplace.json` 側には書かない — plugin.json が優先されるため二重管理は非推奨、公式仕様）。CLAUDE.md / CLAUDE.task.md サンプル・`setup/settings.json` は setup スキルがコピー配布するため version 対象外。
+5. **プラグイン配下を変更したら version を上げる（plugin.json のみに書く）** — `plugins/` 配下の9プラグイン（pipeline・codex-bridge・kiro-bridge・agent-review-panel・model-setup・codebase-setup・self-correct・feedback-rules・learning-coach）の配信対象ファイル（`skills/`・`agents/`・`hooks/` 配下。これらは既定探索パスのためプラグイン導入で自動配信される）を変更したら、該当する `plugins/<name>/.claude-plugin/plugin.json` の `version` をセマンティックバージョニングで更新する。**version は plugin.json のみに書く**（`.claude-plugin/marketplace.json` 側には書かない — plugin.json が優先されるため二重管理は非推奨、公式仕様）。CLAUDE.md / CLAUDE.task.md サンプル・`setup/settings.json` は setup スキルがコピー配布するため version 対象外。
 6. **プラグインの skills/agents/hooks は公式標準レイアウト（プラグインルート直下）に置く** — `<plugin>/skills/`・`<plugin>/agents/`・`<plugin>/hooks/hooks.json` が既定探索パスであり、plugin.json に `skills`/`hooks` フィールドを明示しない（宣言と実体の二重管理を避ける）。コピー導入用の `settings.json` サンプルはプラグインルート直下に置けない（Claude Code の予約パス）ため `<plugin>/setup/settings.json` に置く。pipeline の `hooks/` は導入先リポジトリへコピーする資材であり、この配置自体はプラグインとして自動発火しない（pipeline-setup が対象リポジトリの `.claude/hooks/` へコピーし `.claude/settings.json` に配線する）。
 
 ---
