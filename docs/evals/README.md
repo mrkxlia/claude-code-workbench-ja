@@ -1,6 +1,6 @@
 # evals — 主要スキルの「期待挙動」シナリオ
 
-`task-brief` / `verify-fresh` / `long-run` / `review-panel` について、**「この入力に対して上位モデルは
+`task-brief` / `verify-fresh` / `long-run` / `review-panel` / `adoption-review` について、**「この入力に対して上位モデルは
 こう振る舞う」**を評価シナリオとして固定したもの。Sonnet 5 と Opus 5 のパリティを実測するための物差し。
 
 ## なぜ Markdown なのか（`claude plugin eval` を使わない理由）
@@ -37,6 +37,7 @@ $ echo $?
 | [`verify-fresh.md`](verify-fresh.md) | `verify-fresh` | 4 | 反証フレーミング・網羅指示・**Opus 5 で反射的に呼ばない** |
 | [`long-run.md`](long-run.md) | `long-run` | 4 | 停止条件の閉じた列挙・証拠つき報告・ブリーフ固定 |
 | [`review-panel.md`](review-panel.md) | `review-panel` | 3 | ブラインド並列・単独レビューへの切り分け・deep の裁定 |
+| [`adoption-review.md`](adoption-review.md) | `adoption-review` | 3 | 一次情報の収集・自分の差分レビューを横取りしない・推測で埋めない |
 
 ## 結果記録
 

@@ -16,7 +16,7 @@ flowchart TD
     N1 --> N2{"何を作る？"}
     N2 -->|"コードで機能開発"| N3["pipeline の pipeline-setup を<br/>コードモードで実行"]
     N2 -->|"図・ドキュメント等"| N4["pipeline の pipeline-setup を<br/>成果物モードで実行"]
-    N3 --> N6["codex-bridge・kiro-bridge・<br/>agent-review-panel・self-correct は<br/>いつでも追加導入可"]
+    N3 --> N6["codex-bridge・kiro-bridge・<br/>agent-review-panel・self-correct・<br/>adoption-review は<br/>いつでも追加導入可"]
     N4 --> N6
 
     Existing --> E1["1. 現状を仕様化する（推奨）<br/>cc-rsg 等の外部ツールで SPEC.md を生成"]
@@ -34,7 +34,7 @@ flowchart TD
 1. **個人の運用ルールを先に整える**（Claude Code のユーザー設定に一度入れれば全プロジェクトで効く）— `model-setup` を導入（9ルール＋プロファイル別追補＋`task-brief`／`backlog-loop`／`pr-merge`／`fan-out`／`long-run`／`verify-fresh`）。
 2. **プロジェクトの土台を選ぶ**（対象リポジトリに導入。何を作るかで変わる）
    - `pipeline` の `pipeline-setup` を実行（コード/成果物のモード選択つき。エージェント・CLAUDE.md・フックを対象リポジトリに自動導入）
-3. 別 AI へのレビュー委譲（`codex-bridge`・`kiro-bridge`）、多視点レビュー（`agent-review-panel`）、自己修正ループ（`self-correct`）は、上記と独立して**いつ追加してもよい**。
+3. 別 AI へのレビュー委譲（`codex-bridge`・`kiro-bridge`）、多視点レビュー（`agent-review-panel`）、自己修正ループ（`self-correct`）、外部技術の採用可否レビュー（`adoption-review`）は、上記と独立して**いつ追加してもよい**。
 
 ### 既存リポジトリ（すでにコード・成果物がある）
 
@@ -75,13 +75,13 @@ flowchart TD
 
 > 上の表は「導入するだけで常時発火する」フックの一覧です。**model-setup にもフックが1つありますが、
 > `/long-run` を起動したときだけ登録される opt-in**（圧縮後にブリーフを文脈へ戻す）なのでここには載せていません。
-> kiro-bridge・agent-review-panel・codebase-setup はスキルのみで完結し、フックを持ちません。
+> kiro-bridge・agent-review-panel・adoption-review・codebase-setup はスキルのみで完結し、フックを持ちません。
 
 ## 導入方法（クイックスタート）
 
 ### 方法1: プラグインで導入する（最も簡単）
 
-Claude Code でそのまま実行します（clone 不要）。現在8つのプラグインを配信しています:
+Claude Code でそのまま実行します（clone 不要）。現在9つのプラグインを配信しています:
 
 ```
 /plugin marketplace add mrkxlia/claude-code-workbench-ja
@@ -89,6 +89,7 @@ Claude Code でそのまま実行します（clone 不要）。現在8つのプ�
 /plugin install codex-bridge@workbench-ja
 /plugin install kiro-bridge@workbench-ja
 /plugin install agent-review-panel@workbench-ja
+/plugin install adoption-review@workbench-ja
 /plugin install model-setup@workbench-ja
 /plugin install codebase-setup@workbench-ja
 /plugin install self-correct@workbench-ja
@@ -110,6 +111,13 @@ Claude Code でそのまま実行します（clone 不要）。現在8つのプ�
   の討論つきでレビューさせられます（基本は依存ゼロ）。`deep` で引用検証＋裁定者の最終評決、
   `codex`・`kiro` で外部パネリスト（OpenAI Codex／Kiro・任意・同時指定も可）を混成。詳しくは
   [agent-review-panel/README.md](plugins/agent-review-panel/) を参照。
+- **adoption-review** — 導入すると `/adoption-review`（URL・GitHub リポジトリ・X ポスト・スライド・
+  論文・SaaS・ツール名を渡すと、Web の一次情報を集めてから「実務で採用する価値があるか」を敵対的に
+  判定）が使えます。**良い点より先に「採用しない理由」を探し**、代替手段（既存 OSS・本体機能・
+  何もしない）と導入/運用/学習/撤退コストまで見たうえで、結論・採用判断・検証手順・スコアを返します。
+  証拠収集は `adoption-researcher` に1ソース1体で並列委譲し、結論が肯定寄りになったときだけ
+  `adoption-challenger`（採用しない論拠だけを作る敵対役）を当てます。確認できなかったことは
+  推測で埋めません。詳しくは [adoption-review/README.md](plugins/adoption-review/) を参照。
 - **model-setup**（旧名 sonnet-setup） — 導入すると `/task-brief`（着手前にタスク仕様を一括
   ブリーフ化）・`/backlog-loop`（backlog.md 駆動の定型ループ）・`/pr-merge`（PR作成〜マージ〜
   後片付け、git/gh 専用）・`/fan-out`（独立サブタスクの並列委譲＋検証マージ）・`/long-run`
@@ -161,6 +169,9 @@ mkdir -p .claude/skills .claude/agents && cp -r /tmp/workbench/plugins/codex-bri
 # kiro-bridge — Kiro 依頼スキル2種＋エージェント2種をプロジェクトへ
 mkdir -p .claude/skills .claude/agents && cp -r /tmp/workbench/plugins/kiro-bridge/skills/* .claude/skills/ && cp -r /tmp/workbench/plugins/kiro-bridge/agents/* .claude/agents/
 
+# adoption-review — 採用可否レビューのスキル1種＋エージェント2種（どのリポジトリでも使うならグローバルへ）
+mkdir -p ~/.claude/skills ~/.claude/agents && cp -r /tmp/workbench/plugins/adoption-review/skills/* ~/.claude/skills/ && cp -r /tmp/workbench/plugins/adoption-review/agents/* ~/.claude/agents/
+
 # model-setup — 運用ルール（共通9ルール＋プロファイル追補のどちらか一方）をグローバル CLAUDE.md に追記
 #   私用PC(Opus+Sonnet)は CLAUDE.private.md、会社PC(Sonnet単独)は CLAUDE.company.md
 cat /tmp/workbench/plugins/model-setup/CLAUDE.md /tmp/workbench/plugins/model-setup/CLAUDE.company.md >> ~/.claude/CLAUDE.md
@@ -203,6 +214,7 @@ chmod +x .claude/hooks/feedback-hook.sh
 | 別 AI（OpenAI Codex）にレビュー/実装/相談を委譲したい | **codex-bridge**（`/codex-review` ほか） | Claude が Codex CLI を非対話で駆動。ユーザーは Codex を触らない |
 | 別 AI（Kiro）にレビュー/相談を委譲したい | **kiro-bridge**（`/kiro-review`・`/kiro-ask`） | Claude が kiro-cli を非対話・read-only で駆動。実装委譲はしない |
 | 重要な判断を複数の視点で敵対的にレビュー・討論させたい | **agent-review-panel**（`/review-panel`） | 既定3名がブラインド並列→相互批判→統合。deep で引用検証＋裁定者、codex・kiro で異種モデル混成（同時指定も可） |
+| 流れてきたツール・OSS・論文・X ポストを採用すべきか判断したい | **adoption-review**（`/adoption-review`） | Web の一次情報を集め、良い点より先に採用しない理由を探す。話題性・スター数は採用理由にしない |
 | 要件・仕様を質問で詰めたい | **clarify**（pipeline に同梱） | 単体利用も可（各プラグイン README の「単体利用」参照） |
 | 実装中の判断・逸脱を記録したい | **notes**（pipeline に同梱） | 単体利用も可。物証（file:line・テスト名）つきで記録 |
 | 既存コード/成果物から仕様書を逆引きしたい | 外部ツール（[cc-rsg](https://github.com/daishir0/cc-rsg) 等） | 本リポジトリは持たず外部ツールへ委譲。生成後は pipeline の researcher が一次資料として読む |
@@ -263,7 +275,7 @@ UI 試作では避けて軽量な `build-with-tests` を使う、です（参考
 （コピーして使うテンプレートや独立ツールが増えたら `templates/`・`tools/` を追加する規約になっています。
 詳細なディレクトリ構成は [`CLAUDE.md`](CLAUDE.md) 参照）。
 
-### plugins/ — プラグイン導入可能な8セクション
+### plugins/ — プラグイン導入可能な9セクション
 
 #### [`plugins/model-setup/`](plugins/model-setup/)
 モデル運用テンプレート（旧名 sonnet-setup。Opus 5 + Sonnet 5 の私用PC / Sonnet 単独の会社PC
@@ -317,6 +329,24 @@ bash 系のため Windows は Git Bash / WSL が必要・`jq` は不要）。**�
 を混成して同一モデルの相関バイアスを減らせます。1名で足りる相談は内蔵の Task サブエージェントに、単独の
 コードレビューは内蔵 `/code-review`・`/codex-review`・`/kiro-review` に任せる住み分けです。
 **プラグイン1コマンドで導入可能**（上の「導入方法」参照）。
+
+#### [`plugins/adoption-review/`](plugins/adoption-review/)
+外部の技術（OSS・AI ツール・SaaS・開発手法・論文・スライド・X ポスト・記事）を **Web の一次情報から
+敵対的にレビュー**し、「実務で採用する価値があるか」だけを判定するスキル1種とサブエージェント2種。
+**adoption-review**（`/adoption-review [対象]`）が、対象の種別を判定して想定用途を固定し、
+`adoption-researcher`（read-only・Web 検索）を一次情報／運用情報（Releases・License・Pricing・
+Security）／**外部評価**（Hacker News・Reddit・実運用事例）の3スコープに**1ソース1体で並列委譲**、
+集めた事実を「明示的な主張／暗黙の主張／確認できた効果／証拠が弱い効果」に分けたうえで批判します。
+評価の順序が逆（良い点より先に**採用しない理由**を探す）で、**話題性・スター数・フォロワー数・
+紹介者・肩書きは採用理由にしません**。代替手段（既存 OSS・ツール本体の機能・小さい自作スクリプト・
+**何もしない**）と導入/運用/学習/**撤退**コストを必ず突き合わせ、結論が肯定寄りになったときだけ
+`adoption-challenger`（結論を渡されない fresh context で「採用しない論拠」だけを構築する敵対役）を
+当てて、反論に耐えた根拠だけを残します。**確認できなかったことは推測で埋めず「確認できなかった」と
+明記**します（取得できない X ポスト・画像のみの PDF など）。出力は結論7択・採用判断6択・検証手順・
+8観点スコアの固定型。自分のコード差分・計画・ドキュメントのレビューは agent-review-panel・本体の
+`/code-review` に譲ります。**プラグイン1コマンドで導入可能**（上の「導入方法」参照。設計の経緯と
+先行事例の調査は
+[`docs/decisions/2026-09-06-adoption-review.md`](docs/decisions/2026-09-06-adoption-review.md)）。
 
 #### [`plugins/codebase-setup/`](plugins/codebase-setup/)
 大規模リポジトリ（数十万行以上・モノレポ・トップレベルが数十以上）を Claude Code から
