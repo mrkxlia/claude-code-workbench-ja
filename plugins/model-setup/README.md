@@ -142,6 +142,17 @@ cat plugins/model-setup/CLAUDE.md plugins/model-setup/CLAUDE.company.md >> ~/.cl
 宣言してあり、**`/long-run` を起動したときだけ登録**され、セッションが終われば外れます。
 そのため `settings.json` を編集する必要はありません（bash が使える環境の場合）。
 
+**フックが埋めるのは圧縮直後の1点だけです。** 圧縮のときに何が自動で戻るかは公式が明示しており、
+プロジェクト直下の CLAUDE.md・スコープ無しの rules・auto memory・**Plan モードで書いた計画ファイル**は
+disk から再注入されます。**起動済みスキル本体**も再注入されますが、1スキル 5,000 トークン・合計
+25,000 トークンが上限で、超過分は古い順に脱落し、切り詰めはファイル先頭を残します。戻らないのは
+「会話の中だけで足した制約」であり、ブリーフファイルはそこを埋めるためのものです。
+圧縮を手前に倒したい・焦点を指定したいときは、本体の `/autocompact <トークン数>`・`/compact <指示>`・
+CLAUDE.md の `# Compact instructions` 節が使えます（`# Compact instructions` が自動圧縮にも効くかは
+公式ドキュメントに記載が無いため、効く前提で運用しないでください）。
+出典: [What survives compaction](https://code.claude.com/docs/en/context-window#what-survives-compaction)、
+[Manage costs effectively](https://code.claude.com/docs/en/costs#manage-context-proactively)（ともに 2026-09-06 取得）。
+
 | 導入経路 | フックを動かすために必要なこと |
 |---|---|
 | A. プラグイン | **なし**。`hooks/` は自動配信され、frontmatter が `${CLAUDE_PLUGIN_ROOT}` 経由で見つけます |
