@@ -93,7 +93,8 @@ Phase 0 で目的・評価基準・Ground Truth・変更禁止範囲・最大回
 | 本体機能 | このプラグインでの扱い |
 |---------|----------------------|
 | `/goal` | **再実装しない。ループ外側の完了判定として併用する。** `/goal` の評価器はツールを持たず、判定材料は会話に出た内容だけなので、実ファイル・テスト結果に基づく検査は `loop-judge` が担当する |
-| prompt 型 Stop フック | 同じ理由でファイルを開けない。本プラグインは**状態ファイルを読む command 型**で決定的に判定する |
+| prompt 型 Stop フック | 同じ理由でファイルを開けない（`/goal` 自体が session スコープの prompt 型 Stop フックのラッパー）。本プラグインは**状態ファイルを読む command 型**で決定的に判定する |
+| agent 型フック（`type: "agent"`） | **採らない。** ファイルを読みコマンドを実行できるフックだが、公式ドキュメントが「実験的。本番ワークフローでは command フックを推奨」と明記している。根拠に基づく検査は `loop-judge`（Task）、停止ゲートは command 型に分ける |
 | Task サブエージェント | そのまま使う。役割・ツール権限・戻り値契約を定義したのがこのプラグイン |
 | Permissions | そのまま使う。`/goal` を設定しても権限は広がらないため、危険操作の制限は従来どおり permissions で行う |
 
@@ -155,4 +156,11 @@ plugins/self-correct/
 ## 出典
 
 - Anthropic「Building effective agents」の Evaluator-Optimizer パターン
-- Claude Code 公式ドキュメント（`/goal`・Hooks・Subagents・Permissions）
+- [Claude Code 公式ドキュメント `/goal`](https://code.claude.com/docs/en/goal)（2026-09-06 取得）
+  — 「The evaluator ... does not call tools, so it can only judge what Claude has already
+  surfaced in the conversation.」「The condition can be up to 4,000 characters.」
+  「A goal doesn't change your permission mode.」
+- [Claude Code 公式ドキュメント Hooks guide](https://code.claude.com/docs/en/hooks-guide)（2026-09-06 取得）
+  — agent 型フックについて「Agent hooks are experimental. ... For production workflows,
+  prefer command hooks.」
+- Claude Code 公式ドキュメント（Subagents・Permissions）

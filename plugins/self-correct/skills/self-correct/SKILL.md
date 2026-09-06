@@ -53,8 +53,11 @@ Claude が会話に出した内容だけです。「テストが通った」と�
 ## 段階（いきなり全部やらない）
 
 1. **Level 1** — `/goal` に検証可能な完了条件を書くだけ。まずここで価値を確かめる
-2. **Level 2** — `loop-builder` + `loop-judge` + Manager 判断（このスキルの本体）
-3. **Level 3** — `self-correct-setup` で CLAUDE.md・フック・状態ファイルを常設化する
+2. **Level 1.5** — `loop-judge` だけを立て、**自動修正はまだ回さない**。作る → Judge → **人間が
+   指摘の当否を見る**、を数回やって Judge の精度を確かめる。ここを飛ばすと、精度の分からない
+   Judge に修正の指揮を渡すことになる（正解つきで採点するなら `/judge-eval`）
+3. **Level 2** — `loop-builder` + `loop-judge` + Manager 判断（このスキルの本体）
+4. **Level 3** — `self-correct-setup` で CLAUDE.md・フック・状態ファイルを常設化する
 
 ## フロー
 
