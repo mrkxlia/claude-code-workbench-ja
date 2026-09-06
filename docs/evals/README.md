@@ -37,7 +37,7 @@ $ echo $?
 | [`verify-fresh.md`](verify-fresh.md) | `verify-fresh` | 4 | 反証フレーミング・網羅指示・**Opus 5 で反射的に呼ばない** |
 | [`long-run.md`](long-run.md) | `long-run` | 4 | 停止条件の閉じた列挙・証拠つき報告・ブリーフ固定 |
 | [`review-panel.md`](review-panel.md) | `review-panel` | 3 | ブラインド並列・単独レビューへの切り分け・deep の裁定 |
-| [`adoption-review.md`](adoption-review.md) | `adoption-review` | 3 | 一次情報の収集・自分の差分レビューを横取りしない・推測で埋めない |
+| [`adoption-review.md`](adoption-review.md) | `adoption-review` | 7 | 一次情報の収集・自分の成果物のレビューを横取りしない・推測で埋めない・検証ゲートの分岐・スコアの根拠 |
 
 ## 結果記録
 

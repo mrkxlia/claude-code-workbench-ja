@@ -101,12 +101,13 @@ claude-code-workbench-ja/
     │   ├── 2026-09-05-large-codebase-harness.md               # 大規模コードベース向け足場を codebase-setup として実装した決定
     │   ├── 2026-09-05-self-correction-loop.md                 # 自己修正ループを self-correct として実装した決定（/goal を再実装しない線引き）
     │   ├── 2026-09-05-design-doc-subagents.md                 # 設計書サブエージェントを既存流用＋2点追加に絞った決定
-    │   └── 2026-09-05-feedback-rules.md                       # 指摘の永続化と段階的強制を feedback-rules として実装した決定（先行事例の調査つき）
+    │   ├── 2026-09-05-feedback-rules.md                       # 指摘の永続化と段階的強制を feedback-rules として実装した決定（先行事例の調査つき）
+    │   └── 2026-09-06-adoption-review.md                      # 外部技術の採用可否レビューを adoption-review として実装した決定（先行事例の調査つき）
     ├── lessons.md                   #   過去 PR から蒸留した「繰り返さない判断」（根拠の PR 番号つき）
     ├── skill-authoring.md           #   スキルの書き方（公式ガイド準拠。frontmatter 規約・分冊基準・監査結果）
     ├── evals/                       #   主要スキルの期待挙動シナリオ（Sonnet 5 / Opus 5 のパリティ実測用）
     │   ├── README.md                #     走らせ方・結果記録表・Markdown 形式である理由
-    │   └── {task-brief,verify-fresh,long-run,review-panel}.md
+    │   └── {task-brief,verify-fresh,long-run,review-panel,adoption-review}.md
     ├── backlog-2026-09.md           #   Sonnet/Opus 実行用ブリーフ（完了条件・検証方法つき）
     ├── pipeline-spec-alignment-proposal.html  #   パイプラインと仕様整合の提案資料（歴史的決定記録）
     └── skills-guide/                #   おすすめSkillsガイド（優先度・業務タイプ別）

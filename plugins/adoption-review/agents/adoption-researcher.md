@@ -7,8 +7,9 @@ description: >-
   採用可否の判断・評価・スコアリングはしない（判断は呼び出し側が行う）。adoption-review
   スキルから Task ツールで並列起動される。ファイルは書き換えない。
 tools: Read, Grep, Glob, WebSearch, WebFetch
-# 検索語の組み立てと一次情報の選別に判断が要るため inherit
-model: inherit
+# 事実の抽出と出典付与が仕事で、評価判断は禁止しているため sonnet
+# （判断を伴う役だけ inherit — review-panel のトークン規律と同じ方針）
+model: sonnet
 color: blue
 ---
 
