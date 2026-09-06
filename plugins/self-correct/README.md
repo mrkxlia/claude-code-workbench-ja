@@ -59,7 +59,7 @@ Judge は書き込みツールを持っていないため、指摘した箇所�
 
 | フック | イベント | 効果 |
 |--------|---------|------|
-| **loop-stop-check** | Stop | 状態ファイルを読み、ループが未完了なら停止を止めて次の一手を促す。上限到達時は引き継ぎ書の作成を促す |
+| **loop-stop-check** | Stop | 状態ファイルを読み、ループが未完了なら停止を止めて次の一手を促す。**上限到達・進捗なし2ラウンド連続では引き継ぎ（ESCALATE）を、リグレッション検出時は指摘外の変更の差し戻しを促す** |
 | **guard-ground-truth** | PreToolUse（Edit/Write/NotebookEdit） | 判定の根拠（元資料・仕様・fixture）への書き込みを `exit 2` で拒否する |
 
 どちらも `.claude/self-correct/state.json` が無いか `status` が `ACTIVE` でなければ**素通り**
@@ -93,7 +93,8 @@ Phase 0 で目的・評価基準・Ground Truth・変更禁止範囲・最大回
 | 本体機能 | このプラグインでの扱い |
 |---------|----------------------|
 | `/goal` | **再実装しない。ループ外側の完了判定として併用する。** `/goal` の評価器はツールを持たず、判定材料は会話に出た内容だけなので、実ファイル・テスト結果に基づく検査は `loop-judge` が担当する |
-| prompt 型 Stop フック | 同じ理由でファイルを開けない。本プラグインは**状態ファイルを読む command 型**で決定的に判定する |
+| prompt 型 Stop フック | 同じ理由でファイルを開けない（`/goal` 自体が session スコープの prompt 型 Stop フックのラッパー）。本プラグインは**状態ファイルを読む command 型**で決定的に判定する |
+| agent 型フック（`type: "agent"`） | **採らない。** ファイルを読みコマンドを実行できるフックだが、公式ドキュメントが「実験的。本番ワークフローでは command フックを推奨」と明記している。根拠に基づく検査は `loop-judge`（Task）、停止ゲートは command 型に分ける |
 | Task サブエージェント | そのまま使う。役割・ツール権限・戻り値契約を定義したのがこのプラグイン |
 | Permissions | そのまま使う。`/goal` を設定しても権限は広がらないため、危険操作の制限は従来どおり permissions で行う |
 
@@ -120,6 +121,8 @@ pipeline の中で使うこともできます（成果物を作るフェーズ�
 - [ ] FAIL 理由を Builder へ具体的に返している（場所・証拠・最小修正指示）
 - [ ] 問題がない箇所を再生成しない運用になっている
 - [ ] 最大修正回数・最大ターン数がある
+- [ ] **リグレッション**（前ラウンド PASS の基準が FAIL に転じた）と**進捗なし**（未解決件数が
+      減らない）を毎ラウンド計算し、状態ファイルに書いている
 - [ ] 高リスク操作（送信・公開・削除・課金）は人間確認を残している
 - [ ] **`/judge-eval` で Judge そのものを検定した**
 
@@ -155,4 +158,11 @@ plugins/self-correct/
 ## 出典
 
 - Anthropic「Building effective agents」の Evaluator-Optimizer パターン
-- Claude Code 公式ドキュメント（`/goal`・Hooks・Subagents・Permissions）
+- [Claude Code 公式ドキュメント `/goal`](https://code.claude.com/docs/en/goal)（2026-09-06 取得）
+  — 「The evaluator ... does not call tools, so it can only judge what Claude has already
+  surfaced in the conversation.」「The condition can be up to 4,000 characters.」
+  「A goal doesn't change your permission mode.」
+- [Claude Code 公式ドキュメント Hooks guide](https://code.claude.com/docs/en/hooks-guide)（2026-09-06 取得）
+  — agent 型フックについて「Agent hooks are experimental. ... For production workflows,
+  prefer command hooks.」
+- Claude Code 公式ドキュメント（Subagents・Permissions）

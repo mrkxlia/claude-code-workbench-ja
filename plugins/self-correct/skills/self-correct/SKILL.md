@@ -53,8 +53,11 @@ Claude が会話に出した内容だけです。「テストが通った」と�
 ## 段階（いきなり全部やらない）
 
 1. **Level 1** — `/goal` に検証可能な完了条件を書くだけ。まずここで価値を確かめる
-2. **Level 2** — `loop-builder` + `loop-judge` + Manager 判断（このスキルの本体）
-3. **Level 3** — `self-correct-setup` で CLAUDE.md・フック・状態ファイルを常設化する
+2. **Level 1.5** — `loop-judge` だけを立て、**自動修正はまだ回さない**。作る → Judge → **人間が
+   指摘の当否を見る**、を数回やって Judge の精度を確かめる。ここを飛ばすと、精度の分からない
+   Judge に修正の指揮を渡すことになる（正解つきで採点するなら `/judge-eval`）
+3. **Level 2** — `loop-builder` + `loop-judge` + Manager 判断（このスキルの本体）
+4. **Level 3** — `self-correct-setup` で CLAUDE.md・フック・状態ファイルを常設化する
 
 ## フロー
 
@@ -103,25 +106,36 @@ Claude が会話に出した内容だけです。「テストが通った」と�
 ### Phase 3 — Decide（Manager の判断・Task 起動なし）
 
 判定を、次の**閉じた規則**に当てはめる。ここを曖昧にするとループが終わらない。
+**上から順に当てはめ、最初に当たったものを採る**（下ほど弱い条件）。
 
 | 条件 | 次の一手 |
 |------|---------|
+| 修正回数が上限に達した | `ESCALATE` |
+| 未解決の Critical / Major の**件数**が2ラウンド連続で減っていない | `ESCALATE`（修正が効いていない。原因は基準の矛盾・根拠不足・権限不足のいずれかであることが多い） |
+| 同じ指摘 ID の Critical / Major が**2ラウンド連続**で残った | `ESCALATE`（修正が効いていない） |
+| 前ラウンドで PASS だった基準が FAIL に転じた（**リグレッション**） | `REVERT`（Phase 4 へ） — 指摘外の箇所に入った変更を差し戻してから直し直す。同じ基準が2ラウンド連続で転んだら `ESCALATE` |
 | Critical が1件以上 | `RETRY`（Phase 4 へ） |
 | Major が1件以上 | `RETRY` |
 | 重要な基準が UNVERIFIED | `VERIFY` — 追加調査・追加検証で根拠を取りに行く。取れなければ `ESCALATE` |
-| 同じ指摘 ID の Critical / Major が**2ラウンド連続**で残った | `ESCALATE`（修正が効いていない） |
-| 修正回数が上限に達した | `ESCALATE` |
 | Critical = 0 かつ Major = 0 かつ 重要な UNVERIFIED = 0 | `PASS`（Minor は報告に載せて判断を委ねる） |
+
+**リグレッションと進捗なしは、毎ラウンド必ず計算する。** Judge の `Passed`（PASS した基準
+番号の一覧）を前ラウンドのものと突き合わせ、結果を状態ファイルの `passed_ids` /
+`regressed_ids` / `regressed_count` / `no_progress_streak` に書く。ここを更新しないと、
+Stop フックのゲートは**黙って効かなくなる**。
 
 **UNVERIFIED は「まだ判定できていない」であって PASS ではない。** 情報不足なら、文章を
 書き直すのではなく**根拠を取りに戻る**（追加調査も自己修正のうち）。
 
 ### Phase 4 — Retry
 
-`RETRY` なら Phase 1 に戻る。守ること:
+`RETRY` / `REVERT` なら Phase 1 に戻る。守ること:
 
 - **FAIL した箇所だけを直す。PASS した箇所は触らない。** 全文再生成は、Judge が構成そのものを
   Critical と判定した場合に限る。1か所の指摘で全体を作り直すと、前ラウンドで通った基準が壊れる
+- **`REVERT` は「戻してから直す」。** 直前ラウンドで**指摘されていない箇所**に入った変更を
+  先に差し戻し、そのうえで FAIL 指摘だけを直す。差し戻しもラウンド数（`attempt`）を
+  消費する（無限に戻し続けられてはいけない）
 - 修正後は**必ず再検査**する（Phase 2）。再検査では前回 FAIL の基準を優先しつつ、全基準を見る
 
 ### Phase 5 — Stop / 完了
@@ -145,6 +159,10 @@ Claude が会話に出した内容だけです。「テストが通った」と�
   "max_attempts": 3,
   "verdict": "FAIL",
   "open_ids": ["C1", "M2"],
+  "passed_ids": [1, 3, 5],
+  "regressed_ids": [],
+  "regressed_count": 0,
+  "no_progress_streak": 0,
   "protected": ["references/"],
   "updated": "2026-09-05T10:00:00Z"
 }
@@ -153,6 +171,12 @@ Claude が会話に出した内容だけです。「テストが通った」と�
 - `status` — `ACTIVE` / `PASS` / `ESCALATED`。`ACTIVE` の間だけ2つのフックが効く
 - `attempt` — 実施済みの修正ラウンド数。Phase 4 に入るたびに +1
 - `verdict` / `open_ids` — 直近の Judge 判定と、未解決の指摘 ID（連続 FAIL の検出に使う）
+- `passed_ids` — 直近ラウンドで Judge が PASS と判定した**基準番号**。次ラウンドの比較元
+  （リグレッション検出に使う。フックは読まない）
+- `regressed_ids` / `regressed_count` — 前ラウンド PASS → 今ラウンド FAIL に転じた基準番号と、
+  その件数。**件数はフックが読む**（1件以上で差し戻しのゲートが効く）
+- `no_progress_streak` — 未解決 Critical / Major 件数が減らなかった連続ラウンド数。
+  減ったら 0 に戻す。**フックが読む**（2以上で ESCALATE のゲートが効く）
 - `protected` — 変更禁止範囲。ここに書いたパスへの書き込みはフックが exit 2 で拒否する
 - `updated` — 更新のたびに必ず変える（Stop フックはこの値で「同じ状態への再通知」を抑止する。
   値を変えないと、次にゲートが必要な場面で通知が出ない）

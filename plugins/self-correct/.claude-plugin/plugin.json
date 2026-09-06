@@ -1,6 +1,6 @@
 {
   "name": "self-correct",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "成果物を「作る役（loop-builder）」と「検査する役（loop-judge）」に分離し、FAIL した箇所だけを直して再検査する自己修正ループ。スキル3種（self-correct / judge-eval / self-correct-setup）とサブエージェント3種（loop-builder / loop-judge / judge-auditor）、状態ファイル駆動の決定的な停止ゲート（Stop フック）と Ground Truth 保護フックを提供する。本体の /goal はループ外側の完了判定として併用し、再実装しない（/goal の評価器はツールを持たず実ファイル・テスト結果を見られないため、根拠に基づく検査は loop-judge が担当する）。判定の根拠（Ground Truth）の設計と、Judge 自身を正解つきセットで採点する judge-eval を持つのが他のレビュー系プラグインとの違い。",
   "author": {
     "name": "mrkxlia",
