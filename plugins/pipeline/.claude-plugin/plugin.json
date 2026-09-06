@@ -1,6 +1,6 @@
 {
   "name": "pipeline",
-  "version": "2.3.0",
+  "version": "2.3.1",
   "description": "コード開発（feature-pipeline・7エージェント）とコード以外の成果物（task-pipeline・5エージェント）を1つに統合したパイプラインテンプレート。/pipeline:pipeline-setup がモード選択つきで対象リポジトリを解析し、エージェント・CLAUDE.md・フックを自動導入する。旧 software-pipeline 3.x / task-pipeline 2.x の後継。レガシーコードからの仕様逆引きは cc-rsg 等の外部ツールへ委譲する（2.0.0 で spec-extract スキルを削除）。2.1.0 で SPEC.md の確定要件を SessionStart / SubagentStart で注入する inject-spec-summary と、ビルダーの担当外パスへの書き込みを拒否する guard-builder-paths を追加（フック5種）。2.3.0 で設計書向けに design-docs スキル（要件定義・基本設計・詳細設計・DB設計・図表の章立てテンプレート）と design-doc-checker エージェント（フェーズ間の矛盾・用語ゆれ・実コードとの乖離の検査）を追加（スキル8種・エージェント9種）。",
   "author": {
     "name": "mrkxlia",

@@ -112,6 +112,7 @@ claude-code-workbench-ja/
     │   ├── 2026-09-06-self-correct-stop-rules.md              # self-correct に停止ルール2件（リグレッション検出・進捗なし検出）を追加した決定
     │   ├── 2026-09-06-prompt-techniques-7-adoption.md         # プロンプト手法5件の採用可否レビュー（4件は上位互換が実装済み・1件はルール1と矛盾のため取り込みなし）
     │   ├── 2026-09-06-plan-review-before-present.md          # プラン提示前の Codex レビューの採用可否（opt-in フック1本だけ取り込み・モデル固定と resume は不採用）
+    │   ├── 2026-09-06-pm-skill-article-adoption.md          # PM 業務の Skill 化記事の採用可否（生成物の鮮度チェックと【要確認】の絞り込みの2点だけ取り込み）
     │   └── 2026-09-06-for-file-claude-md-adoption.md          # FOR[yourname].md 自動生成（CLAUDE.md 1行）の採用可否レビュー（手法は不採用・project-catchup に「設計判断の理由」章だけ追加）
     ├── lessons.md                   #   過去 PR から蒸留した「繰り返さない判断」（根拠の PR 番号つき）
     ├── skill-authoring.md           #   スキルの書き方（公式ガイド準拠。frontmatter 規約・分冊基準・監査結果）
