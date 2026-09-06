@@ -33,13 +33,13 @@
 
 ## 決定1: 既存プラグインに入れず、新規プラグインとして独立させる
 
-既存7プラグインはすべて「**Claude に良い仕事をさせる**」ための道具である。
+既存8プラグインはすべて「**Claude に良い仕事をさせる**」ための道具である。
 
 | プラグイン | 目的 |
 |---|---|
 | pipeline / self-correct | Claude に成果物を作らせ、検査させる |
 | codex-bridge / kiro-bridge / agent-review-panel | Claude の成果物を別の目で検査させる |
-| model-setup | Claude の振る舞いを常設化する |
+| model-setup / feedback-rules | Claude の振る舞いを常設化する・人間の指摘で縛る |
 | codebase-setup | **Claude が**リポジトリを読みやすくする足場を作る |
 
 本スキルだけが「**人間の側の理解を作る**」ことを目的にしており、どのプラグインの主題にも

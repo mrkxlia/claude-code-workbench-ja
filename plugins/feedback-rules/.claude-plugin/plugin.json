@@ -1,0 +1,13 @@
+{
+  "name": "feedback-rules",
+  "version": "0.1.0",
+  "description": "人間からの指摘を1指摘1ファイルで永続化し、同じ指摘を受けた回数（count）に応じて強制力を warn → ask → deny と段階的に上げるフィードバックルール基盤。スキル3種（feedback-rule / feedback-audit / feedback-setup）とサブエージェント1種、3つのフック（UserPromptSubmit で確定ルールを注入、PreToolUse で実行前に止める、Stop で直すまで終わらせない）を提供する。違反は .violations.jsonl に記録するが count は自動で上げない（重み付けの権限は人間に残す）。誤検知の逃がし道として unless・severity 明示・enabled: false・expires を持ち、count 3 以上のルールは .claude/rules/ へ書き出して本体のパス限定ロードに寄せられる。",
+  "author": {
+    "name": "mrkxlia",
+    "url": "https://github.com/mrkxlia"
+  },
+  "homepage": "https://github.com/mrkxlia/claude-code-workbench-ja/tree/main/plugins/feedback-rules",
+  "repository": "https://github.com/mrkxlia/claude-code-workbench-ja",
+  "license": "MIT",
+  "keywords": ["feedback", "hooks", "enforcement", "rules", "memory", "japanese"]
+}

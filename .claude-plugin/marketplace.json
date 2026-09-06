@@ -52,13 +52,13 @@
     {
       "name": "codebase-setup",
       "source": "./plugins/codebase-setup",
-      "description": "大規模リポジトリを Claude Code から読みやすくするスキル3種（codebase-onboard / codebase-map / context-audit）とサブエージェント2種。リポジトリを実測して CLAUDE.md の階層化・生成物を読ませない permissions.deny・コードインテリジェンス（LSP）プラグイン・ディレクトリ別スキルのうち効くものだけを導入し、常時ロードされる指示の陳腐化（モデルドリフト）を定期的に棚卸しする。読み取り専用サブエージェントに並列委譲してメインの文脈を汚さない。",
+      "description": "大規模リポジトリを Claude Code から読みやすくし、参画した案件を人がキャッチアップするためのスキル4種（codebase-onboard / codebase-map / context-audit / project-catchup）とサブエージェント3種。リポジトリを実測して CLAUDE.md の階層化・生成物を読ませない permissions.deny・コードインテリジェンス（LSP）プラグイン・ディレクトリ別スキルのうち効くものだけを導入し、常時ロードされる指示の陳腐化（モデルドリフト）を定期的に棚卸しする。project-catchup は「悪い例／良い例」で具体度の下限を縛り、インフラ構成・リクエストの通り道・データモデルに図を必須化した引き継ぎレポートを書く。読み取り専用サブエージェントに並列委譲してメインの文脈を汚さない。",
       "category": "productivity",
       "author": {
         "name": "mrkxlia"
       },
       "license": "MIT",
-      "keywords": ["large-codebase", "monorepo", "claude-md", "lsp", "context", "japanese"]
+      "keywords": ["large-codebase", "monorepo", "claude-md", "lsp", "context", "onboarding", "japanese"]
     },
     {
       "name": "kiro-bridge",
@@ -81,6 +81,17 @@
       },
       "license": "MIT",
       "keywords": ["self-correction", "evaluator-optimizer", "judge", "ground-truth", "goal", "subagents", "japanese"]
+    },
+    {
+      "name": "feedback-rules",
+      "source": "./plugins/feedback-rules",
+      "description": "人間からの指摘を1指摘1ファイルで永続化し、同じ指摘を受けた回数（count）に応じて強制力を warn（記録するが縛らない）→ ask（実行前に確認）→ deny（禁止）と段階的に上げるフィードバックルール基盤。スキル3種（feedback-rule / feedback-audit / feedback-setup）とサブエージェント1種、フック3種（UserPromptSubmit で確定ルールを注入し訂正らしき発言を候補として捕捉、PreToolUse で Bash・ファイル編集を実行前に止める、Stop で直すまでターンを終わらせない）。違反は .violations.jsonl に記録するが count は自動で上げない（ルールの重み付けの権限は人間に残す）。誤検知の逃がし道として unless・severity 明示・enabled・expires を持ち、count 3 以上のルールは .claude/rules/ へ書き出して本体のパス限定ロードに寄せられる。",
+      "category": "productivity",
+      "author": {
+        "name": "mrkxlia"
+      },
+      "license": "MIT",
+      "keywords": ["feedback", "hooks", "enforcement", "rules", "memory", "japanese"]
     },
     {
       "name": "learning-coach",
