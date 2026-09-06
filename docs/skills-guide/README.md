@@ -158,6 +158,7 @@ Anthropic公式リポジトリのスキル。安定性が最も高く、今す�
 | [okdt/claude-code-hardening-cheatsheet](https://github.com/okdt/claude-code-hardening-cheatsheet) | 119 | スキルではなく、Claude Code のサンドボックス・パーミッション・フック設定を固める運用ハードニングガイド（日英併記）。すぐ使える `settings_example.jsonc` テンプレートと監査用プロンプトを収録。「非公式」と明記されており、本番適用前に公式ドキュメントとの突き合わせを推奨と author 自身が注記。**2026-09-05 時点で未検証**（スター数は同日確認） |
 | [cathrynlavery/diagram-design](https://github.com/cathrynlavery/diagram-design) | 31.4k | アーキテクチャ図・フローチャート・シーケンス図・状態機械・Sankey・Wardleyマップなど39種のビジュアルタイプを自己完結HTML+SVGで生成する Agent Skill。draw.io/Mermaid ファイルの取り込み再描画やサイトからのブランド色・フォント自動抽出にも対応。Claude Code / Codex / Factory Droid / Pi 向けに明示的に設計。**2026-09-05 時点で未検証**（スター数は同日確認） |
 | [markdown-viewer/markdown-viewer-extension](https://github.com/markdown-viewer/markdown-viewer-extension) | 1.8k | **Claude Code 専用ではない**独立ツール。Markdown（数式・Mermaid/Vega/Graphviz図・表など）をブラウザで整形表示し DOCX/PDF/HTML にエクスポートする拡張機能（Chrome/Firefox/Edge/VS Code/Obsidian対応、ローカル処理）。AI生成 Markdown の確認・配布に流用できる。**2026-09-05 時点で未検証**（スター数は同日確認・GPLv3） |
+| [EveryInc/compound-engineering-plugin](https://github.com/EveryInc/compound-engineering-plugin) | 24.9k | ブレインストーム→計画→実装→簡素化→レビュー→学習キャプチャの6ステップループ（`ce-brainstorm`/`ce-plan`/`ce-work`ほか計33スキル）でエンジニアリングワークフローを構造化し、サイクルごとに知見を蓄積するプラグイン。`/lfg` で自動パイプライン実行、Git/PR管理・コードレビュー機能も内蔵。本リポジトリの `pipeline`/`self-correct` と近い狙いを持つ。Claude Code / Cursor / Codex など14ホスト対応。**2026-09-05 時点で未検証**（スター数は同日確認） |
 
 ---
 
