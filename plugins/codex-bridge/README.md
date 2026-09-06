@@ -12,7 +12,8 @@ Codex CLI を**非対話モード（`codex exec`）**で Bash 越しに駆動し
 | `/codex-ask <相談内容>` | 設計相談・セカンドオピニオンを Codex に答えさせ要約（コードは書かない） | read-only | `codex-advisor` |
 | `/codex-agents [--project-only]` | 既存の Claude ルール（CLAUDE.md 等）を取り込んだ `AGENTS.md` を生成（Codex に同じルールを効かせる） | —（ローカル生成） | —（スクリプト） |
 
-さらに、**プラン承認で Codex 実装へ委譲する opt-in フック**（`plan-to-codex.sh`）と、
+さらに、**プラン提示前に Codex レビューを挟む opt-in フック**（`plan-review-codex.sh`）、
+**プラン承認で Codex 実装へ委譲する opt-in フック**（`plan-to-codex.sh`）、
 **セッション開始時に `AGENTS.md` を再生成する常時フック**（`hooks.json`）を同梱します（後述）。
 
 > **相談相手が Codex 以外でよいなら**: 依存を増やしたくない・git なし環境なら内蔵の Task
@@ -63,6 +64,7 @@ codex-bridge/
 │   └── codex-advisor.md       # read-only
 └── hooks/
     ├── hooks.json              # SessionStart で AGENTS.md を再生成（常時ON・再生成のみ）
+    ├── plan-review-codex.sh   # プラン提示前→Codex レビュー（opt-in）
     ├── plan-to-codex.sh       # プラン承認→Codex 実装委譲（opt-in）
     └── gen-agents-md.sh       # AGENTS.md 生成スクリプト
 ```
@@ -81,17 +83,19 @@ codex-bridge/
 スキルとエージェントを、使いたいプロジェクトの `.claude/` にコピーします。
 
 ```bash
-# プロジェクトに導入（スキル4種＋エージェント3種＋フック2種）
+# プロジェクトに導入（スキル4種＋エージェント3種＋フック3種）
 mkdir -p .claude/skills .claude/agents .claude/hooks
 cp -r plugins/codex-bridge/skills/*  .claude/skills/
 cp -r plugins/codex-bridge/agents/*  .claude/agents/
-cp plugins/codex-bridge/hooks/gen-agents-md.sh plugins/codex-bridge/hooks/plan-to-codex.sh  .claude/hooks/
+cp plugins/codex-bridge/hooks/gen-agents-md.sh plugins/codex-bridge/hooks/plan-to-codex.sh \
+   plugins/codex-bridge/hooks/plan-review-codex.sh  .claude/hooks/
 ```
 
 グローバルに使いたい場合は `~/.claude/skills/`・`~/.claude/agents/` にコピーします。
 
-> フック（`plan-to-codex.sh` / `gen-agents-md.sh`）はコピーしただけでは動きません。
-> 下記「プラン承認で自動的に Codex に実装させる」「Claude のルールを Codex にも効かせる」を参照して
+> フック（`plan-review-codex.sh` / `plan-to-codex.sh` / `gen-agents-md.sh`）はコピーしただけでは
+> 動きません。下記「プランを提示する前に Codex にレビューさせる」「プラン承認で自動的に Codex に
+> 実装させる」「Claude のルールを Codex にも効かせる」を参照して
 > `.claude/settings.json` に登録してください（プラグイン導入なら `hooks.json` 由来の AGENTS.md 再生成は自動）。
 
 ## 使い方の例
@@ -122,6 +126,44 @@ cp plugins/codex-bridge/hooks/gen-agents-md.sh plugins/codex-bridge/hooks/plan-t
 Codex は repo 直下の **`AGENTS.md`**（CLAUDE.md 相当のプロジェクト指示）を自動で文脈に
 取り込みます。CLAUDE.md の要点（アーキテクチャ・命名・禁止事項など）を `AGENTS.md` にも
 置いておくと、Codex のレビュー・実装の精度が上がります。
+
+## プランを提示する前に Codex にレビューさせる（opt-in）
+
+Claude Code のプランモードで、**プランがユーザーに提示される前**に Codex のレビューを1回挟む連携です。
+`PreToolUse`（matcher `ExitPlanMode`）フックが `permissionDecision: "deny"` を返し、Claude は
+「先に `/codex-ask` でプランをレビューさせ、致命的な指摘を反映してから出し直せ」という
+**固定文字列**の理由を受け取ります。
+
+**なぜ `deny` なのか。** `additionalContext` を足すだけでは ExitPlanMode 自体は成立し、プランが
+そのまま提示されうるためです（ExitPlanMode に対するフック実行とプラン提示の前後関係は公式
+ドキュメントに記載がありません）。`deny` なら ExitPlanMode が成立しないので、仕様の穴に依存せず
+「レビューが先」という順序が決まります。
+
+**フック自身は codex を呼びません。** 呼ぶとフックが数十秒ブロックし、Codex の出力を JSON に
+埋めるため `jq` とエスケープが要り、外部モデルの出力を無検証で文脈へ注入する経路もできます。
+実行は既存の `codex-advisor`（`--sandbox read-only` 固定・未導入時は日本語で案内）に委譲します。
+
+```json
+{"hooks":{"PreToolUse":[{"matcher":"ExitPlanMode",
+  "hooks":[{"type":"command","command":"bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/plan-review-codex.sh"}]}]}}
+```
+
+- スクリプトは `mkdir -p .claude/hooks && cp plugins/codex-bridge/hooks/plan-review-codex.sh .claude/hooks/` で配置。
+- **deny は1セッション1回まで**。状態ファイル `.claude/codex-bridge/plan-reviewed-<session_id>` を
+  作った時点でゲートは開き、改訂後の再提示はそのまま通ります（**構造的にループしません**）。
+  この状態ファイルは `.gitignore` に入れることを推奨します（`.claude/codex-bridge/`）。
+- **異常系は素通り**（`session_id` が取れない・状態ファイルを作れない場合は deny しません）。
+  codex が未導入・未認証のときはレビューを飛ばして再提示してよい旨を理由文に含めてあるため、
+  プランモードが詰まることはありません。
+- **適用条件**: プラン提示のたびに Codex の課金とレイテンシが発生します。**設計判断を含む
+  プロジェクトにだけ配線**してください（typo 修正のプランでも走ります）。既定を「発火しない」に
+  するために opt-in にしてあります。
+- `plan-to-codex.sh` と併用できます（`PreToolUse` と `PostToolUse` で別イベントのため競合しません）。
+  両方を配線すると「提示前レビュー → 承認 → Codex 実装委譲」の流れになります。
+
+> **モデルは指定していません。** 「必ず `-m` で最新の推奨モデルを指定せよ」という運用も見かけますが、
+> 公式が非推奨モデルへの参照を更新するよう求めている以上、テンプレートにモデル名を焼き込むと
+> 陳腐化します。モデルは利用者が `config.toml` の `model` か `-m` で選んでください。
 
 ## プラン承認で自動的に Codex に実装させる（opt-in）
 
@@ -172,6 +214,8 @@ Codex が読むのは CLAUDE.md ではなく `AGENTS.md` ですが、`AGENTS.md`
 | implement で依存取得やネットワークが必要な処理が失敗する | workspace-write は既定でネットワーク無効 | ネットワークが要るのは想定外。必要なら**利用者の責任で**緩いサンドボックスを選ぶ |
 | `/codex-review` の P1–P4 が codex 構造化出力でないように見える | git 外/パス指定では plain `codex exec` パスで実行（重大度はモデル判断） | 構造化レビューが要るなら git 管理下で差分に対して実行する |
 | `codex exec review` がフラグエラーになる | バージョン差でサブコマンド仕様が異なる | `codex exec review --help` で確認。使えなければスキルが plain パスに自動フォールバック |
+| プランが提示されず「先にレビューせよ」と返る | `plan-review-codex.sh` を配線している（仕様どおりの動作） | `/codex-ask` でプランをレビューさせ、P1・P2 を反映して再提示する。ゲートは1セッション1回だけ |
+| プラン提示前レビューのフックが効かない | 配線漏れ／`session_id` が取れない／状態ファイルを作れない | `.claude/settings.json` の `PreToolUse` 登録を確認する。異常系は**安全側に素通り**する設計であり、詰まらせないことを優先している |
 | プラン承認しても Codex 実装が始まらない | フック未登録／誘導は強制ではない | `.claude/settings.json` にフックが登録されているか確認（`additionalContext` は強い誘導であり強制ではない） |
 | `AGENTS.md` が更新されない | 手書き（センチネル無し）でガード／取り込むソースが無い／`--project-only` | 既存 AGENTS.md を退避するか `/codex-agents` で再生成。CLAUDE.md 等のソース有無を確認 |
 | Windows で `bash\r` エラー | `.sh` が CRLF | リポジトリ直下の `.gitattributes`（`*.sh text eol=lf`）で LF に正規化。Git Bash/WSL を使用 |
@@ -182,6 +226,10 @@ Codex が読むのは CLAUDE.md ではなく `AGENTS.md` ですが、`AGENTS.md`
 - 危険フラグ（`--yolo` / `--dangerously-bypass-approvals-and-sandbox` / `danger-full-access`）と
   非推奨の `--full-auto` は使いません。
 - Codex の生出力はサブエージェント内に隔離し、メインセッションには要約のみを返します。
+- **モデル名をテンプレートに焼き込みません**（公式が非推奨モデルへの参照更新を求めており陳腐化するため）。
+  重要な判断を任せたいときは、利用者が `config.toml` の `model` か `-m` で明示してください。
+- フックが出力するのは**ユーザー入力を含まない定数 JSON** だけです（外部モデルの出力を
+  フック経由で文脈に注入しません）。
 
 ## ライセンス・出典
 

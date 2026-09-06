@@ -19,7 +19,7 @@
     {
       "name": "codex-bridge",
       "source": "./plugins/codex-bridge",
-      "description": "コードレビュー・実装・相談を OpenAI Codex に依頼するスキル4種（codex-review / codex-implement / codex-ask / codex-agents）とサブエージェント3種。ユーザー自身は Codex を操作せず、Claude Code が Codex CLI を非対話モードで駆動する。プラン承認で Codex 実装へ委譲する opt-in フックと、Claude ルールを取り込む AGENTS.md ジェネレータを同梱。",
+      "description": "コードレビュー・実装・相談を OpenAI Codex に依頼するスキル4種（codex-review / codex-implement / codex-ask / codex-agents）とサブエージェント3種。ユーザー自身は Codex を操作せず、Claude Code が Codex CLI を非対話モードで駆動する。プラン提示前に Codex レビューを挟む opt-in フック、プラン承認で Codex 実装へ委譲する opt-in フック、Claude ルールを取り込む AGENTS.md ジェネレータを同梱。",
       "category": "workflow",
       "author": {
         "name": "mrkxlia"
