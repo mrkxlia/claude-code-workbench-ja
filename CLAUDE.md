@@ -108,7 +108,8 @@ claude-code-workbench-ja/
     │   ├── 2026-09-05-feedback-rules.md                       # 指摘の永続化と段階的強制を feedback-rules として実装した決定（先行事例の調査つき）
     │   ├── 2026-09-05-learning-prompt-as-skill.md             # 学習用プロンプトを learning-coach として実装した決定（/goal を再実装しない線引き）
     │   ├── 2026-09-06-adoption-review.md                      # 外部技術の採用可否レビューを adoption-review として実装した決定（先行事例の調査つき）
-    │   └── 2026-09-06-self-correct-article-adoption.md        # 自己修正ループ解説記事の採用可否レビュー（中核は実装済みのため差分3点だけ取り込んだ記録）
+    │   ├── 2026-09-06-self-correct-article-adoption.md        # 自己修正ループ解説記事の採用可否レビュー（中核は実装済みのため差分3点だけ取り込んだ記録）
+    │   └── 2026-09-06-self-correct-stop-rules.md              # self-correct に停止ルール2件（リグレッション検出・進捗なし検出）を追加した決定
     ├── lessons.md                   #   過去 PR から蒸留した「繰り返さない判断」（根拠の PR 番号つき）
     ├── skill-authoring.md           #   スキルの書き方（公式ガイド準拠。frontmatter 規約・分冊基準・監査結果）
     ├── evals/                       #   主要スキルの期待挙動シナリオ（Sonnet 5 / Opus 5 のパリティ実測用）

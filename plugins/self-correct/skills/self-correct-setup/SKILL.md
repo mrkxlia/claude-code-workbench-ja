@@ -93,7 +93,9 @@ docs/self-correct/judge-eval/   judge-eval の検定記録
 ## Step 6 — 動作確認
 
 1. 状態ファイルを手で1つ作り、`bash .claude/hooks/loop-stop-check.sh` に `{}` を流して
-   block の JSON が出ることを確認する（各フックの先頭コメントに単体テスト手順がある）
+   block の JSON が出ることを確認する（各フックの先頭コメントに単体テスト手順がある）。
+   `regressed_count` を 1、`no_progress_streak` を 2 にした状態ファイルでも、
+   **それぞれ別の文面の block** が出ることまで確認する（停止ルールの配線確認）
 2. 変更禁止パスへの書き込みが `exit 2` で拒否されることを確認する
 3. 確認が済んだら状態ファイルを消す
 
