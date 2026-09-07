@@ -30,6 +30,12 @@ argument-hint: "[分割したいタスク]"
 - 機能開発（ストーリー→ブリーフ→実装→検証の連鎖が要るもの）→ `feature-pipeline`
 - backlog.md 駆動の定型ループ → `backlog-loop`
 - 計画だけ作って別セッションで実行 → 本体 **Plan モード**（`/plan`。本スキルは同一セッション内で完結する）
+- **1つの変更を大量に分割して、各々に PR を出させたい → 本体の `/batch`**。
+  5〜30個の worktree 隔離サブエージェントに分割し、それぞれが PR を出す。
+  本スキルとの違いは、`/batch` が**隔離と PR 分割**を目的にするのに対し、本スキルは
+  **同一ワークツリー内で分担し、`fresh-verifier` の検証を通してからマージする**点。
+  PR を分けたいなら `/batch`、1つの成果にまとめたいなら本スキル。
+  出典: [Run agents in parallel](https://code.claude.com/docs/en/agents)
 
 ## 中核ルール
 
@@ -48,6 +54,13 @@ argument-hint: "[分割したいタスク]"
    承認を得る。オーケストレーターが Opus 5 のときも同じ上限を守る（Opus 5 は委譲しやすく、
    小さな仕事まで委譲するとコストと時間が増える。決定論的に縛るなら Claude Code の
    `CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS`）。
+   本体の上限は**同時20体・入れ子の深さ3**なので、3 は本体の制約ではなく**本スキルが
+   意図的に置いている上限**である（速く終わらせることより、検証しきれる量に抑えることを採る）。
+7. **worker はメインの文脈を引き継がない。** 非 fork のサブエージェントは会話履歴・過去の
+   ツール結果・メイン会話の auto memory を持たない。一方で **CLAUDE.md 階層は全部読む**。
+   したがって「さっき決めたこと」はブリーフに書かない限り worker に伝わらない（ルール2 の
+   6項目を渡し切るのはこのため）。
+   出典: [Create custom subagents](https://code.claude.com/docs/en/sub-agents)
 7. **前処理の対象洗い出しは bulk-scanner に流せる。**「該当ファイルの一覧化」など機械的な
    スキャンは haiku の `bulk-scanner` で安価に済ませる。
 

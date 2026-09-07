@@ -51,7 +51,7 @@ Codex への指示は次の構造で組む（曖昧さを残さない）:
 ### 3. Codex に実装させる
 
 ```bash
-codex exec --sandbox workspace-write --skip-git-repo-check - <<'EOF'
+codex exec --sandbox workspace-write --ephemeral --skip-git-repo-check - <<'EOF'
 <上記の定番型プロンプト＋関連ファイル内容>
 最後に、変更・追加したファイルのパスを一覧で出力してください。
 EOF
@@ -68,6 +68,24 @@ EOF
 
 CLAUDE.md / `package.json` / `pyproject.toml` 等からテスト・型チェックコマンドを推定して実行する。
 不明なら無理に実行せず、その旨を要約に書く。
+
+## 非対話実行の前提（2026-09-07 時点の一次情報）
+
+- 公式ドキュメントの所在は **`learn.chatgpt.com/docs/`** に移った
+  （`developers.openai.com/codex/*` は 308 で転送される）。CLI リファレンスは
+  [cli/reference](https://learn.chatgpt.com/docs/cli/reference)、非対話モードは
+  [non-interactive-mode](https://learn.chatgpt.com/docs/non-interactive-mode)。
+- **`--ephemeral` を付ける**。セッションファイルをディスクに残さないため、
+  「`codex exec resume` を使わない」という本プラグインの方針がフラグで担保される。
+- **`--full-auto` は使わない。** 公式リファレンスが "Deprecated compatibility flag;
+  prefer `--sandbox workspace-write`" と明記している。
+- 承認モードは `--ask-for-approval untrusted | on-request | never` の3値。非対話で
+  承認待ちに入ると Bash 呼び出しごと固まるため、**止まったら `--ask-for-approval never` を
+  明示して再実行**する（既定に頼らない）。
+- 機械可読な出力が要るときは `--json`（実行イベントを JSON Lines で stdout）か
+  `--output-last-message <path>`（最終メッセージだけをファイルへ）。本テンプレートは
+  リダイレクトで捕捉する正準形を使うため既定では使わない。
+- CI など対話ログインできない環境では `CODEX_API_KEY` を環境変数で渡す。
 
 ## サンドボックス
 
