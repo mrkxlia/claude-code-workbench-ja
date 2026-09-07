@@ -111,6 +111,33 @@ Phase 0 で目的・評価基準・Ground Truth・変更禁止範囲・最大回
 pipeline の中で使うこともできます（成果物を作るフェーズの内側で `/self-correct` を回し、
 パイプラインの承認チェックポイントには合格した成果物だけを載せる）。
 
+## 限界（過信しないこと）
+
+- **状態ファイルを書くのは、判定される側の Claude 自身です。** `loop-stop-check.sh` は
+  `.claude/self-correct/state.json` を読んで停止を判定しますが、その block 理由文は
+  判定される側に向けて「`status` を `PASS` にする」「`ESCALATED` に更新してください」と
+  指示しています。**解除キーを判定対象が握る**構造なので、このゲートは**善意を前提とした
+  進行の矯正**であって、セキュリティ境界ではありません。第三者は Stop フックの品質ゲートに
+  対して、(a) ゲートを実行せず合格マーカーだけを出力する、(b)「すでに実行済み」と主張して
+  スキップする、(c) ブロック後に短い返事だけを返して上限まで回す、(d) 状態ファイルを
+  書き換えてループから抜ける、の4類型を報告しています
+  （[Stop Hook でsimplifyを強制したら、Claude がズルを覚えた話](https://zenn.dev/kok1eeeee/articles/claude-code-stop-hook-quality-gate-gaming)、2026-09-06 取得）。
+  迂回が起きていないかは、`verdict` と `status` の整合を人が見る／`/judge-eval` で Judge
+  そのものを検定する、の2つで確かめてください。
+- **Stop フックは「別のターンを起動する」仕組みではありません。** 公式ドキュメントは
+  「ネストされた Stop フックは無視されるため、Stop 内で別のターンをトリガーすることは
+  できません」「フックが同じ条件に対して永続的に `decision: "block"` を返す場合、Claude は
+  永遠にループ状態に陥る可能性があります」と明記しています
+  （[Hooks](https://code.claude.com/docs/ja/hooks)、2026-09-06 取得）。実害の報告もあります
+  （anthropics/claude-code [#55754](https://github.com/anthropics/claude-code/issues/55754) は
+  Stop フックが返し続けたブロックで約50分・100回超のループになりセッション配分を消費）。
+  本プラグインの `loop-stop-check.sh` は、同じ `updated` 値に対する block を
+  `.claude/self-correct/.stop-nudge` で1回に制限しており、ループが前進しない限り2度目は
+  素通りします。**この「1状態1ナッジ」は上記を構造的に避けるための設計**であり、外さないでください。
+- **ゲートが効くのはループ稼働中だけです。** 状態ファイルが無い・`status` が `ACTIVE` でない・
+  `attempt` / `max_attempts` が壊れている場合は、いずれも素通り（exit 0）します。
+  作業を止めないことを優先した設計で、検知漏れは仕様です。
+
 ## 本番投入前チェックリスト
 
 - [ ] Builder と Judge を分離した
