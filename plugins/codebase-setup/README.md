@@ -17,7 +17,7 @@ Claude Code は RAG のようにコードベースを事前インデックス化
 |---|---|---|
 | **codebase-onboard** | `/codebase-onboard`（明示専用） | リポジトリを実測し、CLAUDE.md の階層化・生成物の遮断・LSP プラグイン・ディレクトリ別スキルなど**効くものだけ**を、2つの承認チェックポイントを挟んで導入する |
 | **codebase-map** | 自然文 / `/codebase-map` | トップレベルが多い・命名が独特なリポジトリの「1行説明つき目次」を `docs/codebase-map.md` に作る |
-| **context-audit** | 自然文 / `/context-audit` | 常時ロードされる指示（CLAUDE.md 階層・rules）を5分類で棚卸しし、陳腐化・矛盾・導出可能・過剰ロードを削除／移設する |
+| **context-audit** | 自然文 / `/context-audit` | 常時ロードされる指示（CLAUDE.md 階層・rules・**本体 auto memory の `MEMORY.md`**）を5分類で棚卸しし、陳腐化・矛盾・導出可能・過剰ロードを削除／移設する |
 | **project-catchup** | 自然文 / `/project-catchup` | 参画した案件を「読んだ人が実装者として振る舞える」水準まで書き下した引き継ぎレポートを作る。**インフラ構成・リクエストの通り道・データモデルは図を必須**とし、各章の「悪い例／良い例」で具体度の下限を縛る。**設計判断の理由は ADR・PR・commit・コメント・人に聞いた答えを出典に持つものだけ**を書き、無いものは「未確認」に落とす |
 
 `project-catchup` だけは**人間が読む成果物**を作る。残り3つは Claude が読む設定・地図を作る。
@@ -99,6 +99,8 @@ Claude Code 本体が既にやることは**呼ぶだけ**にして再実装し�
 | 1つの CLAUDE.md を機械的に短くする | **本体の `/doctor`**（`context-audit` Step 2 が材料にする） |
 | 定義ジャンプ・参照検索・編集直後の診断 | **公式の LSP プラグイン**（`typescript-lsp` 等。`codebase-onboard` Step 6 が案内） |
 | 生成物を読ませない | **本体の `permissions.deny`**（設定を書くのがこのプラグインの仕事） |
+| auto memory を閲覧・編集・削除する／丸ごと切る | **本体の `/memory`・`autoMemoryEnabled`・`CLAUDE_CODE_DISABLE_AUTO_MEMORY`**（`MEMORY.md` の分量の上限と是正も本体が持つ） |
+| auto memory の内容を CLAUDE.md・rules・スキルと**横断照合する** | このプラグイン（`context-audit` Step 3。`/memory` は突き合わせをせず、git 差分にも出ないため他に見つける手段がない） |
 | 複数パッケージを実測して**何を入れるか決める** | このプラグイン |
 | 参画した案件を**人が実装者として動ける水準**まで理解する | このプラグイン（`project-catchup`） |
 | 常時ロードされる指示を**モデルの進化に合わせて捨てる** | このプラグイン |
@@ -120,7 +122,7 @@ Claude Code 本体が既にやることは**呼ぶだけ**にして再実装し�
 | ドキュメント | 使った箇所 |
 |---|---|
 | [Monorepos and large repos](https://code.claude.com/docs/en/large-codebases) | 階層化・`claudeMdExcludes`・`permissions.deny`・`worktree.sparsePaths`・ディレクトリ別スキル |
-| [How Claude remembers your project](https://code.claude.com/docs/en/memory) | CLAUDE.md のロード順・200行の目安・`.claude/rules/` の `paths:` |
+| [How Claude remembers your project](https://code.claude.com/docs/en/memory) | CLAUDE.md のロード順・200行の目安・`.claude/rules/` の `paths:`・auto memory（`MEMORY.md` の保存先とロード範囲・無効化手段） |
 | [Configure permissions](https://code.claude.com/docs/en/permissions) | `Read(...)` のパターン構文とアンカー |
 | [Discover and install prebuilt plugins](https://code.claude.com/docs/en/discover-plugins) | LSP プラグイン名と必要バイナリの対応表 |
 

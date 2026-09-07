@@ -75,14 +75,34 @@ hooks:
    メモファイル（例: `docs/long-run/brief.md`。TodoWrite だけに頼らない — コンパクションで
    消える）に固定し、**各区切りで再読してから**次の作業に進む。長い作業では序盤の制約が
    薄れるため、構造で保持する。作業中に制約が増えたら、その場でメモファイルを更新する（ルール8）。
-   コンテキストの自動圧縮が起きても、CLAUDE.md は再ロードされるがブリーフは再ロードされない。
-   手動で `/compact` するときは `PROMPTS.md` #10 の保持指示を渡す。
    **自動圧縮に対しては、このスキルの frontmatter が `SessionStart`（`matcher: compact`）フックを
    登録し、圧縮直後にメモファイルを文脈へ戻す**（`hooks/reinject-brief.sh`。スキルを起動したときだけ
    武装し、settings.json の編集は不要）。メモファイルが無ければ何もしないので、固定を怠ると効かない。
    bash が無い純 PowerShell 環境ではこのフックが動かないため、`reinject-brief.ps1` を settings.json に
    配線する（model-setup/README.md「フック」節）。設計の経緯は
    `docs/decisions/2026-09-03-long-run-constraints-and-spec-load.md`。
+
+   圧縮のときに**何が自動で戻り、何が戻らないか**は公式が明示している。ブリーフを固定するのは、
+   下表の「戻らない」側を埋めるためであり、戻るものまで手当てしない
+   （出典: [What survives compaction](https://code.claude.com/docs/en/context-window#what-survives-compaction)、
+   [Manage costs effectively](https://code.claude.com/docs/en/costs#manage-context-proactively)。ともに 2026-09-06 取得）。
+
+   | 圧縮後 | 対象 |
+   |---|---|
+   | disk から再注入される | プロジェクト直下の CLAUDE.md・スコープ無しの rules・auto memory・**Plan モードで書いた計画ファイル** |
+   | 上限つきで再注入される | **起動済みスキル本体**（1スキル 5,000 トークン・合計 25,000 トークン。超過分は古い順に脱落し、切り詰めはファイル先頭を残す） |
+   | 5件まで読み直される | このセッションで読んだ・編集したファイル（更新が新しい順） |
+   | フックが足す | `SessionStart`（`matcher: compact`）の出力＝本スキルのブリーフ再注入 |
+   | **戻らない** | 会話の中だけで足した制約・口頭の指示（要約に溶ける）。**だからメモファイルに固定する** |
+
+   圧縮そのものを手前に倒す・焦点を指定する手段も本体にある。区切りの直前に自分で圧縮しておくと、
+   作業の途中で自動圧縮に入られるより制御しやすい:
+
+   - `/autocompact <トークン数>`（例 `/autocompact 500k`）— 自動圧縮が走る手前の残量を決める
+   - `/compact <指示>`（例 `/compact focus on the auth bug fix`）— その回の要約の焦点を指定する。
+     `PROMPTS.md` #10 の保持指示をここに渡す
+   - CLAUDE.md の `# Compact instructions` 節 — 圧縮の焦点を恒久的に指定する。
+     自動圧縮にも効くかは公式ドキュメントに記載が無いので、**効く前提で運用しない**
 
 6. **最終サマリは経過を見ていない読者向けに書く。** 結論（何が完了し、何が残ったか）を
    先頭に、完全な文で。作業中に自分が作った略語・ラベル・矢印つなぎを持ち込まない。
