@@ -31,6 +31,13 @@ disable-model-invocation: true
 以降の Step は両モード共通の骨格。**モード固有の解析項目・配置ファイル・チェックリストは、
 選択したモードの別冊（references/）を該当 Step で必ず参照する**こと。
 
+両モード共通の別冊（必要になった Step で読む）:
+
+| 別冊 | 何が書いてあるか | いつ読むか |
+|---|---|---|
+| [`references/spec-summary.md`](references/spec-summary.md) | `inject-spec-summary` フックが SPEC.md から確定要件を抜き出す規則 | Step 6 でフックを配線するとき、および抽出結果がおかしいとき |
+| [`references/windows.md`](references/windows.md) | PowerShell 版フックの配置と注意点 | 導入先が Windows で bash を使えないとき |
+
 ## セットアップ全体の流れ
 
 ```
