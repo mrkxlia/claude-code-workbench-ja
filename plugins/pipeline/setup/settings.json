@@ -6,7 +6,10 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/block-secrets-commit.sh"
+            "command": "bash",
+            "args": [
+              "$CLAUDE_PROJECT_DIR/.claude/hooks/block-secrets-commit.sh"
+            ]
           }
         ]
       },
@@ -15,7 +18,10 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/guard-builder-writes.sh"
+            "command": "bash",
+            "args": [
+              "$CLAUDE_PROJECT_DIR/.claude/hooks/guard-builder-writes.sh"
+            ]
           }
         ]
       },
@@ -24,7 +30,10 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/guard-deliverable-writes.sh"
+            "command": "bash",
+            "args": [
+              "$CLAUDE_PROJECT_DIR/.claude/hooks/guard-deliverable-writes.sh"
+            ]
           }
         ]
       }
@@ -34,7 +43,10 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/spec-sync-reminder.sh"
+            "command": "bash",
+            "args": [
+              "$CLAUDE_PROJECT_DIR/.claude/hooks/spec-sync-reminder.sh"
+            ]
           }
         ]
       },
@@ -43,7 +55,10 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/inject-spec-summary.sh"
+            "command": "bash",
+            "args": [
+              "$CLAUDE_PROJECT_DIR/.claude/hooks/inject-spec-summary.sh"
+            ]
           }
         ]
       }
@@ -53,7 +68,10 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/spec-sync-reminder.sh"
+            "command": "bash",
+            "args": [
+              "$CLAUDE_PROJECT_DIR/.claude/hooks/spec-sync-reminder.sh"
+            ]
           }
         ]
       }
@@ -64,7 +82,10 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/inject-spec-summary.sh"
+            "command": "bash",
+            "args": [
+              "$CLAUDE_PROJECT_DIR/.claude/hooks/inject-spec-summary.sh"
+            ]
           }
         ]
       }

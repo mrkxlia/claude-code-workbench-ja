@@ -48,6 +48,12 @@
 #     > .claude/self-correct/state.json
 #   echo '{}' | bash hooks/loop-stop-check.sh          # → block（ESCALATE を促す）
 #   rm -rf .claude/self-correct
+#
+# 終了コードの規約（公式: https://code.claude.com/docs/en/hooks、2026-09-07 取得）
+#   exit 2 : ブロックする唯一の終了コード
+#   exit 1 : 非ブロックのエラー。Claude Code は警告を出して処理を続行する
+#   exit 0 : 正常。stdout の JSON（permissionDecision 等）で判断を返す場合もここ
+# したがって「止めたい」ときに exit 1 を返してはいけない（黙って通る）。
 
 set -u
 

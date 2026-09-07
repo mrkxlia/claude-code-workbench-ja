@@ -16,7 +16,10 @@ hooks:
     - matcher: "compact"
       hooks:
         - type: command
-          command: bash -c 'h="${CLAUDE_PLUGIN_ROOT:-}/hooks/reinject-brief.sh"; [ -f "$h" ] || h="$HOME/.claude/hooks/reinject-brief.sh"; [ -f "$h" ] && exec bash "$h"; exit 0'
+          command: bash
+          args:
+            - "-c"
+            - 'h="${CLAUDE_PLUGIN_ROOT:-}/hooks/reinject-brief.sh"; [ -f "$h" ] || h="$HOME/.claude/hooks/reinject-brief.sh"; [ -f "$h" ] && exec bash "$h"; exit 0'
 ---
 
 # long-run — 長時間自律作業の完走プロトコル
