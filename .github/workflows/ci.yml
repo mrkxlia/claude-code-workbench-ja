@@ -41,7 +41,7 @@ jobs:
           print(f"OK: JSON {sum(1 for _ in pathlib.Path('.').rglob('*.json'))} 件")
           PY
 
-      - name: "SKILL.md 検査（公式ガイド準拠 — 山括弧禁止・name・キー集合・レイアウト・字数・行数）"
+      - name: "SKILL.md 検査（公式準拠 — 山括弧禁止・name・キー集合・字数1024・三人称・レイアウト・references 1階層と目次・行数）"
         run: |
           python3 - <<'PY'
           import pathlib
@@ -52,15 +52,27 @@ jobs:
 
           # 公式ガイド "The Complete Guide to Building Skills for Claude" の技術要件を機械化する。
           # 機械化していない項目（description の質など）は docs/skill-authoring.md を参照。
+          # 許可キーは「公式が現在受け付けるもの」に追随させる。集合を固定すると、
+          # 公式が足した正当な機能を CI が禁止する側に回る（docs/lessons.md 教訓9）。
           ALLOWED_KEYS = {
               # ガイドの必須・任意フィールド
               "name", "description", "license", "compatibility", "metadata", "allowed-tools",
               # Claude Code 固有（ガイドには出てこないが正当なキー）
-              "argument-hint", "disable-model-invocation", "hooks",
+              # 出典: https://code.claude.com/docs/en/skills（2026-09-07 取得）
+              "argument-hint", "arguments", "disable-model-invocation", "user-invocable",
+              "disallowed-tools", "when_to_use", "model", "effort",
+              "context", "agent", "background", "paths", "shell", "hooks",
           }
           # システムプロンプトに載る＝山括弧を禁止する対象
           # （hooks はシェルのリダイレクト > が正当に現れるうえ、システムプロンプトに載らないので除く）
-          PROMPT_KEYS = ("name", "description", "argument-hint", "compatibility", "license", "metadata")
+          PROMPT_KEYS = (
+              "name", "description", "when_to_use", "argument-hint",
+              "compatibility", "license", "metadata",
+          )
+          # 公式「Always write in third person」。description はシステムプロンプトに
+          # 注入されるため、一人称・二人称が混ざると発動判定が鈍る。
+          # 出典: https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices
+          SECOND_PERSON = ("あなた", "ください", "私が", "私は")
           NAME_RE = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
           EXCLUDE_PARTS = {"examples", "reimpl", "build", "dist"}
 
@@ -129,9 +141,19 @@ jobs:
                   )
 
               # 字数・行数
-              desc_len = len(str(meta.get("description", "")))
-              if desc_len > 1536:
-                  bad.append(f"{p}: description が1536字超（{desc_len}字）")
+              # 上限 1024 は公式ガイド（PDF）と platform.claude.com の双方が明記する
+              # description の上限。claude.ai アップロード／Skills API では超過がハードエラーになる。
+              desc = str(meta.get("description", ""))
+              desc_len = len(desc) + len(str(meta.get("when_to_use", "")))
+              if desc_len > 1024:
+                  bad.append(f"{p}: description（+when_to_use）が1024字超（{desc_len}字）")
+              for word in SECOND_PERSON:
+                  if word in desc:
+                      bad.append(
+                          f"{p}: description が三人称でない（{word!r} を含む）。"
+                          "「あなたが〜する」ではなく「〜するスキル」の形で書く"
+                      )
+                      break
               nlines = len(text.splitlines())
               if nlines > 500:
                   bad.append(f"{p}: 本文が500行超（{nlines}行）")
@@ -143,15 +165,26 @@ jobs:
 
               # references/ の死蔵防止。SKILL.md から直接、または他の references/ 経由で
               # 到達できること（分冊が分冊を参照する形も正当な段階的開示なので許す）
+              # 公式「Keep references one level deep from SKILL.md」。入れ子参照は
+              # Claude が head -100 で部分読みして情報が欠ける原因になる。
               refs = sorted(p.parent.glob("references/*.md"))
-              corpus = text + "".join(r.read_text(encoding="utf-8") for r in refs)
               for q in refs:
-                  # 自分自身の本文に出てくる名前は参照とみなさない
-                  others = text + "".join(
-                      r.read_text(encoding="utf-8") for r in refs if r != q
-                  )
-                  if q.name not in others:
-                      bad.append(f"{q}: SKILL.md からも他の references/ からも参照されていない")
+                  if q.name not in text:
+                      bad.append(
+                          f"{q}: SKILL.md から直接参照されていない。"
+                          "references は SKILL.md から1階層までにする"
+                      )
+                  # 公式「For reference files longer than 100 lines, include a
+                  # table of contents at the top.」部分読みでも全体像が見えるようにする。
+                  qtext = q.read_text(encoding="utf-8")
+                  qlines = qtext.splitlines()
+                  if len(qlines) > 100:
+                      head = "\n".join(qlines[:20])
+                      if "## 目次" not in head and "## Contents" not in head:
+                          bad.append(
+                              f"{q}: 100行超（{len(qlines)}行）なのに先頭20行に目次がない。"
+                              "「## 目次」を置く"
+                          )
 
           if bad:
               print("\n".join(bad))
@@ -160,7 +193,7 @@ jobs:
           print(f"OK: SKILL.md {checked} 件")
           PY
 
-      - name: agent frontmatter 検査（name/description/tools/model/color の存在と型）
+      - name: agent frontmatter 検査（name/description/tools/model/color の存在と型・description 合計の予算）
         run: |
           python3 - <<'PY'
           import pathlib
@@ -169,10 +202,18 @@ jobs:
           import yaml
 
           REQUIRED = ("name", "description", "tools", "model", "color")
-          OPTIONAL = ("hooks",)   # サブエージェント実行中だけ有効なフック宣言（任意）
+          # 公式が受け付ける任意キー。出典: https://code.claude.com/docs/en/sub-agents
+          # （2026-09-07 取得）。プラグイン配布のサブエージェントでは permissionMode /
+          # mcpServers / hooks は無視されるが、キーとして不正ではない。
+          OPTIONAL = (
+              "hooks", "disallowedTools", "permissionMode", "maxTurns", "skills",
+              "mcpServers", "memory", "background", "effort", "isolation",
+              "initialPrompt", "experimental",
+          )
           EXCLUDE_PARTS = {"examples", "reimpl", "build", "dist", "node_modules"}
           bad = []
           checked = 0
+          total_desc = 0
           for p in sorted(pathlib.Path(".").glob("**/agents/*.md")):
               if EXCLUDE_PARTS & set(p.parts):
                   continue
@@ -198,10 +239,21 @@ jobs:
               for key in meta:
                   if key not in REQUIRED + OPTIONAL:
                       bad.append(f"{p}: 未知のキー '{key}'（許可: {REQUIRED + OPTIONAL}）")
+              total_desc += len(str(meta.get("description", "")))
+          # 公式: 組み込み以外のサブエージェント description の合計が 15,000 トークンを
+          # 超えると起動時に警告が出る。トークン数は環境依存なので文字数を代理指標にし、
+          # 日本語は 1 文字 ≒ 1 トークンとみなして安全側に倒す（12,000 字で警告）。
+          # 出典: https://code.claude.com/docs/en/sub-agents（2026-09-07 取得）
+          DESC_BUDGET = 12000
+          if total_desc > DESC_BUDGET:
+              bad.append(
+                  f"サブエージェント description の合計が {total_desc} 字で予算 {DESC_BUDGET} 字を超えた。"
+                  "公式は合計 15,000 トークン超で起動時警告を出す（日本語は1字≒1トークンとみなす）"
+              )
           if bad:
               print("\n".join(bad))
               sys.exit(1)
-          print(f"OK: agent {checked} 件")
+          print(f"OK: agent {checked} 件 / description 合計 {total_desc} 字（予算 {DESC_BUDGET} 字）")
           PY
 
       - name: shellcheck（plugins 配下の .sh）
