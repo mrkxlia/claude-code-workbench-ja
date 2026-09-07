@@ -114,7 +114,8 @@ claude-code-workbench-ja/
     │   ├── 2026-09-06-plan-review-before-present.md          # プラン提示前の Codex レビューの採用可否（opt-in フック1本だけ取り込み・モデル固定と resume は不採用）
     │   ├── 2026-09-06-pm-skill-article-adoption.md          # PM 業務の Skill 化記事の採用可否（生成物の鮮度チェックと【要確認】の絞り込みの2点だけ取り込み）
     │   ├── 2026-09-06-for-file-claude-md-adoption.md          # FOR[yourname].md 自動生成（CLAUDE.md 1行）の採用可否レビュー（手法は不採用・project-catchup に「設計判断の理由」章だけ追加）
-    │   └── 2026-09-06-dev-principles-adoption.md              # 開発原則記事（SOLID・KISS・YAGNI・DRY）の採用可否レビュー（公式が ❌ Exclude に分類・YAGNI 相当は既存ルール3/8 が上位互換のため取り込みなし）
+    │   ├── 2026-09-06-dev-principles-adoption.md              # 開発原則記事（SOLID・KISS・YAGNI・DRY）の採用可否レビュー（公式が ❌ Exclude に分類・YAGNI 相当は既存ルール3/8 が上位互換のため取り込みなし）
+    │   └── 2026-09-06-claude-code-dev-flow-adoption.md         # 個人ブログの Claude Code 開発フロー採用可否レビュー（既存資材で大半が代替可能・self-correct の README/SKILL に限界の明記1点だけ取り込み）
     ├── lessons.md                   #   過去 PR から蒸留した「繰り返さない判断」（根拠の PR 番号つき）
     ├── skill-authoring.md           #   スキルの書き方（公式ガイド準拠。frontmatter 規約・分冊基準・監査結果）
     ├── evals/                       #   主要スキルの期待挙動シナリオ（Sonnet 5 / Opus 5 のパリティ実測用）
