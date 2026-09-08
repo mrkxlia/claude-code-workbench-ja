@@ -26,7 +26,7 @@ claude-code-workbench-ja/
 ├── CLAUDE.md                        # このファイル
 ├── LICENSE                          # MIT License
 ├── .gitattributes                   # git 属性定義
-├── .github/workflows/ci.yml         # CI（JSON 構文・SKILL.md 形式〔公式ガイド準拠〕・agent frontmatter・shellcheck・.ps1 の BOM・version 差分・内部リンク＝必須、claude plugin validate＝任意）
+├── .github/workflows/ci.yml         # CI（JSON 構文・SKILL.md 形式〔公式準拠: 許可キー・1024字・三人称・references 1階層と目次〕・agent frontmatter〔description 合計の予算〕・shellcheck・.ps1 の BOM・version 差分・内部リンク＝必須、claude plugin validate＝任意）
 ├── .claude-plugin/
 │   └── marketplace.json             # プラグインマーケットプレイス定義（名前: workbench-ja、source は ./plugins/<name>）
 ├── plugins/                         # プラグイン導入可能な10セクション（marketplace.json 登録対象・公式標準レイアウト）
@@ -50,7 +50,7 @@ claude-code-workbench-ja/
 │   │   ├── .claude-plugin/plugin.json
 │   │   ├── skills/                  #     2種（kiro-review / kiro-ask）
 │   │   └── agents/                  #     2種（kiro-reviewer / kiro-advisor）
-│   ├── agent-review-panel/          #   複数ペルソナの敵対的パネルレビュー（codex / kiro 混成 opt-in）
+│   ├── agent-review-panel/          #   複数ペルソナの敵対的パネルレビュー（codex / kiro 混成 opt-in。反グループシンク機構7つ）
 │   │   ├── README.md
 │   │   ├── .claude-plugin/plugin.json
 │   │   ├── skills/                  #     1種（review-panel＋references/{personas,report-template}.md）
@@ -117,12 +117,15 @@ claude-code-workbench-ja/
     │   ├── 2026-09-06-dev-principles-adoption.md              # 開発原則記事（SOLID・KISS・YAGNI・DRY）の採用可否レビュー（公式が ❌ Exclude に分類・YAGNI 相当は既存ルール3/8 が上位互換のため取り込みなし）
     │   ├── 2026-09-06-compact-plus-adoption.md               # compact-plus（/compact 対策プラグイン）の採用可否レビュー（不採用・公式事実4件だけ取り込み）
     │   ├── 2026-09-06-global-claude-md-6-items-adoption.md    # グローバル CLAUDE.md 6項目の採用可否レビュー（6項目は不採用。副産物として context-audit の棚卸し対象に auto memory の MEMORY.md を追加）
-    │   └── 2026-09-06-claude-code-dev-flow-adoption.md         # 個人ブログの Claude Code 開発フロー採用可否レビュー（既存資材で大半が代替可能・self-correct の README/SKILL に限界の明記1点だけ取り込み）
+    │   ├── 2026-09-06-claude-code-dev-flow-adoption.md         # 個人ブログの Claude Code 開発フロー採用可否レビュー（既存資材で大半が代替可能・self-correct の README/SKILL に限界の明記1点だけ取り込み）
+    │   └── 2026-09-07-plugin-inventory-and-official-spec-alignment.md  # 全10プラグインの棚卸しと公式一次情報への追随（削除ゼロ・codex-bridge/agent-review-panel/self-correct は先行OSSとの重複につき審議中・marketplace の単一情報源化・CI の許可キー追随・eval の skill-creator 形式化）
     ├── lessons.md                   #   過去 PR から蒸留した「繰り返さない判断」（根拠の PR 番号つき）
     ├── skill-authoring.md           #   スキルの書き方（公式ガイド準拠。frontmatter 規約・分冊基準・監査結果）
-    ├── evals/                       #   主要スキルの期待挙動シナリオ（Sonnet 5 / Opus 5 のパリティ実測用）
-    │   ├── README.md                #     走らせ方・結果記録表・Markdown 形式である理由
-    │   └── {task-brief,verify-fresh,long-run,review-panel,adoption-review}.md
+    ├── evals/                       #   主要スキル11件の期待挙動シナリオ（Sonnet 5 / Opus 5 のパリティ実測用）
+    │   ├── README.md                #     走らせ方・baseline 比較・20クエリの trigger eval・結果記録表
+    │   ├── gen-evals.py             #     Markdown から evals.json を生成（公式 skill-creator の形式）
+    │   ├── evals.json               #     生成物。手で編集しない
+    │   └── {task-brief,verify-fresh,long-run,review-panel,adoption-review,self-correct,feature-pipeline,project-catchup,feedback-rule,deep-understand,codebase-onboard}.md
     ├── backlog-2026-09.md           #   Sonnet/Opus 実行用ブリーフ（完了条件・検証方法つき）
     ├── pipeline-spec-alignment-proposal.html  #   パイプラインと仕様整合の提案資料（歴史的決定記録）
     └── skills-guide/                #   おすすめSkillsガイド（優先度・業務タイプ別）

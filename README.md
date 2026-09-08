@@ -232,6 +232,7 @@ mkdir -p ~/.claude/skills && cp -r /tmp/workbench/plugins/learning-coach/skills/
 | backlog.md 駆動で計画→実施→PR→マージまで定型ループで回したい | model-setup（`/backlog-loop`・`/pr-merge`） | Step承認ゲート付き。git なし環境は変更ファイル一覧提示で完了 |
 | 巨大なリポジトリで Claude が的外れなファイルを読む／CLAUDE.md が長すぎる | **codebase-setup**（`/codebase-onboard`） | 実測して効く設定だけ入れる。ルート CLAUDE.md の生成自体は本体 `/init` に委譲 |
 | どこに何があるか分からないリポジトリの地図が欲しい | codebase-setup（`/codebase-map`） | 1行説明つきの目次。地図が要らないリポジトリには「作らない」と答える |
+| 参画した案件を実装者レベルで理解したい／引き継ぎ資料が欲しい | codebase-setup（`/project-catchup`） | 構成・経路・データモデルに図を必須化。設計判断の理由は ADR・PR・commit に出典を持つものだけを書き、無いものは未確認に落とす |
 | モデルを更新したので古い指示を整理したい | codebase-setup（`/context-audit`） | 「正しいか」でなく「毎回載せる価値があるか」で5分類。承認前に変更しない |
 | 作る→検査→直す→再検査を人間が毎回指示せずに回したい | **self-correct**（`/self-correct`） | Builder と Judge を別コンテキスト・別ツール権限に分離。停止条件と Ground Truth まで設計する |
 | 同じ指摘を何度もしている／CLAUDE.md に書いても守られない | **feedback-rules**（`/feedback-rule`） | 指摘をファイル化し、指摘回数に応じて warn → ask → deny と強制力が上がる。count を上げるのは人間だけ |

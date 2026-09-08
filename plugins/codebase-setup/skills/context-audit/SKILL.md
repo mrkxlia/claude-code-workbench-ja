@@ -47,6 +47,8 @@ CLAUDE.md やスキルと食い違う「第2の規約レイヤー」になりう
 - パイプラインのエージェント定義・スキル本文の改善 → `pipeline-improve`（pipeline プラグイン）
 - スキルの書き方（frontmatter 規約・分冊基準） → `docs/skill-authoring.md`
 - コード差分のレビュー → 本体の `/code-review`
+- **新しくプラグイン・ツールを入れるべきかを先に決めたい** → `/adoption-review`（adoption-review）。
+  棚卸しは**すでに入れたもの**を減らす作業であり、**入れるかどうか**の判定はしない
 - 足場そのものがまだ無い → 先に `codebase-onboard`
 
 ## 5分類（判定基準）

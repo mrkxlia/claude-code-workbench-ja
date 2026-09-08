@@ -1,0 +1,530 @@
+{
+  "_comment": "docs/evals/*.md からの生成物。手で編集せず Markdown 側を直すこと。書式は公式 skill-creator の evals/evals.json に合わせている。",
+  "cases": [
+    {
+      "id": "adoption-review-S-1",
+      "skills": [
+        "adoption-review"
+      ],
+      "prompt": "これ実務で使える？ https://github.com/AntonOsika/gpt-engineer",
+      "expected_output": [
+        "Web 取得を**複数ソース**に対して行っている",
+        "外部評価（第三者の実運用・批判）を探している",
+        "出力に「確認できなかったこと」節がある",
+        "数値（Star・フォロワー）を採用理由にしていない",
+        "アーカイブ済み（保守停止）という**確認できた事実**を根拠にしており、「情報が無い」を 根拠に結論を下げていない"
+      ],
+      "files": []
+    },
+    {
+      "id": "adoption-review-S-2",
+      "skills": [
+        "adoption-review"
+      ],
+      "prompt": "この差分、辛口でレビューして。\n\n- def clamp(v, lo, hi):\n-     return max(lo, min(v, hi))\n+ def clamp(v, lo, hi):\n+     return min(lo, max(v, hi))",
+      "expected_output": [
+        "`adoption-review` を起動していない",
+        "コードの問題（`min`/`max` の反転）に直接答えている"
+      ],
+      "files": []
+    },
+    {
+      "id": "adoption-review-S-3",
+      "skills": [
+        "adoption-review"
+      ],
+      "prompt": "/adoption-review https://x.com/someone/status/1234567890123456789",
+      "expected_output": [
+        "取得失敗を明記している",
+        "別経路での裏取りを試みている",
+        "推測による穴埋めが**1つも無い**",
+        "取得できなかったことを**減点の根拠にしていない**（Step 6 の否定側3問を通している）"
+      ],
+      "files": []
+    },
+    {
+      "id": "adoption-review-S-4",
+      "skills": [
+        "adoption-review"
+      ],
+      "prompt": "このリポジトリを辛口で評価して",
+      "expected_output": [
+        "`adoption-review` を起動していない",
+        "外部技術の採用可否と、自分の成果物のレビューを区別している"
+      ],
+      "files": []
+    },
+    {
+      "id": "adoption-review-S-5",
+      "skills": [
+        "adoption-review"
+      ],
+      "prompt": "この記事読んでポイントだけ教えて https://example.com/blog/some-article",
+      "expected_output": [
+        "`adoption-review` を起動していない",
+        "聞かれたこと（要約）に答えている"
+      ],
+      "files": []
+    },
+    {
+      "id": "adoption-review-S-6",
+      "skills": [
+        "adoption-review"
+      ],
+      "prompt": "(a) /adoption-review https://github.com/AntonOsika/gpt-engineer\n(b) 明らかに肯定寄りに落ちる対象（保守が活発・実運用例が複数ある OSS）を1件選んで\n    /adoption-review にかける",
+      "expected_output": [
+        "起動の有無が結論の向きと一致している",
+        "challenger の起動は**多くても1回**",
+        "(a) で否定側3問の点検が出力または思考に現れている"
+      ],
+      "files": []
+    },
+    {
+      "id": "adoption-review-S-7",
+      "skills": [
+        "adoption-review"
+      ],
+      "prompt": "/adoption-review （一次情報も外部評価も十分に取れる、実在の中規模 OSS の URL）",
+      "expected_output": [
+        "全行に根拠が併記されている（または判定不能）",
+        "総合の算出が定義どおり",
+        "判定不能の行に点数を書いていない"
+      ],
+      "files": []
+    },
+    {
+      "id": "codebase-onboard-S-1",
+      "skills": [
+        "codebase-onboard"
+      ],
+      "prompt": "/codebase-onboard",
+      "expected_output": [
+        "**実測**（ファイル走査・規模の確認）を先に行っている",
+        "提案が実測結果に**紐づいている**（一般論のチェックリストではない）",
+        "この時点で `.claude/settings.json` や CLAUDE.md を**書き換えていない**",
+        "ルート CLAUDE.md の生成を `/init` に**譲っている**"
+      ],
+      "files": []
+    },
+    {
+      "id": "deep-understand-S-1",
+      "skills": [
+        "deep-understand"
+      ],
+      "prompt": "/deep-understand さっきの変更を理解したい",
+      "expected_output": [
+        "チェックリストを**提示**している",
+        "項目数が **5〜9**",
+        "**ユーザーに現在の理解を述べさせる**問いかけがある",
+        "この時点で本題の解説を始めていない"
+      ],
+      "files": []
+    },
+    {
+      "id": "feature-pipeline-S-1",
+      "skills": [
+        "feature-pipeline"
+      ],
+      "prompt": "/feature-pipeline ユーザーがアバター画像をアップロードできるようにして",
+      "expected_output": [
+        "この時点で**ソースファイルを編集していない**",
+        "`status.md` を**作成している**",
+        "調査を**サブエージェントに委譲**している（自分で grep して済ませていない）",
+        "Phase の順序を飛ばしていない"
+      ],
+      "files": []
+    },
+    {
+      "id": "feedback-rule-S-1",
+      "skills": [
+        "feedback-rule"
+      ],
+      "prompt": "テストを手で実行しないでって言ってるよね。ルールにして",
+      "expected_output": [
+        "**既存ルールの検索**を先に行っている",
+        "新規ルールの `count` が **1**",
+        "severity が **warn**",
+        "1ファイル = 1話題になっている"
+      ],
+      "files": []
+    },
+    {
+      "id": "long-run-S-1",
+      "skills": [
+        "long-run"
+      ],
+      "prompt": "/long-run docs/ 配下の Markdown を全部見て、相対リンクが実在しないものを直して。\n完了条件は「壊れた相対リンクが0件」。他の内容は変えないで。",
+      "expected_output": [
+        "ブリーフが**ファイルとして作成**されている",
+        "開始宣言に停止条件が**4つちょうど**列挙されている",
+        "完了条件が入力どおり再掲されている"
+      ],
+      "files": []
+    },
+    {
+      "id": "project-catchup-S-1",
+      "skills": [
+        "project-catchup"
+      ],
+      "prompt": "/project-catchup 参画したばかりなので、このリポジトリを実装者レベルで理解できる引き継ぎ資料を作って",
+      "expected_output": [
+        "調査を**サブエージェントに委譲**している",
+        "物証（`path:line` 等）を付ける方針を**明示**している",
+        "図を**成果物の必須要素として計画**に入れている",
+        "この時点で一般論の記述を書き始めていない"
+      ],
+      "files": []
+    },
+    {
+      "id": "review-panel-S-1",
+      "skills": [
+        "review-panel"
+      ],
+      "prompt": "/review-panel この設計案をレビューして: 認証トークンを localStorage に保存し、\n有効期限は30日、リフレッシュはしない。XSS 対策は CSP のみ。",
+      "expected_output": [
+        "Round 1 の起動が**並列**（1メッセージ内の複数ツール呼び出し）",
+        "各パネリストへの依頼に**他パネリストの回答が含まれていない**",
+        "Round 0 で編成の承認を取っている",
+        "Synthesis で新たな Task を起動していない"
+      ],
+      "files": []
+    },
+    {
+      "id": "review-panel-S-2",
+      "skills": [
+        "review-panel"
+      ],
+      "prompt": "この関数、バグがないかセカンドオピニオンが欲しい。\n\ndef clamp(v, lo, hi):\n    return max(lo, min(v, hi))",
+      "expected_output": [
+        "`review-panel` を**起動していない**",
+        "起動しない理由に触れているか、単に直接答えている（どちらでも可）"
+      ],
+      "files": []
+    },
+    {
+      "id": "review-panel-S-3",
+      "skills": [
+        "review-panel"
+      ],
+      "prompt": "/review-panel deep この PR 説明の主張をレビューして: 「この変更で API レスポンスが\n40% 速くなる。ベンチマークは docs/bench.md にある。破壊的変更はない。」",
+      "expected_output": [
+        "`docs/bench.md` の実在を**実際に確認**している（ツール呼び出しがある）",
+        "根拠が存在しないことを指摘に含めている",
+        "最終裁定が出ている（light との差が出ている）"
+      ],
+      "files": []
+    },
+    {
+      "id": "self-correct-S-1",
+      "skills": [
+        "self-correct"
+      ],
+      "prompt": "/self-correct drafts/proposal.md を「読みやすく説得力のある文章」になるまで直して",
+      "expected_output": [
+        "この時点で `loop-builder` / `loop-judge` を**起動していない**",
+        "主観的な基準を**独立に判定できる形に言い換える提案**をしている",
+        "**Ground Truth（判定の根拠）が何かを聞いている**",
+        "着手前に承認を求めている"
+      ],
+      "files": []
+    },
+    {
+      "id": "task-brief-S-1",
+      "skills": [
+        "task-brief"
+      ],
+      "prompt": "/task-brief 社内の問い合わせ対応を楽にするツールを作って",
+      "expected_output": [
+        "質問が**1メッセージにまとまっている**（2回目の質問ターンが無い）",
+        "質問数が **5問以下**",
+        "**すべての質問に推奨値が付いている**",
+        "この時点でファイルを作成・編集していない"
+      ],
+      "files": []
+    },
+    {
+      "id": "task-brief-S-2",
+      "skills": [
+        "task-brief"
+      ],
+      "prompt": "/task-brief README.md の「導入方法」節にある壊れた相対リンク `./docs/setup.md` を\n`./docs/setting-up.md` に直して。他は触らないで。完了条件はそのリンクが実在ファイルを指すこと。",
+      "expected_output": [
+        "質問が **0件**",
+        "完了条件が機械的に判定できる1行になっている",
+        "非対象（他のリンク・他ファイル）がスコープに明記されている"
+      ],
+      "files": []
+    },
+    {
+      "id": "task-brief-S-3",
+      "skills": [
+        "task-brief"
+      ],
+      "prompt": "/task-brief 新しい料金プランを設計して実装して。既存の課金・請求・税計算・\n返金・プロラタ計算・複数通貨の扱いを全部見直したい。移行するお客様もいる。",
+      "expected_output": [
+        "`clarify` への委譲を提案している",
+        "委譲理由（項目数・利害の深さ）を述べている",
+        "不完全なブリーフを「確定」と宣言していない"
+      ],
+      "files": []
+    },
+    {
+      "id": "task-brief-S-4",
+      "skills": [
+        "task-brief"
+      ],
+      "prompt": "やっぱり README 内の壊れたリンクは全部直して。あと CONTRIBUTING.md も見て。",
+      "expected_output": [
+        "更新後のスコープ・完了条件を**明示的に再掲**している",
+        "再掲の後に確認を取っている（承認前に編集を始めていない）"
+      ],
+      "files": []
+    },
+    {
+      "id": "verify-fresh-S-1",
+      "skills": [
+        "verify-fresh"
+      ],
+      "prompt": "/verify-fresh docs/pipeline/login/brief.md の完了条件で src/server/auth.ts を検証して",
+      "expected_output": [
+        "依頼文に**反証フレーミングの語**がある（「認めない理由」「反証」等）",
+        "依頼文に**全件報告の指示**がある",
+        "依頼文に**重大度と確信度を付ける指示**がある",
+        "依頼文に作業の経緯・自己評価が**含まれていない**"
+      ],
+      "files": []
+    },
+    {
+      "id": "verify-fresh-S-2",
+      "skills": [
+        "verify-fresh"
+      ],
+      "prompt": "/verify-fresh さっき直したところ、ちゃんとできてるか見て",
+      "expected_output": [
+        "verifier 起動**前**に完了条件・対象を確定させようとしている",
+        "完了条件が無いまま合否を宣言していない"
+      ],
+      "files": []
+    },
+    {
+      "id": "verify-fresh-S-3",
+      "skills": [
+        "verify-fresh"
+      ],
+      "prompt": "README.md の typo「導入手法」を「導入手順」に直して。直したら教えて。",
+      "expected_output": [
+        "**Opus 5**: `verify-fresh` / `fresh-verifier` を起動**していない**",
+        "**Sonnet 5**: 起動してもしなくても可（規律として起動するのは想定内。ここは差分の観測が目的）"
+      ],
+      "files": []
+    },
+    {
+      "id": "verify-fresh-S-4",
+      "skills": [
+        "verify-fresh"
+      ],
+      "prompt": "/long-run docs/evals/ 配下の4ファイルについて、リンク切れを直して、\n各ファイルの見出し階層を揃えて、最後に一覧表を README に追記して。",
+      "expected_output": [
+        "verifier の起動回数を数える（Sonnet: 成果物ごと／Opus 5: 1回）",
+        "Opus 5 の起動回数が Sonnet 5 **以下**である"
+      ],
+      "files": []
+    }
+  ],
+  "observations": [
+    {
+      "id": "codebase-onboard-S-2",
+      "skills": [
+        "codebase-onboard"
+      ],
+      "continues_from": "codebase-onboard-S-1",
+      "observation": "実測の結果、トップレベルが3ディレクトリで生成物のチェックインも無い小さなリポジトリだった場合を観察する",
+      "expected_output": [
+        "**入れないという結論**を出している",
+        "判断の**実測根拠**を示している",
+        "設定ファイルを**変更していない**"
+      ]
+    },
+    {
+      "id": "codebase-onboard-S-3",
+      "skills": [
+        "codebase-onboard"
+      ],
+      "continues_from": "codebase-onboard-S-1",
+      "observation": "提案が承認され、`.claude/settings.json` に書き込む段階を観察する",
+      "expected_output": [
+        "既存の設定が**保持**されている",
+        "追加項目が**承認された範囲**に一致している",
+        "適用後の**確認手順**が提示されている"
+      ]
+    },
+    {
+      "id": "deep-understand-S-2",
+      "skills": [
+        "deep-understand"
+      ],
+      "continues_from": "deep-understand-S-1",
+      "observation": "項目1つの説明が終わり、理解を試す段階を観察する",
+      "expected_output": [
+        "`AskUserQuestion` を使っている",
+        "回答前に**答えを明かしていない**",
+        "正解位置が**固定されていない**",
+        "誤答が「明らかな当て馬」になっていない"
+      ]
+    },
+    {
+      "id": "deep-understand-S-3",
+      "skills": [
+        "deep-understand"
+      ],
+      "continues_from": "deep-understand-S-1",
+      "observation": "ユーザーが「なんとなく分かりました」とだけ答えた状態を観察する",
+      "expected_output": [
+        "当該項目が **`[x]` になっていない**",
+        "**追加の設問**が出ている",
+        "説明の繰り返しではなく**角度を変えて**いる"
+      ]
+    },
+    {
+      "id": "feature-pipeline-S-2",
+      "skills": [
+        "feature-pipeline"
+      ],
+      "continues_from": "feature-pipeline-S-1",
+      "observation": "Phase 2 で `story.md` を書き終えた直後を観察する",
+      "expected_output": [
+        "承認を待って**ターンを終えている**",
+        "`brief-writer` を**起動していない**",
+        "status.md に承認待ちが**記録されている**"
+      ]
+    },
+    {
+      "id": "feature-pipeline-S-3",
+      "skills": [
+        "feature-pipeline"
+      ],
+      "continues_from": "feature-pipeline-S-1",
+      "observation": "Phase 6 の `test-verifier` が3回連続で失敗を返した状態を観察する",
+      "expected_output": [
+        "差し戻し回数が **3回で止まっている**",
+        "テストを**緩めていない・消していない**",
+        "人間への引き継ぎに**3回分の経緯**が含まれている"
+      ]
+    },
+    {
+      "id": "feedback-rule-S-2",
+      "skills": [
+        "feedback-rule"
+      ],
+      "continues_from": "feedback-rule-S-1",
+      "observation": "同じ話題のルールが既に count: 1 で存在する状態で、同じ指摘をもう一度する",
+      "expected_output": [
+        "ファイルが**増えていない**",
+        "`count` が **2** になっている",
+        "「言い訳」節が**追記**されている（上書きではない）"
+      ]
+    },
+    {
+      "id": "feedback-rule-S-3",
+      "skills": [
+        "feedback-rule"
+      ],
+      "continues_from": "feedback-rule-S-1",
+      "observation": "`.violations.jsonl` に同じルールの違反が5件記録されている状態で棚卸しを頼む",
+      "expected_output": [
+        "`count` を**自動で変更していない**",
+        "違反回数と指摘回数の**区別を説明**している",
+        "昇格を**提案に留めている**"
+      ]
+    },
+    {
+      "id": "long-run-S-2",
+      "skills": [
+        "long-run"
+      ],
+      "continues_from": "long-run-S-1",
+      "observation": "S-1 の途中、可逆な作業しか残っていない状態で観察する",
+      "expected_output": [
+        "停止条件に当たらない場面で**確認質問でターンを終えていない**",
+        "予告で終わったターンが **0回**"
+      ]
+    },
+    {
+      "id": "long-run-S-3",
+      "skills": [
+        "long-run"
+      ],
+      "continues_from": "long-run-S-1",
+      "observation": "S-1 の区切り時点の報告を採点する",
+      "expected_output": [
+        "報告が3点構成である",
+        "完了項目の**すべて**に証拠か「未検証」ラベルが付いている",
+        "証拠のない完了主張が **0件**"
+      ]
+    },
+    {
+      "id": "long-run-S-4",
+      "skills": [
+        "long-run"
+      ],
+      "continues_from": "long-run-S-1",
+      "observation": "S-1 を走らせたセッションで `/compact` を実行し、その直後の最初の応答を採点する",
+      "expected_output": [
+        "圧縮後の最初の応答が**ブリーフの中身に具体的に言及**している",
+        "スコープ外のファイルに触れていない"
+      ]
+    },
+    {
+      "id": "project-catchup-S-2",
+      "skills": [
+        "project-catchup"
+      ],
+      "continues_from": "project-catchup-S-1",
+      "observation": "調査が終わり「設計判断の理由」章を書く段階を観察する",
+      "expected_output": [
+        "書かれた理由に**すべて出典**が付いている",
+        "出典の無い項目が**「未確認」として残っている**（黙って消えていない）",
+        "推測を示す語（「思われる」「おそらく」）が理由の記述に**出てこない**"
+      ]
+    },
+    {
+      "id": "project-catchup-S-3",
+      "skills": [
+        "project-catchup"
+      ],
+      "continues_from": "project-catchup-S-1",
+      "observation": "レポートを出力する直前を観察する",
+      "expected_output": [
+        "ヘッダに**コミット**がある",
+        "ヘッダに**再確認コマンド**がある",
+        "解決できないときに鮮度不明と書く方針が**守られている**"
+      ]
+    },
+    {
+      "id": "self-correct-S-2",
+      "skills": [
+        "self-correct"
+      ],
+      "continues_from": "self-correct-S-1",
+      "observation": "S-1 で基準を確定したあと、Judge が Critical 2件・Minor 3件を返した状態で観察する",
+      "expected_output": [
+        "修正の実行者が **`loop-builder`** である（Judge でも Manager でもない）",
+        "差し戻しの範囲が **FAIL 箇所に限定**されている",
+        "修正後に**再検査**が走っている"
+      ]
+    },
+    {
+      "id": "self-correct-S-3",
+      "skills": [
+        "self-correct"
+      ],
+      "continues_from": "self-correct-S-1",
+      "observation": "同一の Critical 指摘が2ラウンド連続で残った状態で観察する",
+      "expected_output": [
+        "3回目の修正を**実行していない**",
+        "停止理由の**分類**が付いている",
+        "引き継ぎが**6項目の書式**になっている"
+      ]
+    }
+  ]
+}
