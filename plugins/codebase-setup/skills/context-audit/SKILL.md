@@ -38,9 +38,17 @@ CLAUDE.md やスキルと食い違う「第2の規約レイヤー」になりう
   `CLAUDE_CODE_DISABLE_AUTO_MEMORY=1`（環境変数）。このスキルが引き受けるのは**横断照合**のほうで、
   緊急の切り分けではない
 - 1ファイルを機械的に短くするだけ → 本体の `/doctor`（このスキルも Step 2 で参考にする）
+- **どのスキル・プラグインが実際に使われているかを知りたい → 本体の `/skill-doctor`**。
+  スキルごとのトークンコストと呼び出し頻度を出し、使われていないスキルと最近使っていない
+  プラグインを無効化の手順つきで提示する（対話セッションでは `/plugin` の Stats タブ）。
+  **このスキルを始める前に実行して、事実を先に手に入れる**のが速い。
+  出典: [Extend Claude with skills](https://code.claude.com/docs/en/skills)
+- いま何がコンテキストを食っているかの内訳 → 本体の `/context`
 - パイプラインのエージェント定義・スキル本文の改善 → `pipeline-improve`（pipeline プラグイン）
 - スキルの書き方（frontmatter 規約・分冊基準） → `docs/skill-authoring.md`
 - コード差分のレビュー → 本体の `/code-review`
+- **新しくプラグイン・ツールを入れるべきかを先に決めたい** → `/adoption-review`（adoption-review）。
+  棚卸しは**すでに入れたもの**を減らす作業であり、**入れるかどうか**の判定はしない
 - 足場そのものがまだ無い → 先に `codebase-onboard`
 
 ## 5分類（判定基準）

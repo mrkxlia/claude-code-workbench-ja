@@ -5,7 +5,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/feedback-hook.sh\" inject"
+            "command": "bash",
+            "args": [
+              "${CLAUDE_PLUGIN_ROOT}/hooks/feedback-hook.sh",
+              "inject"
+            ]
           }
         ]
       }
@@ -16,7 +20,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/feedback-hook.sh\" guard"
+            "command": "bash",
+            "args": [
+              "${CLAUDE_PLUGIN_ROOT}/hooks/feedback-hook.sh",
+              "guard"
+            ]
           }
         ]
       }
@@ -26,7 +34,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/feedback-hook.sh\" stop-check"
+            "command": "bash",
+            "args": [
+              "${CLAUDE_PLUGIN_ROOT}/hooks/feedback-hook.sh",
+              "stop-check"
+            ]
           }
         ]
       }

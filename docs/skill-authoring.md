@@ -37,6 +37,22 @@ print('\n'.join((p.extract_text() or '') for p in PdfReader('guide.pdf').pages))
 第1段が常駐するため、`description` の質がそのまま発動の質になる。逆に、長い手順を frontmatter に
 書くのは最も高くつく。
 
+**第1段には予算がある。** スキル一覧（全スキルの `name` + `description` の羅列）に割り当てられる
+のは**モデルのコンテキストウィンドウの 1%**（`skillListingBudgetFraction` で変更可）。予算を
+超えると説明文が短縮され、**呼び出し回数の少ないスキルから description が落ちる** —
+公式は「Claude が要求と突き合わせるのに必要なキーワードごと削られうる」と書いている。
+さらに**この一覧は圧縮後に再注入されない**（残るのは実際に起動したスキルの本文だけ）。
+
+このリポジトリは10プラグイン・33スキルを配布するため、全部入れる利用者はこの予算に効く。
+含意は2つ:
+
+- **description は短いほうが強い。** 上限 1024 字は「そこまで書いてよい」ではなく「そこが壁」。
+  現状の最長は `project-catchup` の 698 字
+- **重要な使用例を先頭に置く。** 切り詰めは後ろから起きる
+- 使わないプラグインは無効化する。何が使われているかは本体の `/skill-doctor` が出す
+
+出典: [Extend Claude with skills](https://code.claude.com/docs/en/skills)（2026-09-07 取得）
+
 ## 圧縮後の再注入（第2段は「全部は」戻らない）
 
 長いセッションでコンテキストが自動圧縮されると、**起動済みスキルの本文（第2段）は再注入されるが
@@ -128,9 +144,16 @@ description: ... /long-run [タスク内容] での手動起動で発動する�
 [何をするか] + [いつ使うか（トリガー句）] + [主要な能力] + [否定トリガー]
 ```
 
-- 上限はガイドが 1024 字。このリポジトリの CI は**日本語のため 1536 字**で判定する
+- **上限は 1024 字**（`when_to_use` を使う場合は両者の合計）。公式ガイド（PDF）と
+  platform.claude.com の双方が明記する上限で、claude.ai へのアップロードと Skills API では
+  **超過がハードエラー**になる。CI はこの 1024 字で判定する（以前は「日本語だから」という
+  根拠で 1536 字にしていたが、1536 は Claude Code の**スキル一覧での切り詰め閾値**であって
+  description の上限ではなかった）
 - トリガー句は**ユーザーが実際に言う言葉**を「」で並べる（技術用語だけでは発動しない）
 - 「〜は X に任せる」の否定トリガーを添える。これが無いと隣接スキルと衝突する
+- **三人称で書く。** 公式が "Always write in third person. The description is injected into
+  the system prompt, and inconsistent point-of-view can cause discovery problems" と明記して
+  いる。「あなたが〜する」「〜してください」ではなく「〜するスキル」の形にする（CI が検査する）
 
 ## 本文の型
 
@@ -145,6 +168,22 @@ description: ... /long-run [タスク内容] での手動起動で発動する�
 ```
 
 **具体的に書く。** 「検証する」ではなく、実行するコマンドと失敗時の見分け方を書く。
+
+**本文の長さ。** 公式は2つの数字を出しており、値が食い違う（どちらも公式）:
+
+| 出典 | 目安 |
+|---|---|
+| platform.claude.com の best-practices・code.claude.com の skills | **500 行未満** |
+| The Complete Guide to Building Skills for Claude（PDF・2026-01-26 版） | **5,000 words 未満** |
+
+このリポジトリは CI で判定できる **500 行**を採る。超えたら `references/` に切る（下記の分冊基準）。
+
+**references の置き方（公式の明文2件）:**
+
+- **SKILL.md から1階層まで。** 分冊が分冊を参照する形にしない。公式は理由として
+  「入れ子だと Claude が `head -100` のような部分読みで済ませ、情報が欠ける」ことを挙げている
+  （以前この文書は入れ子を許していたが、公式の明文に合わせて改めた。CI が検査する）
+- **100行を超える分冊には先頭に目次を置く。** 部分読みされても全体像が見えるようにするため
 
 ## Common Issues（エラー処理）
 
@@ -169,7 +208,7 @@ description: ... /long-run [タスク内容] での手動起動で発動する�
 | 発動しすぎる | ①否定トリガーを足す ②より具体的にする ③スコープを明示する |
 
 **複数スキルが同じトリガー句を自称してはいけない。** どちらでもない依頼は、どちらも受けずに
-本体機能（内蔵の Task サブエージェント・`/code-review`）へ譲るのが正しい。
+本体機能（内蔵の Agent サブエージェント・`/code-review`）へ譲るのが正しい。
 
 ## 別冊（`references/`）に切る基準
 
@@ -199,12 +238,35 @@ description: ... /long-run [タスク内容] での手動起動で発動する�
 |---|---|
 | frontmatter | 先頭にある・終端がある・YAML としてパースできる |
 | `name` | 必須・kebab-case・ディレクトリ名と一致・予約語を含まない |
-| `description` | 必須・1536字以内 |
-| キー集合 | 上表の9キー以外はエラー（打ち間違いが無言で無効化されるのを防ぐ） |
-| 山括弧 | `name`・`description`・`argument-hint`・`compatibility`・`license`・`metadata` の値に `< >` があればエラー |
+| `description` | 必須・`when_to_use` との合計で1024字以内 |
+| description の人称 | 「あなた」「ください」等の一人称・二人称を含まないこと |
+| キー集合 | 公式が受け付けるキー以外はエラー（打ち間違いが無言で無効化されるのを防ぐ） |
+| 山括弧 | `name`・`description`・`when_to_use`・`argument-hint`・`compatibility`・`license`・`metadata` の値に `< >` があればエラー |
 | `argument-hint` | 文字列であること（クオート漏れの検出） |
 | 本文 | 500行以内 |
-| レイアウト | スキル直下は `SKILL.md` のみ／`references/*.md` が SKILL.md か他の references から到達できる |
+| レイアウト | スキル直下は `SKILL.md` のみ／`references/*.md` が **SKILL.md から直接**到達できる（1階層） |
+| 分冊の目次 | 100行超の `references/*.md` は先頭20行に「## 目次」を持つ |
+| agent の description 合計 | 全サブエージェント合計 12,000 字以内（公式は 15,000 トークン超で起動時警告。日本語は1字≒1トークンとみなす） |
+
+**キー集合は固定しない。** 公式が受け付けるキーは増える。集合を固定した検査は、やがて
+正しい機能を禁止する側に回る（[`lessons.md`](lessons.md) 教訓9）。公式ドキュメントを見て
+追随させること。
+
+## サブエージェント（`agents/*.md`）の規約
+
+出典: [Create custom subagents](https://code.claude.com/docs/en/sub-agents)（2026-09-07 取得）
+
+- 必須は `name` と `description` のみ。このリポジトリは可読性のため `tools`・`model`・`color` も必須にしている
+- **`description` の合計に予算がある。** 組み込み以外の合計が 15,000 トークンを超えると起動時に警告が出る。
+  現在31体で 7,001 字。CI が 12,000 字で止める
+- **`tools` と `disallowedTools` を両方書いた場合、`disallowedTools` が先に適用される**
+- 自発的な委譲を促したいときは description に「積極的に使う」相当の語を入れる
+  （公式は "use proactively" を挙げている）
+- **プラグイン配布のサブエージェントでは `permissionMode` / `mcpServers` / `hooks` は無視される**
+- 非 fork のサブエージェントは会話履歴・過去のツール結果・output style・**メイン会話の auto memory** を
+  引き継がない。一方で **CLAUDE.md 階層は全部読む**。委譲プロンプトに書かないことは伝わらない
+- 同時実行の上限は既定20体（`CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS`）、spawn の入れ子は深さ3
+- ツール名は現在 **`Agent`**（`Task` は v2.1.63 以降エイリアス）
 
 **機械化していない**（人がレビューする）: description が「何を＋いつ」を含むか、トリガー句が
 実際の言い回しか、否定トリガーが足りているか、Common Issues の内容が実際の失敗モードと合っているか。
@@ -227,7 +289,7 @@ description: ... /long-run [タスク内容] での手動起動で発動する�
 | 13スキル | frontmatter | **高** | `description`・`argument-hint` に `< >`。ガイドが security restriction として2箇所で禁止 | 角括弧に統一 |
 | `build-with-tests`・`clarify`・`feature-pipeline`・`task-pipeline` | frontmatter | 中 | `argument-hint` がクオート無し。角括弧化すると list 化・パースエラーになる | クオート追加 |
 | `review-panel` | レイアウト | 中 | `personas.md`・`report-template.md` がスキル直下 | `references/` へ移動。参照3箇所を Markdown リンク化 |
-| `codex-ask` / `kiro-ask` | 発動 | 中 | 「セカンドオピニオン」「別の AI の意見も」を両方が自称 | 両方から削除。内蔵 Task サブエージェントへ譲る |
+| `codex-ask` / `kiro-ask` | 発動 | 中 | 「セカンドオピニオン」「別の AI の意見も」を両方が自称 | 両方から削除。内蔵 Agent サブエージェントへ譲る |
 | `codex-review` / `kiro-review` | 発動 | 中 | 「セカンドレビュー」「別の AI にレビューさせて」を両方が自称 | 両方から削除。`/code-review` へ譲る |
 | codex系4・kiro系2・`pr-merge`・`pipeline-setup` | エラー処理 | 中 | 外部プロセスを叩くのに失敗モードの記載が無い | `## Common Issues` を追加 |
 

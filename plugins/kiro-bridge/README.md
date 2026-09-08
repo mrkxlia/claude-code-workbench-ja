@@ -32,6 +32,13 @@
 - **安全側を既定に**: `--trust-tools=read` 固定。`--trust-all-tools`、および write/shell を
   含む `--trust-tools` 指定は**テンプレートでは使いません**。より広い権限が必要な場合に
   選ぶのは利用者の責任です。
+- **Kiro 側の権限モデル**: Kiro はケイパビリティベースの権限モデルを持ち、ケイパビリティは
+  `fs_read` / `fs_write` / `shell` / `web_fetch` / `mcp`、エフェクトは `deny`（常に拒否）/
+  `ask`（確認）/ `allow`（黙って実行）で、**deny はスコープに関わらず常に勝ちます**。
+  ただしこれはプロセス内の許可判定であって、Codex の `--sandbox` のような **OS レベルの
+  隔離についての記述は公式ドキュメントに見当たりません**（無いことの証明ではなく、
+  一次情報で確認できなかったということです）。上の read-only 限定はこの前提に基づきます。
+  出典: [Kiro Permissions](https://kiro.dev/docs/permissions/)
 
 ## 前提
 
@@ -41,7 +48,14 @@
 3. **フラグの環境差** — `kiro-cli chat` のフラグ・プロンプト引数の扱いはバージョンで
    異なりうるため、各サブエージェントは `kiro-cli chat --help` で実体を確認する前提で
    書かれています。挙動が変わっている場合はエージェント本文の記述を実環境に合わせて
-   調整してください。
+   調整してください。最新のフラグ一覧は
+   [CLI commands](https://kiro.dev/docs/reference/cli-commands/) と
+   [Headless mode](https://kiro.dev/docs/cli/headless/) にあります。
+
+> **出力のパースが不安定なとき**: `--output-format stream-json` を足すと実行イベントが
+> JSON Lines で stdout に出ます（V2 / V3 エンジンの指定が要ります）。テンプレートは
+> 素のテキスト出力を要約する前提なので既定では使いませんが、要約が崩れる環境では
+> こちらに切り替えてください。出典: [Headless mode](https://kiro.dev/docs/cli/headless/)
 
 > 未導入・未認証のまま起動した場合、サブエージェントが `command -v kiro-cli` と認証エラー
 > 文言を検知し、raw なエラーを出さずに日本語で案内して終了します。

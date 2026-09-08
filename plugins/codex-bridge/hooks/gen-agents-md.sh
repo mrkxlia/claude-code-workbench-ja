@@ -21,6 +21,10 @@ set -u
 SENTINEL='<!-- codex-bridge:generated v1 DO NOT EDIT -->'
 NOTE='<!-- ルールは CLAUDE.md 側で更新し /codex-agents で再生成してください。手編集は失われます。 -->'
 MAXBYTES=65536
+# Codex が AGENTS.md を読み込むサイズ上限（config.toml の project_doc_max_bytes、既定 32 KiB）。
+# 超えた分は Codex 側が黙って切り捨てるため、生成結果がこれを超えたら警告する。
+# 出典: https://learn.chatgpt.com/docs/agent-configuration/agents-md.md（2026-09-07 取得）
+CODEX_DOC_MAXBYTES=32768
 
 AUTO=0
 PROJECT_ONLY=0
@@ -118,6 +122,16 @@ _expand() {
 }
 
 # --- 生成済み内容を出力先へ書き込む（書き込み規律つき） -------------------------------
+# 生成物が Codex の読み込み上限を超えていたら警告する（切り詰めは Codex 側で黙って起きる）。
+_warn_oversize() {
+  _osz=$(_filesize "$1")
+  [ -n "$_osz" ] || return 0
+  [ "$_osz" -gt "$CODEX_DOC_MAXBYTES" ] || return 0
+  printf '警告: %s が %sB で Codex の読み込み上限 %sB を超えた。超過分は読まれない。\n' \
+    "$1" "$_osz" "$CODEX_DOC_MAXBYTES" >&2
+  printf '      CLAUDE.md を減らすか config.toml の project_doc_max_bytes を上げること。\n' >&2
+}
+
 _write_out() {
   _target=$1
   _src=$2
@@ -128,6 +142,7 @@ _write_out() {
         :  # 無変更 → 触らない
       else
         cp "$_src" "$_target" && printf '更新: %s\n' "$_target" >&2
+        _warn_oversize "$_target"
       fi
     else
       printf 'スキップ（手書き / センチネル無し）: %s\n' "$_target" >&2
