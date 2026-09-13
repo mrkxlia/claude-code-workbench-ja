@@ -118,7 +118,8 @@ claude-code-workbench-ja/
     │   ├── 2026-09-06-compact-plus-adoption.md               # compact-plus（/compact 対策プラグイン）の採用可否レビュー（不採用・公式事実4件だけ取り込み）
     │   ├── 2026-09-06-global-claude-md-6-items-adoption.md    # グローバル CLAUDE.md 6項目の採用可否レビュー（6項目は不採用。副産物として context-audit の棚卸し対象に auto memory の MEMORY.md を追加）
     │   ├── 2026-09-06-claude-code-dev-flow-adoption.md         # 個人ブログの Claude Code 開発フロー採用可否レビュー（既存資材で大半が代替可能・self-correct の README/SKILL に限界の明記1点だけ取り込み）
-    │   └── 2026-09-07-plugin-inventory-and-official-spec-alignment.md  # 全10プラグインの棚卸しと公式一次情報への追随（削除ゼロ・codex-bridge/agent-review-panel/self-correct は先行OSSとの重複につき審議中・marketplace の単一情報源化・CI の許可キー追随・eval の skill-creator 形式化）
+    │   ├── 2026-09-07-plugin-inventory-and-official-spec-alignment.md  # 全10プラグインの棚卸しと公式一次情報への追随（削除ゼロ・codex-bridge/agent-review-panel/self-correct は先行OSSとの重複につき審議中・marketplace の単一情報源化・CI の許可キー追随・eval の skill-creator 形式化）
+    │   └── 2026-09-13-skill-duplication-check.md               # 全33スキルの車輪の再発明チェック（重なり度 A12/B13/C3/D5・審議中3件の決着・`claude plugin eval` は実在するという前回記述の訂正）
     ├── lessons.md                   #   過去 PR から蒸留した「繰り返さない判断」（根拠の PR 番号つき）
     ├── skill-authoring.md           #   スキルの書き方（公式ガイド準拠。frontmatter 規約・分冊基準・監査結果）
     ├── evals/                       #   主要スキル11件の期待挙動シナリオ（Sonnet 5 / Opus 5 のパリティ実測用）
