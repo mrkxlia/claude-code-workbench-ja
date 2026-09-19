@@ -13,6 +13,12 @@ argument-hint: "[タスク内容]"
 このスキルは「うちのチームのコードの作り方」を定義する。
 実装を依頼されたら、以下の3フェーズを順番に、省略せずに実行すること。
 
+> **他の選択肢（2026-09-19 の棚卸し）。** TDD を規律として強制したいなら
+> [`obra/superpowers`](https://github.com/obra/superpowers) の test-driven-development
+> （RED-GREEN-REFACTOR を踏ませる）や公式マーケットプレイスの `mattpocock-skills` のほうが
+> 手厚い。本スキルは**既存パターンの踏襲を先に置く軽量版**で、pipeline を通すほどでもない
+> 小さな実装・修正のための入口である。
+
 ## フェーズ1: 書く前に（既存パターンに合わせる）
 
 1. これから書くものに似た既存コードを Grep / Glob で探す

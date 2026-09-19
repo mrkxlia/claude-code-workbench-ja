@@ -20,6 +20,12 @@ argument-hint: "[詰めたい要件・プラン・設計・成果物の方針]"
 プラン・要件・設計・成果物の構成・意思決定のあらゆる側面について、共通の理解に達するまで
 ユーザーに徹底的に質問する。実装や成果物の作成を始める前に、穴・曖昧さ・隠れた前提を潰すのが目的。
 
+> **他の選択肢（2026-09-19 の棚卸し）。** 仕様駆動開発の枠組みごと入れるなら
+> [`github/spec-kit`](https://github.com/github/spec-kit) の `/speckit.clarify`（specify →
+> plan → tasks → implement の一部）や `obra/superpowers` の brainstorming がある。
+> 本スキルは**依存ゼロ・日本語・一問一答**で、推奨回答を添えて甘い回答に突っ込む対話の作法に
+> 絞った部品であり、pipeline の Phase 2・3 からも呼ばれる。
+
 > このスキルは外部の2スキルの設計を参考にしている:
 > [dig](https://github.com/ryonakae/dotfiles/tree/master/config/.agents/skills/dig)（ryonakae/dotfiles）と
 > [grill-me / grilling](https://github.com/mattpocock/skills)（mattpocock/skills）。
