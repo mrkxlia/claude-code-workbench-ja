@@ -16,7 +16,7 @@ flowchart TD
     N1 --> N2{"何を作る？"}
     N2 -->|"コードで機能開発"| N3["pipeline の pipeline-setup を<br/>コードモードで実行"]
     N2 -->|"図・ドキュメント等"| N4["pipeline の pipeline-setup を<br/>成果物モードで実行"]
-    N3 --> N6["codex-bridge・kiro-bridge・<br/>agent-review-panel・self-correct・<br/>feedback-rules・adoption-review・<br/>learning-coach は<br/>いつでも追加導入可"]
+    N3 --> N6["cli-bridge・agent-review-panel・<br/>self-correct・feedback-rules・<br/>adoption-review・learning-coach は<br/>いつでも追加導入可"]
     N4 --> N6
 
     Existing --> E1["1. 現状を仕様化する（推奨）<br/>cc-rsg 等の外部ツールで SPEC.md を生成"]
@@ -34,7 +34,7 @@ flowchart TD
 1. **個人の運用ルールを先に整える**（Claude Code のユーザー設定に一度入れれば全プロジェクトで効く）— `model-setup` を導入（9ルール＋プロファイル別追補＋`task-brief`／`backlog-loop`／`pr-merge`／`fan-out`／`long-run`／`verify-fresh`）。
 2. **プロジェクトの土台を選ぶ**（対象リポジトリに導入。何を作るかで変わる）
    - `pipeline` の `pipeline-setup` を実行（コード/成果物のモード選択つき。エージェント・CLAUDE.md・フックを対象リポジトリに自動導入）
-3. 別 AI へのレビュー委譲（`codex-bridge`・`kiro-bridge`）、多視点レビュー（`agent-review-panel`）、自己修正ループ（`self-correct`）、指摘の永続化と段階的強制（`feedback-rules`）、外部技術の採用可否レビュー（`adoption-review`）、変更内容を自分が理解するための学習コーチ（`learning-coach`）は、上記と独立して**いつ追加してもよい**。
+3. 別 AI への相談・レビュー委譲（`cli-bridge`）、多視点レビュー（`agent-review-panel`）、自己修正ループ（`self-correct`）、指摘の永続化と段階的強制（`feedback-rules`）、外部技術の採用可否レビュー（`adoption-review`）、変更内容を自分が理解するための学習コーチ（`learning-coach`）は、上記と独立して**いつ追加してもよい**。
 
 ### 既存リポジトリ（すでにコード・成果物がある）
 
@@ -68,26 +68,25 @@ flowchart TD
 
 | プラグイン | フック | 発火タイミング | 効果 |
 |---|---|---|---|
-| codex-bridge | gen-agents-md | セッション開始 | CLAUDE.md 等から AGENTS.md を自動生成・同期（Codex にも同じルールを効かせる） |
+| cli-bridge | gen-agents-md | セッション開始 | CLAUDE.md 等から AGENTS.md を自動生成・同期（Codex にも同じルールを効かせる） |
 | pipeline | block-secrets-commit / guard-builder-writes / guard-deliverable-writes / guard-builder-paths / inject-spec-summary / spec-sync-reminder | コミット前／Edit・Write 前／セッション開始・サブエージェント開始・Stop | 機密のコミット防止、担当外・出力先外への書き込み防止（`guard-builder-paths` はビルダーの越境を exit 2 で拒否）、SPEC.md の確定要件の注入、仕様更新漏れの通知（guard はモードに応じて setup が配線） |
 | feedback-rules | feedback-hook（inject / guard / stop-check の3モード） | プロンプト送信時／Bash・Edit・Write 前／Stop | 繰り返し指摘された確定ルール（count 3 以上）を毎ターン注入し、違反しそうなツール実行を count に応じて ask / deny で止め、直すまでターンを終わらせない。**ルールが1件も無い間は素通り**する |
 | self-correct | loop-stop-check / guard-ground-truth | Stop／Edit・Write 前 | 自己修正ループが未完了のまま停止するのを止め、上限到達時は人間への引き継ぎを促す。判定の根拠（元資料・仕様・fixture）への書き込みを exit 2 で拒否する。**どちらも状態ファイルが ACTIVE のときだけ発火**し、ループを回していないときは素通りする |
 
 > 上の表は「導入するだけで常時発火する」フックの一覧です。**model-setup にもフックが1つありますが、
 > `/long-run` を起動したときだけ登録される opt-in**（圧縮後にブリーフを文脈へ戻す）なのでここには載せていません。
-> kiro-bridge・agent-review-panel・codebase-setup・adoption-review・learning-coach はスキルのみで完結し、フックを持ちません。
+> agent-review-panel・codebase-setup・adoption-review・learning-coach はスキルのみで完結し、フックを持ちません。
 
 ## 導入方法（クイックスタート）
 
 ### 方法1: プラグインで導入する（最も簡単）
 
-Claude Code でそのまま実行します（clone 不要）。現在10のプラグインを配信しています:
+Claude Code でそのまま実行します（clone 不要）。現在9のプラグインを配信しています:
 
 ```
 /plugin marketplace add mrkxlia/claude-code-workbench-ja
 /plugin install pipeline@workbench-ja
-/plugin install codex-bridge@workbench-ja
-/plugin install kiro-bridge@workbench-ja
+/plugin install cli-bridge@workbench-ja
 /plugin install agent-review-panel@workbench-ja
 /plugin install adoption-review@workbench-ja
 /plugin install model-setup@workbench-ja
@@ -101,12 +100,12 @@ Claude Code でそのまま実行します（clone 不要）。現在10のプラ
   （コード開発 `/feature-pipeline` ／コード以外の成果物 `/task-pipeline`）つきで対象リポジトリに
   パイプライン一式（エージェント・CLAUDE.md・フック）が導入されます。旧 software-pipeline /
   task-pipeline の統合後継です。詳しくは [pipeline/README.md](plugins/pipeline/) を参照。
-- **codex-bridge** — 導入すると `/codex-review`・`/codex-implement`・`/codex-ask` で、
-  コードレビュー・実装・相談を OpenAI Codex に依頼できます（ユーザーは Codex を直接操作せず、
-  Claude Code が Codex CLI を非対話で駆動）。詳しくは [codex-bridge/README.md](plugins/codex-bridge/) を参照。
-- **kiro-bridge** — 導入すると `/kiro-review`・`/kiro-ask` で、コードレビュー・相談を Kiro に
-  依頼できます（ユーザーは Kiro を直接操作せず、Claude Code が kiro-cli を非対話・read-only
-  で駆動。実装委譲スキルは持ちません）。詳しくは [kiro-bridge/README.md](plugins/kiro-bridge/) を参照。
+- **cli-bridge** — 導入すると `/kiro-review`・`/kiro-ask`・`/codex-ask`・`/codex-agents` で、
+  外部の AI コーディング CLI（Kiro・OpenAI Codex）に相談・レビューを委譲できます（ユーザーは
+  外部 CLI を直接操作せず、Claude Code が非対話・read-only で駆動）。**Codex へのレビュー・実装の
+  委譲は公式プラグイン [openai/codex-plugin-cc](https://github.com/openai/codex-plugin-cc) を
+  使ってください**（旧 codex-bridge は 2026-09-19 に廃止）。詳しくは
+  [cli-bridge/README.md](plugins/cli-bridge/) を参照。
 - **agent-review-panel** — 導入すると `/review-panel` で、コード差分・実装計画・ドキュメントを
   複数ペルソナのサブエージェント（既定3名）に**ブラインド並列レビュー→相互批判→応答・譲歩→統合**
   の討論つきでレビューさせられます（基本は依存ゼロ）。`deep` で引用検証＋裁定者の最終評決、
@@ -171,11 +170,8 @@ git clone --depth 1 https://github.com/mrkxlia/claude-code-workbench-ja /tmp/wor
 # pipeline — pipeline-setup をパーソナルスキル化（以後どのリポジトリでも /pipeline-setup が使える）
 mkdir -p ~/.claude/skills && cp -r /tmp/workbench/plugins/pipeline/skills/pipeline-setup ~/.claude/skills/
 
-# codex-bridge — Codex 依頼スキル4種＋エージェント3種をプロジェクトへ
-mkdir -p .claude/skills .claude/agents && cp -r /tmp/workbench/plugins/codex-bridge/skills/* .claude/skills/ && cp -r /tmp/workbench/plugins/codex-bridge/agents/* .claude/agents/
-
-# kiro-bridge — Kiro 依頼スキル2種＋エージェント2種をプロジェクトへ
-mkdir -p .claude/skills .claude/agents && cp -r /tmp/workbench/plugins/kiro-bridge/skills/* .claude/skills/ && cp -r /tmp/workbench/plugins/kiro-bridge/agents/* .claude/agents/
+# cli-bridge — 外部 CLI 委譲スキル4種＋エージェント3種をプロジェクトへ
+mkdir -p .claude/skills .claude/agents && cp -r /tmp/workbench/plugins/cli-bridge/skills/* .claude/skills/ && cp -r /tmp/workbench/plugins/cli-bridge/agents/* .claude/agents/
 
 # adoption-review — 採用可否レビューのスキル1種＋エージェント2種（どのリポジトリでも使うならグローバルへ）
 mkdir -p ~/.claude/skills ~/.claude/agents && cp -r /tmp/workbench/plugins/adoption-review/skills/* ~/.claude/skills/ && cp -r /tmp/workbench/plugins/adoption-review/agents/* ~/.claude/agents/
@@ -221,8 +217,8 @@ mkdir -p ~/.claude/skills && cp -r /tmp/workbench/plugins/learning-coach/skills/
 | パイプラインを通すほどでない小さな実装＋テスト | pipeline の `/build-with-tests` | 既存パターン確認 → 実装とテスト並行 → 型チェック |
 | 図・ドキュメント等コード以外の成果物を作りたい | **pipeline**（`/task-pipeline`） | 5エージェント連鎖。drawio 等のユーザー導入スキルも呼べる |
 | 要件定義書・基本設計書・詳細設計書・DB設計書を毎回同じ型で書きたい | **pipeline**（`/design-docs`） | フェーズ別の章立てテンプレート＋フェーズ間整合を検査する design-doc-checker |
-| 別 AI（OpenAI Codex）にレビュー/実装/相談を委譲したい | **codex-bridge**（`/codex-review` ほか） | Claude が Codex CLI を非対話で駆動。ユーザーは Codex を触らない |
-| 別 AI（Kiro）にレビュー/相談を委譲したい | **kiro-bridge**（`/kiro-review`・`/kiro-ask`） | Claude が kiro-cli を非対話・read-only で駆動。実装委譲はしない |
+| 別 AI（OpenAI Codex）にレビュー/実装を委譲したい | 公式プラグイン [openai/codex-plugin-cc](https://github.com/openai/codex-plugin-cc) | 本リポジトリでは扱わない（2026-09-19 に委譲） |
+| 別 AI（Codex / Kiro）に**相談**したい・Claude のルールを AGENTS.md で共有したい | **cli-bridge**（`/codex-ask`・`/kiro-ask`・`/kiro-review`・`/codex-agents`） | Claude が各 CLI を非対話・read-only で駆動。ユーザーは外部 CLI を触らない |
 | 重要な判断を複数の視点で敵対的にレビュー・討論させたい | **agent-review-panel**（`/review-panel`） | 既定3名がブラインド並列→相互批判→統合。deep で引用検証＋裁定者、codex・kiro で異種モデル混成（同時指定も可） |
 | 流れてきたツール・OSS・論文・X ポストを採用すべきか判断したい | **adoption-review**（`/adoption-review`） | Web の一次情報を集め、良い点より先に採用しない理由を探す。話題性・スター数は採用理由にしない |
 | 要件・仕様を質問で詰めたい | **clarify**（pipeline に同梱） | 単体利用も可（各プラグイン README の「単体利用」参照） |
@@ -287,7 +283,7 @@ UI 試作では避けて軽量な `build-with-tests` を使う、です（参考
 （コピーして使うテンプレートや独立ツールが増えたら `templates/`・`tools/` を追加する規約になっています。
 詳細なディレクトリ構成は [`CLAUDE.md`](CLAUDE.md) 参照）。
 
-### plugins/ — プラグイン導入可能な10セクション
+### plugins/ — プラグイン導入可能な9セクション
 
 #### [`plugins/model-setup/`](plugins/model-setup/)
 モデル運用テンプレート（旧名 sonnet-setup。Opus 5 + Sonnet 5 の私用PC / Sonnet 単独の会社PC
@@ -308,27 +304,28 @@ fresh-verifier / bulk-scanner。sonnet/haiku をタスク別にルーティン�
 コード開発とコード以外の成果物作成を1つに統合したパイプラインテンプレート（旧 software-pipeline / task-pipeline の後継）。
 **コードモード**は `/feature-pipeline` が 調査 → ストーリー → 技術ブリーフ → バックエンド → フロントエンド → 受け入れテスト → 最終検証 の7工程を、**成果物モード**は `/task-pipeline` が 調査 → 成果物要件 → 作業ブリーフ → 作成 → レビュー の5工程を連鎖実行し、いずれも3つの人間承認チェックポイントで停止します（成果物モードのビルダーは drawio などユーザー導入スキルを呼び出せます）。対象リポジトリを解析してモード選択つきで一式を自動導入する **pipeline-setup**、運用実績から定義を改善する **pipeline-improve**（自己改善ループ）を含むスキル8種（設計書の章立てを5フェーズで固定する **design-docs** を含む）と、モード自動判定の共有エージェント4種（researcher / requirements-writer / brief-writer / final-reviewer）+専用ビルダー等5種の計9エージェント、フック4種（機密コミットブロック・担当外/出力先外書き込みガード・仕様更新漏れ通知）・CLAUDE.md サンプル2種（コード用 / 成果物用）を収録しています。ビルダーが実装中の判断を `docs/pipeline/<slug>/implementation-notes.md` に記録し、レガシーコードには [cc-rsg](https://github.com/daishir0/cc-rsg) 等の外部ツールで仕様を固めてから導入できます。**プラグイン2コマンドで導入可能**（上の「導入方法」参照）。
 
-#### [`plugins/codex-bridge/`](plugins/codex-bridge/)
-コードレビュー・実装・相談を OpenAI Codex に依頼するスキル4種とサブエージェント3種。
-ユーザー自身は Codex を操作せず、Claude Code が Codex CLI を**非対話モード（`codex exec`）**で
-駆動します。`/codex-review`（差分/指定ファイルを Codex にレビューさせ重大度 P1–P4 で要約・read-only）、
-`/codex-implement`（Codex にファイルを直接編集させ Claude が差分とテストを検証・workspace-write）、
-`/codex-ask`（設計相談・セカンドオピニオンを Codex に答えさせ要約・read-only）を収録。実際の codex 実行は
-サブエージェント（codex-reviewer / codex-implementer / codex-advisor）に委譲し、冗長な出力をメイン文脈から
-隔離します。さらに **`/codex-agents`**（既存の Claude ルール CLAUDE.md 等を取り込んだ `AGENTS.md` を生成し、
-Codex に同じルールを効かせる）と、**プラン承認で Codex 実装へ委譲する opt-in フック**を同梱。安全側を
-既定にし（危険サンドボックスフラグ不使用）、git を使っていない環境でも動作します（フック/スクリプトは
-bash 系のため Windows は Git Bash / WSL が必要・`jq` は不要）。**プラグイン1コマンドで導入可能**（上の「導入方法」参照）。
+#### [`plugins/cli-bridge/`](plugins/cli-bridge/)
+外部の AI コーディング CLI（**OpenAI Codex**・**Kiro**）に相談・レビューを委譲するスキル4種と
+サブエージェント3種。ユーザー自身は外部 CLI を操作せず、Claude Code が**非対話・read-only**で
+駆動し、冗長な生出力をサブエージェント内に隔離して要約だけを返します。`/codex-ask`（設計相談・
+セカンドオピニオンを Codex に答えさせ要約）、`/kiro-review`（差分/指定ファイルを Kiro にレビュー
+させ重大度 P1–P4 で要約）、`/kiro-ask`（同じく相談）、**`/codex-agents`**（既存の Claude ルール
+CLAUDE.md 等を取り込んだ `AGENTS.md` を生成し、Codex に同じルールを効かせる）を収録。さらに
+**プラン提示前に Codex レビューを挟む opt-in フック**と、**セッション開始時に AGENTS.md を
+再生成する常時フック**を同梱します。
 
-#### [`plugins/kiro-bridge/`](plugins/kiro-bridge/)
-コードレビュー・相談を Kiro に依頼するスキル2種とサブエージェント2種。
-ユーザー自身は Kiro を操作せず、Claude Code が `kiro-cli` を**非対話モード
-（`kiro-cli chat --no-interactive`）**で駆動します。`/kiro-review`（差分/指定ファイルを Kiro に
-レビューさせ重大度 P1–P4 で要約）、`/kiro-ask`（設計相談・セカンドオピニオンを Kiro に答えさせ要約）
-を収録し、いずれも `--trust-tools=read` 固定の read-only です。実際の kiro-cli 実行はサブエージェント
-（kiro-reviewer / kiro-advisor）に委譲し、冗長な出力をメイン文脈から隔離します。kiro-cli には Codex の
-`--sandbox workspace-write` に相当する OS レベル隔離が無いため、**実装を委譲するスキルは持ちません**
-（理由は README の「なぜこの構成か」参照）。**プラグイン1コマンドで導入可能**（上の「導入方法」参照）。
+> **Codex へのレビュー・実装の委譲は公式プラグイン
+> [openai/codex-plugin-cc](https://github.com/openai/codex-plugin-cc) を使ってください。**
+> 同じ用途を公式がより広くカバーする（敵対的レビュー・バックグラウンドジョブ管理つき）ため、
+> 2026-09-19 に旧 `codex-bridge` の `/codex-review`・`/codex-implement` を廃止し、
+> 残る2スキルを旧 `kiro-bridge` と統合して `cli-bridge` に改名しました。経緯は
+> [`docs/decisions/2026-09-19-retire-codex-bridge-and-cli-bridge.md`](docs/decisions/2026-09-19-retire-codex-bridge-and-cli-bridge.md)。
+
+kiro-cli には Codex の `--sandbox workspace-write` に相当する OS レベル隔離が無いため、
+**Kiro に実装を委譲するスキルは持ちません**（理由は README の「なぜこの構成か」参照）。
+安全側を既定にし（危険サンドボックスフラグ不使用）、git を使っていない環境でも動作します
+（フック/スクリプトは bash 系のため Windows は Git Bash / WSL が必要・`jq` は不要）。
+**プラグイン1コマンドで導入可能**（上の「導入方法」参照）。
 
 #### [`plugins/agent-review-panel/`](plugins/agent-review-panel/)
 コード差分・実装計画・ドキュメントを、異なるペルソナの複数サブエージェント（既定3名）にレビューさせる
@@ -339,7 +336,7 @@ bash 系のため Windows は Git Bash / WSL が必要・`jq` は不要）。**�
 （panel-judge）による最終評決＋レポート出力を追加、`codex`・`kiro` 指定で外部パネリスト
 （panel-codex 経由の OpenAI Codex／panel-kiro 経由の Kiro・いずれも未導入なら欠席扱い・**同時指定も可**）
 を混成して同一モデルの相関バイアスを減らせます。1名で足りる相談は内蔵の Task サブエージェントに、単独の
-コードレビューは内蔵 `/code-review`・`/codex-review`・`/kiro-review` に任せる住み分けです。
+コードレビューは内蔵 `/code-review`・`/kiro-review`・公式 Codex プラグインに任せる住み分けです。
 **プラグイン1コマンドで導入可能**（上の「導入方法」参照）。
 
 #### [`plugins/adoption-review/`](plugins/adoption-review/)
@@ -467,7 +464,7 @@ Power Automate のクラウドフローから Azure AI Foundry（Azure OpenAI）
 | [`plugins/model-setup/`](plugins/model-setup/) | X 記事「Sonnet 5をFable 5にする方法」（[@armadillo_ai 氏](https://x.com/armadillo_ai)） | 記事の7原則を参照・要約・翻案した独自整形（コピーではない）— 帰属を README とファイル内に記載 |
 | [`docs/skills-guide/`](docs/skills-guide/) | [anthropics/skills](https://github.com/anthropics/skills)・[obra/superpowers](https://github.com/obra/superpowers)・[mattpocock/skills](https://github.com/mattpocock/skills) | リンクと独自解説のみ収録。各スキル本体は各リポジトリのライセンス（anthropics/skills は Apache 2.0 + 一部 source-available）に従う |
 | [`plugins/pipeline/`](plugins/pipeline/) | [How to Build a Software Factory with Claude Code（@sairahul1 氏）](https://x.com/sairahul1/status/2058832033628241931) | 記事のコンセプト（コードモード）とそのコード以外の成果物への汎用化（成果物モード）に基づく独自実装（コピーではない）— 帰属を README に記載 |
-| [`plugins/codex-bridge/`](plugins/codex-bridge/) | [eddiearc/codex-delegator](https://github.com/eddiearc/codex-delegator)・[hamelsmu/claude-review-loop](https://github.com/hamelsmu/claude-review-loop)・[OpenAI Codex CLI ドキュメント](https://developers.openai.com/codex/) | 構成・プロンプト型のコンセプトを参考にした独自実装（コードのコピーではない） |
+| [`plugins/cli-bridge/`](plugins/cli-bridge/) | [eddiearc/codex-delegator](https://github.com/eddiearc/codex-delegator)・[hamelsmu/claude-review-loop](https://github.com/hamelsmu/claude-review-loop)・[OpenAI Codex CLI ドキュメント](https://developers.openai.com/codex/) | 構成・プロンプト型のコンセプトを参考にした独自実装（コードのコピーではない） |
 | [`plugins/agent-review-panel/`](plugins/agent-review-panel/) | [wan-huiyan/agent-review-panel](https://github.com/wan-huiyan/agent-review-panel)・[makinux/adversarial-panel](https://github.com/makinux/adversarial-panel) | 多フェーズ・パネル構成（並列独立レビュー→討論→検証→裁定）／4ラウンド敵対プロトコル（ブラインド回答→相互批判→譲歩→統合）のコンセプトを参考にした独自実装（コードのコピーではない）— 帰属を README に記載 |
 | [`plugins/codebase-setup/`](plugins/codebase-setup/) | [How Claude Code works in large codebases: best practices and where to start](https://claude.com/blog/how-claude-code-works-in-large-codebases-best-practices-and-where-to-start)（Anthropic 公式ブログ・2026-09-05 取得）＋公式ドキュメント [Monorepos and large repos](https://code.claude.com/docs/en/large-codebases) ほか | 記事の設計原則（harness の7拡張点・3つの設定パターン・導入ロードマップ・所有と棚卸し）を参考にした独自実装（文章のコピーではない）。設定キー名・LSP プラグイン名などの事実は公式ドキュメントを一次情報とした — 帰属を README・決定記録に記載 |
 | [`plugins/learning-coach/`](plugins/learning-coach/) | 2026-08-11 に共有された Anthropic メンバーの「仕事の学習用プロンプト」（日本語訳） | プロンプトの規範（診断が先・3層・クイズで実証・全項目が済むまで終えない）を本リポジトリのスキル規約に載せ替えた独自実装（コピーではない）— 帰属を README・決定記録に記載 |

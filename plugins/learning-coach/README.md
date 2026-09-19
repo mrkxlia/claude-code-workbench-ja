@@ -14,13 +14,20 @@ Claude を**教師役**に固定し、ある変更・コード・設計判断を
 | 出力 | 会話内のみ（3層チェックリストを毎ターン更新して提示）。ファイルは書かない |
 | 依存 | なし（外部 CLI・ネットワーク・サブエージェント不要） |
 
+> **先行事例との線引き（2026-09-19 の棚卸し）。** 同じ狙いの英語圏スキルは複数ある —
+> [`rodbv/socratic-skills`](https://github.com/rodbv/socratic-skills)（差分・仕様・プランを
+> クイズして理解を確認する）や、公式の `learning-output-style` / `explanatory-output-style`。
+> **英語で足りるならそれらでよい。** 本プラグインの差分は、①問題／②解決／③広い文脈の
+> **3層チェックリストを毎ターン維持する**こと、②`AskUserQuestion` の選択式クイズで理解を
+> 実証させてから次に進むこと、③日本語と粒度指定（ELI5 / 14歳 / 実務者）の3点。
+
 ## どれを選ぶか
 
 | やりたいこと | 使うもの |
 |---|---|
 | 1つの疑問にすぐ答えてほしい | 通常の応答（1問1答に教師役は過剰） |
 | **中身を理解して、自分で説明できるようになりたい** | **`/deep-understand`（本プラグイン）** |
-| コードの欠陥・改善点を挙げてほしい | `/code-review`、[`codex-bridge`](../codex-bridge/)、[`agent-review-panel`](../agent-review-panel/) |
+| コードの欠陥・改善点を挙げてほしい | `/code-review`、[`cli-bridge`](../cli-bridge/)、[`agent-review-panel`](../agent-review-panel/) |
 | 成果物が完了条件を満たすか検証したい | `verify-fresh`（[`model-setup`](../model-setup/)） |
 | Claude がリポジトリを読みやすくする足場 | `codebase-onboard`（[`codebase-setup`](../codebase-setup/)） |
 | 理解した内容を記録に残したい | `notes`（[`pipeline`](../pipeline/)）。理解の実証が済んでから |

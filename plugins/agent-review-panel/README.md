@@ -12,11 +12,19 @@
 | `/review-panel [deep] kiro <対象>` | 上記に外部パネリスト（Kiro）を混成 | 同上 | `kiro-cli`（任意。未導入なら欠席扱いで内部のみ続行） |
 | `/review-panel [deep] codex kiro <対象>` | Codex と Kiro を同時混成（各1枠・既定人数+1） | 同上 | `codex` CLI ＋ `kiro-cli`（いずれも任意・個別に欠席縮退） |
 
+> **先行事例との線引き（2026-09-19）。** 同趣旨の OSS
+> [`wan-huiyan/agent-review-panel`](https://github.com/wan-huiyan/agent-review-panel) は
+> ペルソナ自動選択・裁定者・判定後の再検証ゲートまで備えており、**反グループシンク機構は
+> 向こうのほうが厚い**。ただし向こうは **Claude 専用**（素の Anthropic API では動かないと明記）
+> で、外部モデルの混成には対応していない。本プラグインを選ぶ理由は
+> **`codex` / `kiro` を混ぜて同一モデルの相関バイアスを下げられること**（と日本語）に絞られる。
+> 内部ペルソナだけで使うなら、先に向こうを検討してよい。
+
 ## どれを選ぶか
 
 - **1名のセカンドオピニオンで足りる（実装前の壁打ち・軽い相談）→ 内蔵の Task サブエージェント
   （fresh context）に相談**。そちらのほうがずっと軽い（Task 1回 vs 6〜9回）。
-- **行レベルの網羅的なコードレビューが欲しい → 内蔵 `/code-review` か [`codex-bridge`](../codex-bridge/) の `/codex-review`**。
+- **行レベルの網羅的なコードレビューが欲しい → 内蔵 `/code-review` か、外部 CLI への委譲（[`cli-bridge`](../cli-bridge/)・公式 Codex プラグイン）**。
   単独レビュアーの網羅性が目的ならそちら。
 - **重要な設計判断・リリース前・意見が割れそうな対象 → 本パネル**。指摘を討論でたたき合わせ、
   生き残った指摘・未解決の対立・全員一致の警告まで含めて返すのが本スキルの守備範囲です。
@@ -72,11 +80,11 @@ deep 追加:
 
 - **light / deep** … 追加の前提なし（Claude Code だけで動く。git・ネットワーク不要）。
 - **codex 混成** … `codex` CLI が導入・認証済みであること。詳細は
-  [`codex-bridge/README.md`](../codex-bridge/README.md) の「前提」を参照（本プラグインは
-  codex-bridge に依存しません — 未導入なら外部パネリストを欠席にして内部のみで続行します）。
+  [`cli-bridge/README.md`](../cli-bridge/README.md) の「前提」を参照（本プラグインは
+  cli-bridge に依存しません — 未導入なら外部パネリストを欠席にして内部のみで続行します）。
 - **kiro 混成** … `kiro-cli` が導入・認証済みであること。詳細は
-  [`kiro-bridge/README.md`](../kiro-bridge/README.md) の「前提」を参照（本プラグインは
-  kiro-bridge に依存しません — 未導入なら外部パネリストを欠席にして内部のみで続行します）。
+  [`cli-bridge/README.md`](../cli-bridge/README.md) の「前提」を参照（本プラグインは
+  cli-bridge に依存しません — 未導入なら外部パネリストを欠席にして内部のみで続行します）。
 
 ## ファイル構成
 
@@ -155,5 +163,5 @@ cp -r plugins/agent-review-panel/agents/*  .claude/agents/
   「疑わしい」でなく反例で批判する検証優位性、ゴーストパネリスト・追従的収束・
   ファシリテーター私見分離という失敗モード対策、異種モデル混成のコンセプト
 - スキル（入口）／エージェント（実行）の分業と要約契約は、本リポジトリ
-  [`codex-bridge`](../codex-bridge/)・[`kiro-bridge`](../kiro-bridge/)
+  [`cli-bridge`](../cli-bridge/)
   と同型

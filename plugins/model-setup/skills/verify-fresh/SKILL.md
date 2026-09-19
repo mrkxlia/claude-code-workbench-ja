@@ -6,7 +6,7 @@ description: >-
   「新鮮な目でチェックして」「完了条件を満たしているか検証して」「本当に終わったか
   確認して」「フレッシュレビューして」といった依頼や、/verify-fresh [完了条件・ブリーフの
   パス | 検証対象] での手動起動で発動する。実装前のプランレビュー・壁打ちは fresh context の
-  Task サブエージェント、Codex による第二の目は codex-review（codex-bridge）、feature-pipeline 実行中の
+  Task サブエージェント、外部 CLI による第二の目は kiro-review（cli-bridge）や公式 Codex プラグイン、feature-pipeline 実行中の
   ギャップ検査は同パイプラインの final-reviewer に任せる — 本スキルは
   任意のタスクの「成果物 vs 完了条件」の検証に使う。
 argument-hint: "[完了条件・ブリーフのパス | 検証対象]"
@@ -32,7 +32,7 @@ AIDLC 簡易版ワークフロー（`model-setup/MODEL-GUIDE.md` §9）では検
 - 実行モデルが Opus 5 のときは反射的に呼ばない。Opus 5 は自己検証が既定動作で、明示的な検証
   指示は過剰検証を招く（公式ガイド）。引き渡し前の1回に限る（`MODEL-GUIDE.md` §3）
 - 実装**前**の計画・設計の相談 → fresh context の Task サブエージェント
-- Codex による第二の目（コードレビュー） → `codex-review`（codex-bridge）
+- 外部 CLI による第二の目（コードレビュー） → `kiro-review`（cli-bridge）・公式 Codex プラグイン
 - feature-pipeline 実行中のストーリー/ブリーフ突き合わせ → `final-reviewer`（同パイプライン Phase 7）
 
 ## 中核ルール

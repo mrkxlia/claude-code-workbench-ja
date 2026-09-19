@@ -31,11 +31,11 @@
 |---|---|---|
 | `permissions.defaultMode` を `plan` にする | [`CLAUDE.private.md`](../../plugins/model-setup/CLAUDE.private.md) 追補ルール14「エンドユーザの基本操作は『Plan モードで依頼 → 計画を承認』の2つ」／[`MODEL-GUIDE.md`](../../plugins/model-setup/MODEL-GUIDE.md) §9「AIDLC 簡易版ワークフロー（Plan モード起点の自動ルーティング）」 | 設定サンプルには無い（→ **不採用**。理由は下記） |
 | 計画ファイルに完了条件チェックリストを書く | [`CLAUDE.md`](../../plugins/model-setup/CLAUDE.md) ルール1「完了条件を先に定義する」／[`task-brief`](../../plugins/model-setup/skills/task-brief/SKILL.md) の「完了条件（機械的に判定できる形で）」 | 無し（上位互換） |
-| 計画ファイルを Codex にレビューさせる | [`plan-review-codex.sh`](../../plugins/codex-bridge/hooks/plan-review-codex.sh)（`PreToolUse` matcher `ExitPlanMode`・opt-in）＋ `/codex-ask` | 無し（[2026-09-06 に取り込み済み](2026-09-06-plan-review-before-present.md)） |
+| 計画ファイルを Codex にレビューさせる | [`plan-review-codex.sh`](../../plugins/cli-bridge/hooks/plan-review-codex.sh)（`PreToolUse` matcher `ExitPlanMode`・opt-in）＋ `/codex-ask` | 無し（[2026-09-06 に取り込み済み](2026-09-06-plan-review-before-present.md)） |
 | Stop フックで品質ゲートを回す | [`loop-stop-check.sh`](../../plugins/self-correct/hooks/loop-stop-check.sh)（状態ファイル駆動・1状態1ナッジ）／[`spec-sync-reminder.sh`](../../plugins/pipeline/hooks/spec-sync-reminder.sh)（Stop・非ブロッキング通知） | 5フェーズの連鎖自体は無い（→ **不採用**。公式 codex-plugin-cc のレビューゲートも Stop フック） |
 | Phase 2: 計画チェックリストと実装の同期検証 | `spec-sync-reminder.sh`（SPEC.md 基準・非ブロッキング）／`feature-pipeline` の `status.md` と再開時の突き合わせ | 「チェックが更新されていない」の自動検出は無い（→ **不採用**。記事の Phase 2 は記事側の計画ファイル命名規約に依存しており、配布物にならない） |
 | Phase 3: `/simplify` | **Claude Code 組み込みコマンド**（[Code review](https://code.claude.com/docs/en/code-review)、2026-09-06 取得）。`code-simplifier` も Anthropic 公式マーケットプレイス登録済み | 無し（本体機能） |
-| Phase 4: `/codex:review` | [`codex-bridge`](../../plugins/codex-bridge/README.md) の `/codex-review`・`codex-reviewer`（P1–P4 の重大度） | 無し（上位互換） |
+| Phase 4: `/codex:review` | `codex-bridge` の `/codex-review`・`codex-reviewer`（P1–P4 の重大度） | 無し（上位互換） |
 | Phase 5: `/commit` + `/pr` | [`pr-merge`](../../plugins/model-setup/skills/pr-merge/SKILL.md)（PR 作成〜マージ〜後片付け） | Conventional Commits の強制のみ差分。ただし既存 OSS 多数（[教訓1](../lessons.md)） |
 | `skill-guard`（フラグファイルでスキル経由を強制） | [`block-secrets-commit.sh`](../../plugins/pipeline/hooks/block-secrets-commit.sh)（`git commit` を `PreToolUse` で捕捉・exit 2）／[`feedback-rules`](../../plugins/feedback-rules/README.md) の段階的 deny | 一般形は無い（→ **不採用**。理由は下記） |
 | `terraform-guard` | `permissions.deny`（本体）／`feedback-rules` | 無し（本体機能） |
@@ -153,3 +153,6 @@
 以上はいずれも **`adoption-review` の中核ルール11 に従い、減点の材料にしていない**。
 不採用の根拠は「既存実装・本体機能との重複」「既存構成との衝突」「配信されないこと」であって、
 情報の不在ではない。
+
+> 2026-09-19: `codex-bridge` の廃止（`/codex-review`・`/codex-implement` を公式 `openai/codex-plugin-cc` へ委譲、残りを `cli-bridge` へ統合）に伴い、**この記録のリンク先パスだけ**を
+> 現存先へ更新した。本文の判断は当時のまま。経緯は [2026-09-19 の記録](2026-09-19-retire-codex-bridge-and-cli-bridge.md)を参照。

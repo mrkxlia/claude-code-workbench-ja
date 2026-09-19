@@ -36,7 +36,7 @@ command -v kiro-cli
 
 見つからない場合は、**raw な stderr を出さず**、次の要約だけを返して終了する:
 
-> ❌ kiro-cli が見つかりません（未導入）。`kiro-bridge/README.md` の「前提」
+> ❌ kiro-cli が見つかりません（未導入）。`cli-bridge/README.md` の「前提」
 > （Kiro CLI の導入・認証）を確認してください。
 
 実行後に認証エラー文言（`login` / `credential` / `API key` / `subscription` 等）を

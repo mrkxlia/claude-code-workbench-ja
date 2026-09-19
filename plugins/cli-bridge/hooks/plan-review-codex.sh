@@ -47,6 +47,9 @@ SESSION_ID=$(printf '%s' "$INPUT" \
 # セッションを識別できないときは、ゲートを掛けずに素通りする（安全側）。
 [ -n "$SESSION_ID" ] || exit 0
 
+# ディレクトリ名は cli-bridge へ改名したあとも codex-bridge のままにしてある。改名すると、
+# 旧名の状態ファイルを持つ進行中のセッションでゲートがもう一度開くため（1セッション1回の
+# 約束が壊れる）。中身は plan-reviewed-<session_id> の空ファイルだけで、移行の必要はない。
 STATE_DIR="${CLAUDE_PROJECT_DIR:-$PWD}/.claude/codex-bridge"
 STATE_FILE="$STATE_DIR/plan-reviewed-$SESSION_ID"
 

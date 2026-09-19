@@ -58,6 +58,18 @@ CLAUDE.md・スキル・サブエージェントとして常設化するテン�
 | `/long-run <タスク内容>` | 長時間の自律作業を、早期切り上げ・許可待ち・証拠のない進捗報告なしで完走させる |
 | `/verify-fresh [完了条件のパス\|対象]` | 完了報告・マージ・引き渡しの前に、経緯を知らない fresh context に「完了と認めない理由」を探させる |
 
+> **本体・専用ツールとの住み分け**（2026-09-19 の棚卸しで明示）
+>
+> - `/fan-out` … worktree 隔離と PR 作成まで要るなら**本体の `/batch`**。本スキルは
+>   セッション内で完結する分担に徹する
+> - `/long-run` … 完了条件の充足判定そのものは**本体の `/goal`**（毎ターン判定）。本スキルは
+>   その外側の実行プロトコル（早期切り上げ・許可待ちを止める規律＋ブリーフ再注入）。併用可
+> - `/backlog-loop` … カンバン・依存関係・MCP 連携まで要るなら
+>   [`Backlog.md`](https://github.com/MrLesk/Backlog.md)。本スキルはステップ承認ゲートの規律
+>
+> 出典: [Slash commands](https://code.claude.com/docs/en/slash-commands)・
+> [Skills](https://code.claude.com/docs/en/skills)（2026-09-19 取得）。
+
 いずれも自然な依頼文（「ブリーフを作って」「backlog.md に基づき実施して」「手分けして進めて」
 「最後までやり切って」「新鮮な目でチェックして」）でも自動発動します。詳細な住み分け
 （clarify・feature-pipeline・codex-review・commit-commands との境界）は

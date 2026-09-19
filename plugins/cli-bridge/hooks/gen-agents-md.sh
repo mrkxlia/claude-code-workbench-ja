@@ -18,7 +18,11 @@
 
 set -u
 
-SENTINEL='<!-- codex-bridge:generated v1 DO NOT EDIT -->'
+SENTINEL='<!-- cli-bridge:generated v1 DO NOT EDIT -->'
+# 旧センチネル（codex-bridge だった頃の生成物）。所有判定では受け付け、書き出しは新センチネルに
+# 揃える（次回の再生成で自動的に移行する）。受け付けをやめると、既存利用者の AGENTS.md が
+# 「手書き（センチネル無し）」と誤判定され、再生成が無言で止まる。
+SENTINEL_LEGACY='<!-- codex-bridge:generated v1 DO NOT EDIT -->'
 NOTE='<!-- ルールは CLAUDE.md 側で更新し /codex-agents で再生成してください。手編集は失われます。 -->'
 MAXBYTES=65536
 # Codex が AGENTS.md を読み込むサイズ上限（config.toml の project_doc_max_bytes、既定 32 KiB）。
@@ -137,7 +141,7 @@ _write_out() {
   _src=$2
   if [ -f "$_target" ]; then
     _first=$(head -n 1 "$_target" 2>/dev/null || true)
-    if [ "$_first" = "$SENTINEL" ]; then
+    if [ "$_first" = "$SENTINEL" ] || [ "$_first" = "$SENTINEL_LEGACY" ]; then
       if cmp -s "$_src" "$_target"; then
         :  # 無変更 → 触らない
       else

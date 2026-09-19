@@ -1,10 +1,10 @@
 ---
 name: context-audit
 description: >-
-  毎セッション必ずコンテキストに載る指示（CLAUDE.md 階層・CLAUDE.local.md・.claude/rules/・
-  導入済みスキルとプラグイン・本体の auto memory の MEMORY.md）を棚卸しし、陳腐化した指示・
-  矛盾・コードから導ける記述・常時ロードが過剰なものを、根拠の行番号つきで削除／移設／保持に
-  仕分けて適用するスキル。
+  毎セッション必ずコンテキストに載る指示を、レイヤー横断で一度に棚卸しするスキル。対象は
+  CLAUDE.md 階層・CLAUDE.local.md・.claude/rules/・導入済みスキルとプラグイン・本体の auto memory
+  が書く MEMORY.md で、陳腐化した指示・レイヤーをまたぐ矛盾・コードから導ける記述・常時ロードが
+  過剰なものを、根拠の行番号つきで削除／移設／保持に仕分けて適用する。
   「CLAUDE.md が長すぎる」「指示が守られない」「設定を棚卸ししたい」「モデルを上げたので
   古いルールを整理したい」「常時読み込まれている指示を見直して」といった依頼や、
   /context-audit [対象パス] での手動起動で発動する。1ファイルの機械的な短縮だけなら本体の
@@ -27,6 +27,14 @@ CLAUDE.md は一度書くと消されない。プロジェクトが育つほど�
 CLAUDE.md やスキルと食い違う「第2の規約レイヤー」になりうる。指示ファイルと同じ棚に載せて扱う。
 
 出典: [How Claude Code works in large codebases](https://claude.com/blog/how-claude-code-works-in-large-codebases-best-practices-and-where-to-start)（設定はモデルの進化に合わせて見直す）
+
+> **本体・公式プラグインとの線引き（2026-09-19 の棚卸し）。** CLAUDE.md **1ファイル**の機械的な
+> 短縮なら本体の `/doctor` が提案までやる（v2.1.206 以降。コードから導ける記述を削り、落とし穴と
+> 理由を残す）。CLAUDE.md **単体**の品質監査と学びの取り込みなら公式プラグイン
+> `claude-md-management` がある。本スキルの差分は、**CLAUDE.md 階層・`.claude/rules/`・導入済み
+> スキル/プラグイン・auto memory の `MEMORY.md` を一度に突き合わせる**こと — 矛盾は1ファイルの
+> 中ではなく**レイヤーをまたいで**起きるため。出典: [Memory](https://code.claude.com/docs/en/memory)・
+> [Plugins](https://code.claude.com/docs/en/plugins)（2026-09-19 取得）。
 
 ## 使いどころ／住み分け
 

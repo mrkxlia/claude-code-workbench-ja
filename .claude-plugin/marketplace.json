@@ -11,11 +11,6 @@
       "category": "workflow"
     },
     {
-      "name": "codex-bridge",
-      "source": "./plugins/codex-bridge",
-      "category": "workflow"
-    },
-    {
       "name": "model-setup",
       "source": "./plugins/model-setup",
       "category": "productivity"
@@ -31,8 +26,8 @@
       "category": "productivity"
     },
     {
-      "name": "kiro-bridge",
-      "source": "./plugins/kiro-bridge",
+      "name": "cli-bridge",
+      "source": "./plugins/cli-bridge",
       "category": "workflow"
     },
     {
@@ -55,5 +50,9 @@
       "source": "./plugins/learning-coach",
       "category": "productivity"
     }
-  ]
+  ],
+  "renames": {
+    "kiro-bridge": "cli-bridge",
+    "codex-bridge": null
+  }
 }

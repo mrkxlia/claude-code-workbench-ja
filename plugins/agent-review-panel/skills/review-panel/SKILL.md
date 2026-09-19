@@ -8,7 +8,7 @@ description: >-
   「パネルレビューして」「複数の視点で徹底的にレビューして」「レビュー会議にかけて」
   「敵対的にレビューして」といった依頼や、/review-panel [deep] [codex] [kiro] [対象] での
   手動起動で発動する。単独のセカンドオピニオンは内蔵の Task サブエージェント、単独の
-  コードレビューは /code-review・/codex-review・/kiro-review に任せる。
+  コードレビューは /code-review・/kiro-review・外部 CLI へのレビュー委譲に任せる。
 argument-hint: "[deep] [codex] [kiro] [レビュー対象（プラン本文/差分/@ファイル/ドキュメント）]"
 ---
 
@@ -65,7 +65,7 @@ argument-hint: "[deep] [codex] [kiro] [レビュー対象（プラン本文/差�
 - **内蔵の Task サブエージェント（fresh context）** … 1名のセカンドオピニオン
   （実装前レビュー・壁打ち）。「もう1つの視点」で足りるならそちらが軽い。本スキルは
   **複数・敵対的・討論あり** — 重要な設計判断・リリース前・意見が割れそうな対象に使う
-- **内蔵 `/code-review`・`/codex-review`（codex-bridge）・`/kiro-review`（kiro-bridge）** …
+- **内蔵 `/code-review`・`/kiro-review`（cli-bridge）・公式 Codex プラグイン** …
   単独レビュアーによるコードレビュー。行レベルの網羅的な指摘が目的ならそちら。本スキルは
   **指摘を討論でたたき合わせて生き残ったものだけを返す**のが目的
 - **`/verify-fresh`（model-setup）** … 成果物と完了条件の突き合わせ検証。合否判定は
