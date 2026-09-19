@@ -18,7 +18,7 @@
 - settings: `plugins/model-setup/settings.private.json`（`opusplan` + `xhigh`）
 - workbench-ja のプラグイン: `model-setup`（`pipeline` は必要に応じて）。同じ指摘を繰り返している自覚があるなら `feedback-rules` も（指摘をファイル化し、回数に応じて hook が段階的に止める）。SNS や記事で流れてくるツールを頻繁に検討するなら `adoption-review`（採用可否を敵対的に判定。依存ゼロ）
 - 公式プラグイン: `commit-commands`・`pr-review-toolkit`・`skill-creator`・`claude-md-management`
-- `codex-bridge` は導入**しない**（Codex CLI を使っていないため）
+- `cli-bridge` は導入**しない**（Codex CLI も Kiro も使っていないため）
 
 ### 会社 PC（Sonnet 5 のみ・git なし・Codex CLI あり）
 
@@ -37,9 +37,11 @@ cat plugins/model-setup/CLAUDE.md plugins/model-setup/CLAUDE.company.md >> ~/.cl
 # 都度貼りプロンプト集（自動配信されない資材）も手元に置いておくと便利
 cp plugins/model-setup/PROMPTS.md ~/.claude/model-setup-PROMPTS.md
 
-# codex-bridge: 会社でのみ Codex CLI が使えるため、単一モデル環境のレビュー/セカンドオピニオン役として導入
-cp -r plugins/codex-bridge/skills/* ~/.claude/skills/
-cp -r plugins/codex-bridge/agents/* ~/.claude/agents/
+# cli-bridge: 会社でのみ Codex CLI が使えるため、単一モデル環境のセカンドオピニオン役として導入
+# （レビュー・実装の委譲そのものは公式プラグイン openai/codex-plugin-cc が担当。マーケット
+#   プレイスが使えない環境では codex-ask で相談だけ受けるか、公式を別途 zip で持ち込む）
+cp -r plugins/cli-bridge/skills/codex-ask plugins/cli-bridge/skills/codex-agents ~/.claude/skills/
+cp plugins/cli-bridge/agents/codex-advisor.md ~/.claude/agents/
 # bash が使えない環境ではフック（gen-agents-md.sh）は省いてよい（スキル・エージェントのみで動作する）
 ```
 

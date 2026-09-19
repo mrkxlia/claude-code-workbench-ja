@@ -45,7 +45,7 @@ command -v kiro-cli
 できる**ので、エラーで止めない）:
 
 > ❌ kiro-cli が見つかりません（未導入）。外部パネリストは欠席とし、内部パネリストのみで
-> 続行してください。導入は `kiro-bridge/README.md` の「前提」を参照。
+> 続行してください。導入は `cli-bridge/README.md` の「前提」を参照。
 
 実行後に認証エラー文言（`login` / `credential` / `API key` / `subscription` 等）を検知した
 場合も「kiro-cli が未認証のため欠席」と要約して返す。

@@ -117,7 +117,7 @@ git が無い環境での代替策:
 - **版管理の代替**: backlog.md への完了記録（日付・変更内容）＋作業単位でのフォルダ／zip
   コピー退避。
 - **レビューの代替**: 単一モデル（Sonnet のみ）環境では自己レビューにバイアスがかかりやすい。
-  会社では Codex CLI が使えるので、`codex-bridge` の `/codex-review` で第二の目を確保する
+  会社では Codex CLI が使えるので、公式 Codex プラグインのレビューで第二の目を確保する
   （git が無くても対象ファイル指定でレビューできる）。
 
 ## 4. Opus で計画 → Sonnet で実行（「7/7まで…」前置きの恒久的な代替）
@@ -277,7 +277,7 @@ AWS Labs [AI-DLC (aidlc-workflows)](https://github.com/awslabs/aidlc-workflows) 
 | 承認ゲート（Human in the Loop） | Plan 承認（唯一のゲート）／Step ごとに刻むなら `backlog-loop`／パイプラインの3チェックポイント |
 | Construction: 実装 | 軽微なら直接実行。機能開発 → `feature-pipeline`、非コード成果物 → `task-pipeline`、汎用実装 → `task-worker` |
 | Units of Work（並列作業単位） | `/fan-out` の分解（書き込み範囲が交わらないサブタスク）／pipelines の並列実行グループ |
-| 検証（レビュー役の分離） | `/verify-fresh`（`fresh-verifier`）を要所で自動実行。コードは `/codex-review`、設計・文書は `review-panel`〔導入時〕 |
+| 検証（レビュー役の分離） | `/verify-fresh`（`fresh-verifier`）を要所で自動実行。コードは外部 CLI へのレビュー委譲、設計・文書は `review-panel`〔導入時〕 |
 | 複雑度適応（adaptive execution） | 軽微な変更（1〜2ファイル・完了条件が自明）はパイプラインを通さず直接実行 |
 | 成果物の集約（aidlc-docs/ 相当） | 作業メモ（long-run）・`notes`（実装ノート）〔導入時〕・本体自動メモリ（教訓） — 新規の仕組みは作らない |
 

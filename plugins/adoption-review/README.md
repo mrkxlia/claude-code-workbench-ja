@@ -85,7 +85,7 @@ cp -r plugins/adoption-review/agents/*  .claude/agents/
 |---|---|
 | **外部の技術**を採用すべきか判断したい | **本プラグイン** |
 | 自分のコード差分・実装計画・ドキュメントを多視点で討論させたい | [`agent-review-panel`](../agent-review-panel/) の `/review-panel` |
-| コードの行レベルのレビューが欲しい | 本体の `/code-review`・[`codex-bridge`](../codex-bridge/)・[`kiro-bridge`](../kiro-bridge/) |
+| コードの行レベルのレビューが欲しい | 本体の `/code-review`・[`cli-bridge`](../cli-bridge/)（Kiro／公式 Codex プラグイン） |
 | 別の AI の意見が聞きたい | `/codex-ask`・`/kiro-ask`、または内蔵の Task サブエージェント |
 | 成果物が完了条件を満たすか判定したい | [`model-setup`](../model-setup/) の `/verify-fresh` |
 

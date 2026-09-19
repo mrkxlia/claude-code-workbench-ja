@@ -16,7 +16,7 @@
 
 - **1名のセカンドオピニオンで足りる（実装前の壁打ち・軽い相談）→ 内蔵の Task サブエージェント
   （fresh context）に相談**。そちらのほうがずっと軽い（Task 1回 vs 6〜9回）。
-- **行レベルの網羅的なコードレビューが欲しい → 内蔵 `/code-review` か [`codex-bridge`](../codex-bridge/) の `/codex-review`**。
+- **行レベルの網羅的なコードレビューが欲しい → 内蔵 `/code-review` か、外部 CLI への委譲（[`cli-bridge`](../cli-bridge/)・公式 Codex プラグイン）**。
   単独レビュアーの網羅性が目的ならそちら。
 - **重要な設計判断・リリース前・意見が割れそうな対象 → 本パネル**。指摘を討論でたたき合わせ、
   生き残った指摘・未解決の対立・全員一致の警告まで含めて返すのが本スキルの守備範囲です。
@@ -72,11 +72,11 @@ deep 追加:
 
 - **light / deep** … 追加の前提なし（Claude Code だけで動く。git・ネットワーク不要）。
 - **codex 混成** … `codex` CLI が導入・認証済みであること。詳細は
-  [`codex-bridge/README.md`](../codex-bridge/README.md) の「前提」を参照（本プラグインは
-  codex-bridge に依存しません — 未導入なら外部パネリストを欠席にして内部のみで続行します）。
+  [`cli-bridge/README.md`](../cli-bridge/README.md) の「前提」を参照（本プラグインは
+  cli-bridge に依存しません — 未導入なら外部パネリストを欠席にして内部のみで続行します）。
 - **kiro 混成** … `kiro-cli` が導入・認証済みであること。詳細は
-  [`kiro-bridge/README.md`](../kiro-bridge/README.md) の「前提」を参照（本プラグインは
-  kiro-bridge に依存しません — 未導入なら外部パネリストを欠席にして内部のみで続行します）。
+  [`cli-bridge/README.md`](../cli-bridge/README.md) の「前提」を参照（本プラグインは
+  cli-bridge に依存しません — 未導入なら外部パネリストを欠席にして内部のみで続行します）。
 
 ## ファイル構成
 
@@ -155,5 +155,5 @@ cp -r plugins/agent-review-panel/agents/*  .claude/agents/
   「疑わしい」でなく反例で批判する検証優位性、ゴーストパネリスト・追従的収束・
   ファシリテーター私見分離という失敗モード対策、異種モデル混成のコンセプト
 - スキル（入口）／エージェント（実行）の分業と要約契約は、本リポジトリ
-  [`codex-bridge`](../codex-bridge/)・[`kiro-bridge`](../kiro-bridge/)
+  [`cli-bridge`](../cli-bridge/)
   と同型

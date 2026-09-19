@@ -7,8 +7,8 @@ description: >-
   させて」「kiro-cli でレビューして」のように Kiro を名指しした依頼や、
   /kiro-review [スコープ] での手動起動で発動する。相手を名指ししない
   「セカンドレビューして」「別の AI にレビューさせて」では発動しない — 本体の
-  /code-review に任せる。Codex を名指しした依頼は codex-review、複数ペルソナの敵対的
-  レビューは review-panel に任せる。
+  /code-review に任せる。Codex にレビューさせたいときは公式の Codex プラグイン、
+  複数ペルソナの敵対的レビューは review-panel に任せる。
 argument-hint: "uncommitted | base [branch] | [paths]"
 ---
 
@@ -29,12 +29,12 @@ Claude Code が kiro-cli を**非対話モード**（`--no-interactive --trust-t
 
 > **レビュー相手を変えたいとき**: 依存なしで Claude にレビューさせるなら内蔵 `/code-review`、
 > 実装前のプランレビューや壁打ちなら内蔵の Task サブエージェント（fresh context）、相手を
-> Codex にしたいなら [`codex-bridge`](../../../codex-bridge/) の `/codex-review`。
+> Codex にしたいなら公式の Codex プラグイン（[README](../../README.md) に導入手順）。
 > kiro-review は相手が **Kiro**（`kiro-cli`）である点が違う。
 
 ## 前提
 
-`kiro-cli` が導入・認証済みであること（`kiro-bridge/README.md` の「前提」参照）。
+`kiro-cli` が導入・認証済みであること（`cli-bridge/README.md` の「前提」参照）。
 未導入・未認証の場合、サブエージェントが日本語で案内して終了します。
 
 ## Common Issues
@@ -73,12 +73,12 @@ Claude Code が kiro-cli を**非対話モード**（`--no-interactive --trust-t
 
 5. **修正するか確認する**
    - P1 / P2 を Claude が直すか、ユーザーに確認する。
-   - 直す場合は Claude 自身が修正する（kiro-bridge に実装委譲スキルはない。規模が大きい
-     場合は `/codex-implement` か通常の実装フローを使う）。
+   - 直す場合は Claude 自身が修正する（このプラグインに実装委譲スキルはない。規模が大きい
+     場合は公式 Codex プラグインでの委譲か通常の実装フローを使う）。
 
 ## このスキルがやらないこと
 
 - ユーザーに kiro-cli を手動で叩かせる（すべて Claude が非対話で駆動する）
 - レビュー指摘を勝手に全部適用する（適用は必ず確認してから）
 - `--trust-all-tools` や write/shell 系の信頼指定を使う（read-only 既定）
-- コードを書かせる（kiro-bridge に implement 系スキルはない。理由は README 参照）
+- コードを書かせる（このプラグインに implement 系スキルはない。理由は README 参照）

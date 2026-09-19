@@ -13,7 +13,7 @@ argument-hint: "[--project-only]"
 # codex-agents — Claude のルールを Codex にも効かせる（/codex-agents）
 
 既存の Claude ルールを取り込んだ **AGENTS.md** を生成/更新するスキルです。Codex は
-`codex-bridge` の各スキル経由で Claude が駆動しますが、Codex 側は CLAUDE.md を読みません。
+`cli-bridge` の各スキル経由で Claude が駆動しますが、Codex 側は CLAUDE.md を読みません。
 Codex が読むのは **AGENTS.md** です。しかし AGENTS.md は `@import` 非対応なので、
 **生成時に中身を取り込んだ平らな AGENTS.md** を作って橋渡しします。
 
@@ -48,13 +48,14 @@ Codex が読むのは **AGENTS.md** です。しかし AGENTS.md は `@import` �
 
 ## 自動更新との関係
 
-`codex-bridge` をプラグイン導入している場合、`SessionStart`（startup/resume）で
+`cli-bridge` をプラグイン導入している場合、`SessionStart`（startup/resume）で
 `gen-agents-md.sh --auto` が走り、**既存の生成済み AGENTS.md を最新化**します。
 `--auto` は**新規作成しない**ので、初回の作成はこのスキル（`/codex-agents`）で行ってください。
 
 ## 書き込み規律（安全策）
 
-- 生成物は1行目にセンチネル（`<!-- codex-bridge:generated v1 DO NOT EDIT -->`）を持ちます。
+- 生成物は1行目にセンチネル（`<!-- cli-bridge:generated v1 DO NOT EDIT -->`）を持ちます。
+  旧 `codex-bridge:generated` の生成物も所有印として受け付け、再生成時に置き換えます。
 - **手書きの AGENTS.md（センチネル無し）は上書きしません**（警告して当該出力先だけスキップ）。
 - 生成済みファイルは**内容に差分があるときだけ**更新します（無変更なら触りません）。
 - 生成された `AGENTS.md` は再生成物です。**手編集せず CLAUDE.md 側を更新**してください
@@ -64,7 +65,7 @@ Codex が読むのは **AGENTS.md** です。しかし AGENTS.md は `@import` �
 
 | 症状 | 原因 | 対処 |
 |---|---|---|
-| 生成がスキップされる | 対象の AGENTS.md が手書き（センチネル `<!-- codex-bridge:generated v1 -->` が無い） | **上書きしない。** 手書きである旨を報告し、退避してから再生成するかをユーザーに確認する |
+| 生成がスキップされる | 対象の AGENTS.md が手書き（センチネル `<!-- cli-bridge:generated v1 -->` が無い） | **上書きしない。** 手書きである旨を報告し、退避してから再生成するかをユーザーに確認する |
 | 出力先が想定と違う | `$CODEX_HOME` が既定（`~/.codex`）と異なる | `$CODEX_HOME` の実値を確認し、どちらに出力するかを明示して実行する |
 | 取り込まれない参照がある | `@import` が未解決（深さ上限超過・循環参照・パス誤り） | 解決できなかった参照を一覧で報告する。黙って落とさない |
 | 何も起きない | `--auto` は既存ファイルの再生成のみで、新規作成しない | 引数なしで明示的に実行する |

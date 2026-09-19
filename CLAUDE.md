@@ -16,7 +16,7 @@ Claude Code のテーマから外れる独立ツール・サンプルは別リ�
 
 ## ディレクトリ構成
 
-トップレベルは **plugins/**（プラグイン導入可能な10セクション）・**docs/**（リポジトリ内ドキュメント）の2分類。
+トップレベルは **plugins/**（プラグイン導入可能な9セクション）・**docs/**（リポジトリ内ドキュメント）の2分類。
 コピーして使うテンプレートや独立ツールが増えたら `templates/`・`tools/` を追加する（規約1）。
 ルートの `.claude-plugin/` は分類対象外（規約1の例外、現位置維持）。
 
@@ -29,7 +29,7 @@ claude-code-workbench-ja/
 ├── .github/workflows/ci.yml         # CI（JSON 構文・SKILL.md 形式〔公式準拠: 許可キー・1024字・三人称・references 1階層と目次〕・agent frontmatter〔description 合計の予算〕・shellcheck・.ps1 の BOM・version 差分・内部リンク＝必須、claude plugin validate＝任意）
 ├── .claude-plugin/
 │   └── marketplace.json             # プラグインマーケットプレイス定義（名前: workbench-ja、source は ./plugins/<name>）
-├── plugins/                         # プラグイン導入可能な10セクション（marketplace.json 登録対象・公式標準レイアウト）
+├── plugins/                         # プラグイン導入可能な9セクション（marketplace.json 登録対象・公式標準レイアウト）
 │   ├── pipeline/                    #   コード開発（feature-pipeline）と成果物作成（task-pipeline）を統合したパイプラインテンプレート
 │   │   ├── README.md
 │   │   ├── CLAUDE.md                #     コピーして使う CLAUDE.md サンプル（コードモード）
@@ -39,17 +39,12 @@ claude-code-workbench-ja/
 │   │   ├── agents/                  #     9種（共有4: researcher / requirements-writer / brief-writer / final-reviewer＋コード専用3: backend/frontend-builder / test-verifier＋成果物専用2: deliverable-builder / design-doc-checker）
 │   │   ├── hooks/                   #     6種（block-secrets-commit・guard-builder-writes・guard-deliverable-writes・guard-builder-paths・inject-spec-summary・spec-sync-reminder。導入先へコピーする資材＝非自動配線）
 │   │   └── setup/settings.json      #     コピー導入用テンプレート（setup がモードに応じて guard を絞る）
-│   ├── codex-bridge/                #   Codex にレビュー・実装・相談を依頼するスキル＆エージェント
+│   ├── cli-bridge/                  #   外部 AI コーディング CLI（Codex・Kiro）への相談・レビュー委譲（read-only 専用。旧 codex-bridge ＋ 旧 kiro-bridge）
 │   │   ├── README.md
 │   │   ├── .claude-plugin/plugin.json
-│   │   ├── skills/                  #     4種（codex-review / codex-implement / codex-ask / codex-agents）
-│   │   ├── agents/                  #     3種（codex-reviewer / codex-implementer / codex-advisor）
-│   │   └── hooks/                   #     hooks.json（gen-agents-md＝プラグイン導入で自動ON）/ plan-review-codex.sh（プラン提示前レビュー・opt-in・手動配線）/ plan-to-codex.sh（opt-in・手動配線）
-│   ├── kiro-bridge/                 #   Kiro にレビュー・相談を依頼するスキル＆エージェント（read-only 専用）
-│   │   ├── README.md
-│   │   ├── .claude-plugin/plugin.json
-│   │   ├── skills/                  #     2種（kiro-review / kiro-ask）
-│   │   └── agents/                  #     2種（kiro-reviewer / kiro-advisor）
+│   │   ├── skills/                  #     4種（codex-ask / codex-agents / kiro-review / kiro-ask。レビュー・実装の委譲は公式 openai/codex-plugin-cc へ委譲したため持たない）
+│   │   ├── agents/                  #     3種（codex-advisor / kiro-reviewer / kiro-advisor。いずれも read-only）
+│   │   └── hooks/                   #     hooks.json（gen-agents-md＝プラグイン導入で自動ON）/ plan-review-codex.sh（プラン提示前レビュー・opt-in・手動配線）
 │   ├── agent-review-panel/          #   複数ペルソナの敵対的パネルレビュー（codex / kiro 混成 opt-in。反グループシンク機構7つ）
 │   │   ├── README.md
 │   │   ├── .claude-plugin/plugin.json
@@ -141,7 +136,7 @@ claude-code-workbench-ja/
 2. **各ディレクトリには README.md を置く** — セクションの目的・使い方・ファイル構成を説明する README.md を必ず用意する。
 3. **リポジトリ全体の言語は日本語** — README.md・CLAUDE.md など、このリポジトリ自体のドキュメントは日本語で記述する。
 4. **マーケットプレイス定義はルートの `.claude-plugin/` に置く** — Claude Code プラグイン仕様上の必須配置であり、規約1の例外。
-5. **プラグイン配下を変更したら version を上げる。プラグインのメタデータは plugin.json だけに書く** — `plugins/` 配下の10プラグイン（pipeline・codex-bridge・kiro-bridge・agent-review-panel・adoption-review・model-setup・codebase-setup・self-correct・feedback-rules・learning-coach）の配信対象ファイル（`skills/`・`agents/`・`hooks/` 配下。これらは既定探索パスのためプラグイン導入で自動配信される）を変更したら、該当する `plugins/<name>/.claude-plugin/plugin.json` の `version` をセマンティックバージョニングで更新する。CLAUDE.md / CLAUDE.task.md サンプル・`setup/settings.json` は setup スキルがコピー配布するため version 対象外。
+5. **プラグイン配下を変更したら version を上げる。プラグインのメタデータは plugin.json だけに書く** — `plugins/` 配下の9プラグイン（pipeline・cli-bridge・agent-review-panel・adoption-review・model-setup・codebase-setup・self-correct・feedback-rules・learning-coach）の配信対象ファイル（`skills/`・`agents/`・`hooks/` 配下。これらは既定探索パスのためプラグイン導入で自動配信される）を変更したら、該当する `plugins/<name>/.claude-plugin/plugin.json` の `version` をセマンティックバージョニングで更新する。CLAUDE.md / CLAUDE.task.md サンプル・`setup/settings.json` は setup スキルがコピー配布するため version 対象外。
 
    **`version`・`description`・`keywords`・`license`・`author` は plugin.json のみに書き、`.claude-plugin/marketplace.json` 側には書かない。** marketplace のエントリは `name`・`source`・`category` だけを持つ。公式仕様上、エントリで省略された `description` 等は plugin.json の値が使われ（`strict` 未指定＝true のとき）、両方にあるとエントリ側が黙って優先される。二重に持つと必ずずれる（実際 pipeline の説明文は 2.3.0 の追加を反映しないまま「スキル7種・エージェント8種」と書き続けていた）。出典: [Plugin marketplaces](https://code.claude.com/docs/en/plugin-marketplaces)（2026-09-07 取得）。
 6. **プラグインの skills/agents/hooks は公式標準レイアウト（プラグインルート直下）に置く** — `<plugin>/skills/`・`<plugin>/agents/`・`<plugin>/hooks/hooks.json` が既定探索パスであり、plugin.json に `skills`/`hooks` フィールドを明示しない（宣言と実体の二重管理を避ける）。コピー導入用の `settings.json` サンプルはプラグインルート直下に置けない（Claude Code の予約パス）ため `<plugin>/setup/settings.json` に置く。pipeline の `hooks/` は導入先リポジトリへコピーする資材であり、この配置自体はプラグインとして自動発火しない（pipeline-setup が対象リポジトリの `.claude/hooks/` へコピーし `.claude/settings.json` に配線する）。

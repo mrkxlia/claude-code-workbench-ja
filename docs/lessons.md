@@ -24,10 +24,15 @@
 | `spec-extract` スキル | `cc-rsg` 等の外部ツール | #57 |
 | `tools/multi-model-dist`（90ファイル・3,955行） | `rulesync` | #57 |
 | `tools/skill-sync` | 同期対象そのものが消えた（下の教訓2） | #57 |
+| `codex-bridge` の `/codex-review`・`/codex-implement` | OpenAI 公式プラグイン `openai/codex-plugin-cc`（敵対的レビュー・バックグラウンドジョブ管理つき） | 2026-09-19 |
 
 **教訓。** 新しいものを作る前に、(a) Claude Code 本体が既にやらないか、(b) 公式プラグインが
 無いか、(c) 広く使われている OSS（spec-kit・rulesync・cc-rsg・claude-mem 等）が無いか、を
 順に確認する。重複していたら「作らない」か「その OSS へ委譲して連携部分だけ書く」を選ぶ。
+
+2026-09-19 の追加分は、**作った時点では公式プラグインが存在しなかった**点が上の9件と違う。
+外部ツールの公式プラグインは後から出てくる。作るときだけでなく、**定期的に**(a)〜(c) を引き直す
+必要がある（`docs/decisions/2026-09-13-skill-duplication-check.md` はその棚卸し）。
 
 ## 2. 重複を自動化する前に、重複そのものを消す
 

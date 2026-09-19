@@ -105,7 +105,7 @@ Phase 0 で目的・評価基準・Ground Truth・変更禁止範囲・最大回
 | 完了したか**1回だけ**確かめたい | `verify-fresh`（model-setup）— ループも修正もしない |
 | 複数視点で**批評・討論**させたい | `review-panel`（agent-review-panel）— 合否ではなく論点を出す |
 | 機能開発を**工程連鎖**で通したい | `feature-pipeline` / `task-pipeline`（pipeline）— 人間承認チェックポイント付き |
-| 別 AI に**セカンドオピニオン**を求めたい | `codex-review`（codex-bridge）・`kiro-review`（kiro-bridge） |
+| 別 AI に**セカンドオピニオン**を求めたい | `kiro-review`・`codex-ask`（cli-bridge）・公式 Codex プラグイン |
 | **作る→検査→直す→再検査**を自動で回したい | **self-correct** |
 
 pipeline の中で使うこともできます（成果物を作るフェーズの内側で `/self-correct` を回し、
