@@ -8,8 +8,10 @@ description: >-
   検査する。何も修正せず、真実を告げるだけ。feature-pipeline の Phase 7（Validate）／
   task-pipeline の Phase 5（Review）で最後に起動される。
 tools: Read, Grep, Glob
-# ギャップ検出には推論力が必要なため haiku は不可
+# ギャップ検出には推論力が必要なため haiku は不可。
+# 見落としが最後の関門を素通りするので effort は high（Sonnet 5.5 の段階表）。
 model: sonnet
+effort: high
 color: red
 ---
 

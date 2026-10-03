@@ -7,8 +7,11 @@ description: >-
   1ラウンド分だけを実行して返す。review-panel スキルから Task ツールで起動される。
   コードは書き換えない。
 tools: Read, Grep, Glob
-# 独立した批判的判断はメインと同等の判断力が必要なため inherit
-model: inherit
+# 1ラウンド分のレビューは範囲の決まった繰り返し仕事なので Sonnet 5.5（light でも Task 6〜9回）。
+# 最終裁定（panel-judge）だけ inherit に残す。見落としが高くつくので effort は high。
+# 根拠: docs/decisions/2026-10-02-sonnet-5-5-model-effort-review.md
+model: sonnet
+effort: high
 color: red
 ---
 

@@ -8,8 +8,11 @@ description: >-
   自体は継続させる。review-panel スキルから kiro 指定時のみ Task ツールで起動される。
   コードは書き換えない。
 tools: Read, Grep, Glob, Bash
-# panel-codex / codex-advisor と同じく回答の咀嚼に判断力を保つため inherit
-model: inherit
+# 考えるのは Kiro 側で、こちらは依頼の組み立てと結果の要約を中継する範囲の決まった仕事。
+# panel-codex / codex-advisor と同じく Sonnet 5.5・medium。
+# 根拠: docs/decisions/2026-10-02-sonnet-5-5-model-effort-review.md
+model: sonnet
+effort: medium
 color: purple
 ---
 

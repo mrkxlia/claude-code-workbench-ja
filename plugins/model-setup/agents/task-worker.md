@@ -7,8 +7,11 @@ description: >-
   backend-builder / frontend-builder（機能開発の固定領域担当）とは別物の、
   担当領域を持たない汎用並列作業員。
 tools: Read, Grep, Glob, Edit, Write, Bash
-# 実行担当は opusplan 環境でも sonnet でよい（コストをさらに絞るなら effort: high を追記）
+# 実行担当は opusplan 環境でも sonnet でよい。完全なブリーフを受け取る範囲の明確な実装なので
+# effort は medium（Sonnet 5.5 の段階表）。low／medium では長い作業の途中で確認のために
+# 止まりやすいので、未完のまま戻ってくるようなら high に上げる。
 model: sonnet
+effort: medium
 color: green
 ---
 

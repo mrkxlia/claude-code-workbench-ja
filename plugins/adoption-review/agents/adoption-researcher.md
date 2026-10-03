@@ -8,8 +8,10 @@ description: >-
   スキルから Task ツールで並列起動される。ファイルは書き換えない。
 tools: Read, Grep, Glob, WebSearch, WebFetch
 # 事実の抽出と出典付与が仕事で、評価判断は禁止しているため sonnet
-# （判断を伴う役だけ inherit — review-panel のトークン規律と同じ方針）
+# （判断を伴う役だけ inherit — review-panel のトークン規律と同じ方針）。
+# 1スコープの事実集めは範囲が明確なので effort は medium（Sonnet 5.5 の段階表）。
 model: sonnet
+effort: medium
 color: blue
 ---
 

@@ -7,8 +7,11 @@ description: >-
   メインセッションに返す。kiro-review スキルから Task ツールで起動される。リポジトリは
   一切編集しない。
 tools: Read, Grep, Glob, Bash
-# kiro 出力の解釈はメインセッションと同等の判断力を保つため inherit
-model: inherit
+# レビューするのは Kiro 側で、こちらは差分の受け渡しと指摘の要約を中継する範囲の決まった仕事のため
+# Sonnet 5.5・medium。指摘をどう採るかの判断は呼び出し元（メイン）が行う。
+# 根拠: docs/decisions/2026-10-02-sonnet-5-5-model-effort-review.md
+model: sonnet
+effort: medium
 color: cyan
 ---
 

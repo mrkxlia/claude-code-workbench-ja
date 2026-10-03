@@ -9,8 +9,9 @@ description: >-
   推測で通過点を足さない。担当する経路以外は辿らない。実装・修正は一切しない。
 tools: Read, Grep, Glob
 # 「どのミドルウェアがこのハンドラに効くか」は登録順・条件つき適用の読み取り判断が要る。
-# 機械的な grep では確定しないため sonnet。
+# 機械的な grep では確定しないため sonnet。取りこぼしが図の誤りに直結するので effort は high。
 model: sonnet
+effort: high
 color: cyan
 ---
 

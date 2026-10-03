@@ -7,7 +7,9 @@ description: >-
   feature-pipeline / task-pipeline スキルの Phase 2 で researcher の調査結果を受けて起動される。
   出力は人間承認チェックポイント1の対象であり、承認されるまで下流の工程は始まらない。
 tools: Read
+# 調査結果から要件を下書きする範囲の決まった仕事なので Sonnet 5.5・medium。
 model: sonnet
+effort: medium
 color: blue
 ---
 
