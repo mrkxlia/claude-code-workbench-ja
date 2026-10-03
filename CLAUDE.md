@@ -67,8 +67,8 @@ claude-code-workbench-ja/
 │   │   ├── CLAUDE.company.md        #     プロファイル追補（Sonnet単独・会社PC）ルール10〜15
 │   │   ├── MODEL-GUIDE.md           #     モデル仕様・effort選定・プロファイル・Fable 5.1 パリティマップ・AIDLC 簡易版・Fable 本人にやらせる仕事
 │   │   ├── PROMPTS.md               #     都度貼りプロンプト集（Plan モード用初回テンプレート・公式スニペット翻案）
-│   │   ├── settings.private.json    #     私用PC向け設定サンプル（opusplan + xhigh）
-│   │   ├── settings.company.json    #     会社PC向け設定サンプル（sonnet + xhigh）
+│   │   ├── settings.private.json    #     私用PC向け設定サンプル（opusplan。effort は書かない — MODEL-GUIDE §2）
+│   │   ├── settings.company.json    #     会社PC向け設定サンプル（sonnet。effort は書かない — MODEL-GUIDE §2）
 │   │   ├── .claude-plugin/plugin.json
 │   │   ├── skills/                  #     6種（task-brief / backlog-loop / pr-merge / fan-out / long-run / verify-fresh）
 │   │   ├── agents/                  #     3種（task-worker / fresh-verifier / bulk-scanner）
@@ -115,7 +115,8 @@ claude-code-workbench-ja/
     │   ├── 2026-09-06-claude-code-dev-flow-adoption.md         # 個人ブログの Claude Code 開発フロー採用可否レビュー（既存資材で大半が代替可能・self-correct の README/SKILL に限界の明記1点だけ取り込み）
     │   ├── 2026-09-07-plugin-inventory-and-official-spec-alignment.md  # 全10プラグインの棚卸しと公式一次情報への追随（削除ゼロ・codex-bridge/agent-review-panel/self-correct は先行OSSとの重複につき審議中・marketplace の単一情報源化・CI の許可キー追随・eval の skill-creator 形式化）
     │   ├── 2026-09-13-skill-duplication-check.md               # 全33スキルの車輪の再発明チェック（重なり度 A12/B13/C3/D5・審議中3件の決着・`claude plugin eval` は実在するという前回記述の訂正）
-    │   └── 2026-09-19-retire-codex-bridge-and-cli-bridge.md    # 上の示唆1〜6の適用（codex-bridge 廃止＝レビュー/実装は公式 codex-plugin-cc へ委譲・kiro-bridge を cli-bridge へ改名して統合・marketplace の renames・敵対的検証で直した5件・示唆2〜6は削除せず線引きを明記）
+    │   ├── 2026-09-19-retire-codex-bridge-and-cli-bridge.md    # 上の示唆1〜6の適用（codex-bridge 廃止＝レビュー/実装は公式 codex-plugin-cc へ委譲・kiro-bridge を cli-bridge へ改名して統合・marketplace の renames・敵対的検証で直した5件・示唆2〜6は削除せず線引きを明記）
+    │   └── 2026-10-02-sonnet-5-5-model-effort-review.md        # Sonnet 5.5 ガイドに合わせた見直し（中継・レビュー系8エージェントを sonnet へ・sonnet 全エージェントに effort を明示・設定サンプルの xhigh を撤去・PROMPTS に 5.5 の API 破壊的変更・loop-judge は judge-eval で測ってから）
     ├── lessons.md                   #   過去 PR から蒸留した「繰り返さない判断」（根拠の PR 番号つき）
     ├── skill-authoring.md           #   スキルの書き方（公式ガイド準拠。frontmatter 規約・分冊基準・監査結果）
     ├── evals/                       #   主要スキル11件の期待挙動シナリオ（Sonnet 5 / Opus 5 のパリティ実測用）
