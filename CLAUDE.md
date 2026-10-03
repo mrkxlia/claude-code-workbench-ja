@@ -16,8 +16,8 @@ Claude Code のテーマから外れる独立ツール・サンプルは別リ�
 
 ## ディレクトリ構成
 
-トップレベルは **plugins/**（プラグイン導入可能な9セクション）・**docs/**（リポジトリ内ドキュメント）の2分類。
-コピーして使うテンプレートや独立ツールが増えたら `templates/`・`tools/` を追加する（規約1）。
+トップレベルは **plugins/**（プラグイン導入可能な9セクション）・**tools/**（独立ツール）・**docs/**（リポジトリ内ドキュメント）の3分類。
+コピーして使うテンプレートが増えたら `templates/` を追加する（規約1）。
 ルートの `.claude-plugin/` は分類対象外（規約1の例外、現位置維持）。
 
 ```
@@ -92,6 +92,11 @@ claude-code-workbench-ja/
 │       ├── README.md
 │       ├── .claude-plugin/plugin.json
 │       └── skills/                  #     1種（deep-understand。エージェント・フックは持たない）
+├── tools/                           # 独立ツール（プラグインとして配布しない単体スクリプト）
+│   ├── README.md
+│   └── progress/                    #   各スキルの状態ファイル（pipeline status.md・self-correct state.json・backlog・long-run ブリーフ）を読み、進み具合を statusline と .dashboard/index.html に出す（LLM なし・Python 標準ライブラリのみ）
+│       ├── README.md
+│       └── progress.py
 └── docs/                            # リポジトリ内ドキュメント置き場
     ├── README.md
     ├── decisions/                   #   日付つきの決定記録・監査記録（追記のみ。覆すときは新記録を足す）
@@ -136,7 +141,7 @@ claude-code-workbench-ja/
 
 ## このリポジトリの規約
 
-1. **トップレベルは plugins/・docs/（＋将来追加しうる templates/・tools/）の分類、セクションはディレクトリ単位で管理する** — 新しいセクションを追加する場合、プラグイン導入可能なら `plugins/`、コピーして使うテンプレートなら `templates/`、独立ツールや配布パイプラインなら `tools/` に専用ディレクトリを作り、ルート直下にファイルを置かない（現状 `templates/`・`tools/` は対象セクションが無いため存在しない）。
+1. **トップレベルは plugins/・tools/・docs/（＋将来追加しうる templates/）の分類、セクションはディレクトリ単位で管理する** — 新しいセクションを追加する場合、プラグイン導入可能なら `plugins/`、コピーして使うテンプレートなら `templates/`、独立ツールや配布パイプラインなら `tools/` に専用ディレクトリを作り、ルート直下にファイルを置かない（現状 `templates/` は対象セクションが無いため存在しない）。
 2. **各ディレクトリには README.md を置く** — セクションの目的・使い方・ファイル構成を説明する README.md を必ず用意する。
 3. **リポジトリ全体の言語は日本語** — README.md・CLAUDE.md など、このリポジトリ自体のドキュメントは日本語で記述する。
 4. **マーケットプレイス定義はルートの `.claude-plugin/` に置く** — Claude Code プラグイン仕様上の必須配置であり、規約1の例外。
