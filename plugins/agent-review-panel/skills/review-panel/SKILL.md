@@ -209,7 +209,8 @@ R3 で再起動したパネリストには、改訂後の指摘リストと合�
 - R2/R3 の配布は**指摘表のみ**（対象の全文再掲をしない。必要箇所は抜粋）
 - 批判ゼロのパネリストの R3 はスキップ。外部 CLI 呼び出しは**各外部パネリストにつき**
   最大2回（light は1回）
-- 引用検証は haiku（`panel-verifier`）。判断を伴う役だけ inherit
+- 引用検証は haiku（`panel-verifier`）。各ラウンドのパネリスト（`panel-reviewer`）と外部 CLI の中継役
+  （`panel-codex`・`panel-kiro`）は sonnet。最終裁定（`panel-judge`）だけ inherit
 
 ## このスキルがやらないこと
 

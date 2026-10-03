@@ -8,8 +8,10 @@ description: >-
   final-reviewer が「承認済みの要件・ブリーフとの照合」を担うのに対し、本エージェントは
   「設計書どうしの整合と実装との一致」を担う。何も修正せず、物証つきで指摘するだけ。
 tools: Read, Grep, Glob
-# フェーズ間の含意の食い違いを読み取る必要があるため haiku は不可
+# フェーズ間の含意の食い違いを読み取る必要があるため haiku は不可。
+# 検査が仕事そのものなので effort は high（Sonnet 5.5 の段階表）。
 model: sonnet
+effort: high
 color: yellow
 ---
 

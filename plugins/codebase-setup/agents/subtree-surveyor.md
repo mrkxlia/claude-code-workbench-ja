@@ -9,7 +9,9 @@ description: >-
   ファイルの中身をそのまま貼らない。実装・修正・ファイル作成は一切しない。
 tools: Read, Grep, Glob
 # 「このディレクトリの規約は何か」を読み取る判断が要る。機械的な列挙ではないため sonnet。
+# 1サブツリーだけの範囲の決まった調査なので effort は medium（Sonnet 5.5 の段階表）。
 model: sonnet
+effort: medium
 color: green
 ---
 

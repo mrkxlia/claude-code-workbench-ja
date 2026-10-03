@@ -8,8 +8,10 @@ description: >-
   final-reviewer（ストーリー/ブリーフ突き合わせ）と違い、
   任意のタスクの成果物と完了条件に使える汎用版。
 tools: Read, Grep, Glob, Bash
-# 反証には推論力が必要なため sonnet 固定。haiku は不可
+# 反証には推論力が必要なため sonnet 固定。haiku は不可。
+# 検証が仕事そのものなので effort は high（Sonnet 5.5 の段階表）。
 model: sonnet
+effort: high
 color: red
 ---
 

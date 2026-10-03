@@ -7,7 +7,9 @@ description: >-
   テストが失敗してもパッチせず、差し戻し先（backend / frontend）を明記したレポートを返す。
   feature-pipeline スキルの Phase 6（Verify）で両ビルダーの完了後に起動される。
 tools: Read, Grep, Glob, Edit, Write, Bash
+# 受け入れテストで外側から証明する仕事で、検証が要となるので effort は high（Sonnet 5.5 の段階表）。
 model: sonnet
+effort: high
 color: orange
 ---
 

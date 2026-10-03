@@ -6,8 +6,11 @@ description: >-
   仕分けして提案書を返す。ルールファイルは編集しない（提案のみ）。feedback-audit スキルから
   Task ツールで起動され、メインの文脈を集計ログで汚さないために存在する。
 tools: Read, Grep, Glob, Bash
-# 「このルールはもう不要か」「この誤検知はパターンの問題か」の判断が要るため inherit
-model: inherit
+# 集計済みログと frontmatter から提案書を書く範囲の決まった仕事（提案のみ・編集しない）のため Sonnet 5.5。
+# 「このルールはもう不要か」「この誤検知はパターンの問題か」の読み取りがあるので effort は high。
+# 根拠: docs/decisions/2026-10-02-sonnet-5-5-model-effort-review.md
+model: sonnet
+effort: high
 color: cyan
 ---
 

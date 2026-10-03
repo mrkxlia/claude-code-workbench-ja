@@ -6,8 +6,11 @@ description: >-
   自由形式の質問に対する Codex の回答を要約してメインに返す。コードは書き換えない。
   codex-ask スキルから Task ツールで起動される。
 tools: Read, Grep, Glob, Bash
-# 回答の咀嚼はメインセッションと同等の判断力を保つため inherit
-model: inherit
+# 考えるのは Codex 側で、こちらは依頼の組み立てと回答の要約を中継する範囲の決まった仕事のため
+# Sonnet 5.5・medium。回答をどう採るかの判断は呼び出し元（メイン）が行う。
+# 根拠: docs/decisions/2026-10-02-sonnet-5-5-model-effort-review.md
+model: sonnet
+effort: medium
 color: blue
 ---
 

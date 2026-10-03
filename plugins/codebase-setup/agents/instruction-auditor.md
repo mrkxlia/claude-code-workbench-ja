@@ -8,8 +8,12 @@ description: >-
   複数の指示ファイルを並列に監査するために使う。分類だけを返し、削除・書き換えは行わない
   （適用は承認を得た呼び出し側の仕事）。
 tools: Read, Grep, Glob
-# 「この指示はもう要らないか」は判断が要る。メインの実行モデルに合わせる。
-model: inherit
+# 指示ファイル1組を5分類に仕分ける監査（レビュー）で、範囲の決まった仕事のため Sonnet 5.5。
+# 「この指示はもう要らないか」の読み取りに取りこぼしが出ないよう effort は high。
+# 分類を採るかどうかの判断は呼び出し側（context-audit）がユーザーの承認を得て行う。
+# 根拠: docs/decisions/2026-10-02-sonnet-5-5-model-effort-review.md
+model: sonnet
+effort: high
 color: yellow
 ---
 

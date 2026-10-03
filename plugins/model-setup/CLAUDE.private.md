@@ -2,7 +2,7 @@
      model-setup/CLAUDE.md（ルール1〜9）の後ろに追記して使う。CLAUDE.company.md とは
      どちらか一方だけを導入する。共通ルール10〜13は両プロファイルで同一文面
      （片方を直したらもう片方も直す）。出典: 公式 Prompting Claude Fable 5 / Fable 5.1 / Sonnet 5 /
-     Opus 5 ガイド（2026-07〜09）の翻案。前提 settings: {"model":"opusplan","effortLevel":"xhigh"} -->
+     Opus 5 ガイド（2026-07〜09）の翻案。前提 settings: {"model":"opusplan"}（effort は設定に書かず、Sonnet 5.5 の既定 medium から段階表で上げる） -->
 
 # プロファイル追補 — Opus+Sonnet（私用PC）
 
@@ -67,8 +67,8 @@ Opus、実行は Sonnet が担う。スキル名の指定を求めず、依頼�
   にし、ルール6 の初見レビューも省略してよい（公式: 明示的な検証指示は過剰検証を招き、品質を
   上げずにトークンだけ増やす。ルール10・11 は Fable ガイド由来の規律で過剰検証には当たらない）。
   自分がどちらのモデルかはシステムプロンプトのモデル名で判定し、判定できなければ Sonnet 側
-  （自動検証あり）で動く。Opus 5 が実行側に回るときは `effortLevel: xhigh` を既定にせず
-  `/effort` で難度に合わせて下げる（MODEL-GUIDE §2）。
+  （自動検証あり）で動く。effort は MODEL-GUIDE §2 の段階表に従う — 範囲が明確な作業は `medium`、
+  難しい・長い作業は `high`。`xhigh` 以上は測定で品質向上を確かめたときだけ。
   設計・計画・重要文書は `review-panel`〔導入時〕で敵対的にレビューする。
   Critical は修正→再検証（同一問題2回まで＝ルール5）。
 - **自由度の高い成果物**（デザイン・設計方針・構成）は、1案目に固定せず方向性の異なる複数案を
