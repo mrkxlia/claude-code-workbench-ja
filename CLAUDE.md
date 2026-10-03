@@ -116,7 +116,8 @@ claude-code-workbench-ja/
     │   ├── 2026-09-07-plugin-inventory-and-official-spec-alignment.md  # 全10プラグインの棚卸しと公式一次情報への追随（削除ゼロ・codex-bridge/agent-review-panel/self-correct は先行OSSとの重複につき審議中・marketplace の単一情報源化・CI の許可キー追随・eval の skill-creator 形式化）
     │   ├── 2026-09-13-skill-duplication-check.md               # 全33スキルの車輪の再発明チェック（重なり度 A12/B13/C3/D5・審議中3件の決着・`claude plugin eval` は実在するという前回記述の訂正）
     │   ├── 2026-09-19-retire-codex-bridge-and-cli-bridge.md    # 上の示唆1〜6の適用（codex-bridge 廃止＝レビュー/実装は公式 codex-plugin-cc へ委譲・kiro-bridge を cli-bridge へ改名して統合・marketplace の renames・敵対的検証で直した5件・示唆2〜6は削除せず線引きを明記）
-    │   └── 2026-10-02-sonnet-5-5-model-effort-review.md        # Sonnet 5.5 ガイドに合わせた見直し（中継・レビュー系8エージェントを sonnet へ・sonnet 全エージェントに effort を明示・設定サンプルの xhigh を撤去・PROMPTS に 5.5 の API 破壊的変更・loop-judge は judge-eval で測ってから）
+    │   ├── 2026-10-02-sonnet-5-5-model-effort-review.md        # Sonnet 5.5 ガイドに合わせた見直し（中継・レビュー系8エージェントを sonnet へ・sonnet 全エージェントに effort を明示・設定サンプルの xhigh を撤去・PROMPTS に 5.5 の API 破壊的変更・loop-judge は judge-eval で測ってから）
+    │   └── 2026-10-03-tsundoku-claude-code-16-items-adoption.md  # 積読インデックスの Claude Code 関連16件の採用可否レビュー（clarify に答えられないときの3分岐・PROMPTS に #11 テストの棚卸しの2点だけ取り込み）
     ├── lessons.md                   #   過去 PR から蒸留した「繰り返さない判断」（根拠の PR 番号つき）
     ├── skill-authoring.md           #   スキルの書き方（公式ガイド準拠。frontmatter 規約・分冊基準・監査結果）
     ├── evals/                       #   主要スキル11件の期待挙動シナリオ（Sonnet 5 / Opus 5 のパリティ実測用）
