@@ -247,6 +247,7 @@ description: ... /long-run [タスク内容] での手動起動で発動する�
 | レイアウト | スキル直下は `SKILL.md` のみ／`references/*.md` が **SKILL.md から直接**到達できる（1階層） |
 | 分冊の目次 | 100行超の `references/*.md` は先頭20行に「## 目次」を持つ |
 | agent の description 合計 | 全サブエージェント合計 12,000 字以内（公式は 15,000 トークン超で起動時警告。日本語は1字≒1トークンとみなす） |
+| 自動発火スキルの description 合計 | `disable-model-invocation` でない `plugins/*/skills/*` の `description`＋`when_to_use` が合計 7,500 字以内。スキル一覧の予算（文脈の1%・全プラグイン共有）を超えると description が落とされるため。実測と経緯は [`decisions/2026-10-03-skill-description-budget.md`](decisions/2026-10-03-skill-description-budget.md) |
 
 **キー集合は固定しない。** 公式が受け付けるキーは増える。集合を固定した検査は、やがて
 正しい機能を禁止する側に回る（[`lessons.md`](lessons.md) 教訓9）。公式ドキュメントを見て

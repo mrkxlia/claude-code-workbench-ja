@@ -1,14 +1,7 @@
 ---
 name: codex-ask
 description: >-
-  設計相談を OpenAI Codex に依頼するスキル。ユーザー自身は Codex を操作せず、Claude Code が
-  Codex CLI を非対話モード（read-only）で駆動し、自由形式の質問（設計の是非・代替案・
-  デバッグ方針・トレードオフ）に Codex を答えさせて要約する。「Codex に相談して」
-  「codex の意見を聞いて」「コーデックスに聞いて」「OpenAI にも聞いて」のように
-  Codex を名指しした依頼や、/codex-ask [相談内容] での手動起動で発動する。コードは
-  書き換えず、助言だけがほしいときに使う。相手を名指ししない「セカンドオピニオンがほしい」
-  「別の AI の意見も」では発動しない — 内蔵の Task サブエージェントに任せる。
-  Kiro を名指しした相談は kiro-ask、レビューと実装の委譲は公式の Codex プラグインに任せる。
+  設計相談を OpenAI Codex に依頼するスキル。Claude Code が Codex CLI を read-only の非対話モードで動かし、設計の是非・代替案・デバッグ方針などへの Codex の回答を要約する。「Codex に相談して」「codex の意見を聞いて」「OpenAI にも聞いて」のように Codex を名指しした依頼や /codex-ask で発動する。名指しの無いセカンドオピニオンには発動しない。レビューと実装の委譲は公式 Codex プラグインに任せる。
 argument-hint: "[相談内容]"
 ---
 
