@@ -29,6 +29,9 @@ argument-hint: "[詰めたい要件・プラン・設計・成果物の方針]"
 > このスキルは外部の2スキルの設計を参考にしている:
 > [dig](https://github.com/ryonakae/dotfiles/tree/master/config/.agents/skills/dig)（ryonakae/dotfiles）と
 > [grill-me / grilling](https://github.com/mattpocock/skills)（mattpocock/skills）。
+> 上流の現行 grilling は、前提が揃った質問をラウンドごとにまとめて出す方式に移っている（2026-10-03 確認）。
+> 本スキルは一問ずつ・日本語・pipeline 統合を差分として残す。**上流と本スキルを両方入れると
+> 「grill して」で発火を取り合うので、どちらか一方を入れる。**
 
 ## 中核プロトコル
 
@@ -72,8 +75,9 @@ AskUserQuestion ツールで提示する場合は、同じ内容を `question`�
 
 その論点に依存する後続の質問は保留し、依存しない論点へ進む。
 出典: [Grillingで詰まったら推測せず分岐する](https://tech.algomatic.jp/entry/2026/08/31/185832)
-（2026-10-03 取得。mattpocock/skills の `/teach`・`/to-questionnaire`・`/prototype` への handoff を、
-このリポジトリの既存の受け皿に置き換えた）。
+（2026-10-03 取得）。記事は公式マーケットプレイスの `mattpocock-skills` の学習・質問票・試作スキルへ
+handoff するが、それらはユーザーが起動するスキルでモデルからは呼べないため、ここでは既存の受け皿に置き換えた。
+上流スキルを手で使うなら [skills-guide](../../../../docs/skills-guide/README.md) を参照。
 
 ## 終了
 

@@ -97,6 +97,28 @@ Anthropic公式リポジトリのスキル。安定性が最も高く、今す�
 > なっている。`misc/` は「作者が手元に残しているが plugin では配布しない」、`in-progress/` は
 > 「ベータ。予告なく変わる・消える」と明記されているので、常用するなら engineering / productivity から選ぶ。
 
+#### mattpocock-skills と本リポジトリの関係（2026-10-03 確認・v1.2.3）
+
+`mattpocock-skills` は **Claude Code 公式マーケットプレイスに登録済み**（MIT）で、`/plugin install mattpocock-skills`
+の1行で入り、更新も自動で届く。本リポジトリは上流のスキルをコピーしない。上流のコマンド名は**この節にだけ**書く
+（改名が多いため。上の「使えないことが確認されたもの」参照）。
+
+| 状況 | 本リポジトリ | 上流 | どう選ぶか |
+|---|---|---|---|
+| 計画・要件を質問で詰める | `clarify`（一問ずつ・日本語・pipeline 統合） | `/grill-me`・`/grill-with-docs`（ラウンド方式。後者は GLOSSARY.md と ADR を同時に作る） | **どちらか一方**。両方入れると「grill して」で発火を取り合う |
+| テストを先に書いて実装 | `build-with-tests`（pipeline を通さない軽量実装） | `tdd` | **どちらか一方** |
+| 答えを持つ人に質問票を送る | 無し（`clarify` は「確認先・現在の仮定」つきで持ち越すだけ） | `/to-questionnaire` | 上流を使う |
+| 紙の上で決めきれない設計を試作で確かめる | 無し | `prototype` | 上流を使う |
+| 再現しにくいバグを診断する | 無し | `diagnosing-bugs` | 上流を使う |
+| 用語集と ADR を育てる | 無し（`project-catchup` は読み解き用の用語表まで） | `domain-modeling` | 上流を使う |
+| 1セッションに収まらない大きな計画 | `backlog-loop`（決まったタスクを回す） | `/wayfinder`（決まっていない判断を issue で地図化する） | 判断が未確定なら上流、タスクが決まっていれば本リポジトリ |
+
+- 上流の `/teach`・`/to-questionnaire`・`/handoff`・`/ask-matt` などは**ユーザーが打つスキル**（`disable-model-invocation: true`）で、
+  Claude が自分から呼ぶことはない。本リポジトリのスキルからは案内しかできない
+- `/ask-matt` は上流スキルだけを案内するルーターで、本リポジトリのスキルは対象外。本リポジトリのスキルを探すときは、
+  本体の `/skills` で一覧を見るか、自然文で「○○したい、どのスキル？」と聞く
+- `wait-what`（GLOSSARY.md 前提の言い直し）・`wizard`（人間が手で踏む手順の bash ウィザード生成）は用途が狭いので載せない
+
 ### デザイン・資料作成が多い人
 
 | スキル | 用途 | リポジトリ |
