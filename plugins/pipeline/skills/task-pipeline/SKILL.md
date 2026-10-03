@@ -1,15 +1,7 @@
 ---
 name: task-pipeline
 description: >-
-  5つの専門エージェント（researcher → requirements-writer → brief-writer →
-  deliverable-builder → final-reviewer）を連鎖させて、コード以外の成果物
-  （drawio 図・ドキュメント・レポートなど）を end-to-end で作成するオーケストレーター。
-  3つの人間承認チェックポイント（要件承認・ブリーフ承認・最終レビュー）で必ず停止する。
-  「この図を描いて」「〜のドキュメントを作って」「〜をまとめて」のような成果物作成の依頼や、
-  /task-pipeline [依頼の説明] での手動起動で発動する。
-  中断したパイプラインは /task-pipeline 再開 [slug] で status.md から再開できる。
-  backlog.md への明示的な言及がある依頼（「backlog.md に基づき進めて」等）は
-  model-setup の backlog-loop に任せ、本スキルでは扱わない。
+  コード以外の成果物（drawio 図・ドキュメント・レポート等）を、5エージェントの連鎖と3つの人間承認（要件・ブリーフ・最終レビュー）で end-to-end に作るオーケストレーター。「この図を描いて」「〜のドキュメントを作って」「〜をまとめて」や /task-pipeline で発動し、/task-pipeline 再開 [slug] で再開できる。backlog.md を名指しした依頼は backlog-loop に任せる。
 argument-hint: "[依頼の説明]"
 ---
 

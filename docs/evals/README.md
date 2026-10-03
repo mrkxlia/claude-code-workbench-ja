@@ -24,6 +24,14 @@ python3 docs/evals/gen-evals.py
 > cli-reference）に存在しない。実在するのは公式マーケットプレイスの `skill-creator` プラグインで、
 > `evals/evals.json` にテストケース、`grading.json` に採点結果、`benchmark.json` に pass rate を
 > 出す。前提が誤っていたので記述を差し替えた。
+>
+> **訂正（2026-10-03）。** 上の「`claude plugin eval` は存在しない」も誤りだった。Claude Code 2.1.288 には
+> `claude plugin eval` があり、`prompt.md` と `graders/*.md` のケースを1プラグインに対して実行できる
+> （出典: [Plugin evals](https://code.claude.com/docs/en/plugin-evals)、2026-10-03 取得。2026-09-13 の
+> [重複チェック](../decisions/2026-09-13-skill-duplication-check.md)でも実在を確認済み）。
+> 本ディレクトリでは、発火の有無を測るケースだけを [`triggers.md`](triggers.md) に置き、
+> `gen-trigger-cases.py` で `claude plugin eval` の形式へ生成している。上のシナリオ（応答の中身の採点）は
+> 従来どおり手動で行う。
 
 ## 走らせ方（手動）
 
@@ -58,6 +66,16 @@ python3 docs/evals/gen-evals.py
 - **should（10件）** — そのスキルが出るべき言い回し。`description` のトリガー句をそのまま
   使わず、**ユーザーが実際に言いそうな言い換え**にする
 - **should NOT（10件）** — 隣接スキルが出るべきもの、本体機能で足りるもの、無関係なもの
+
+同じプラグイン内の衝突組は [`triggers.md`](triggers.md) にケース化してあり、次のように走らせる
+（リポジトリのプラグインに `evals/` を置かないため、一時ディレクトリへコピーして実行する）:
+
+```bash
+T=$(mktemp -d); cp -r plugins/model-setup "$T/"
+python3 docs/evals/gen-trigger-cases.py model-setup "$T/model-setup/evals"
+claude plugin eval "$T/model-setup" --trust-plugin --ablation none --runs 1 --no-publish \
+  --max-cost-usd 5 --model claude-sonnet-5-5 -j 4 --threshold 0
+```
 
 隣接スキルとトリガー句が衝突していると、ここで両方が出る。衝突したら
 [`../skill-authoring.md`](../skill-authoring.md) の「発動の調整」に従い、否定トリガーを足す。

@@ -211,6 +211,9 @@ mkdir -p ~/.claude/skills && cp -r /tmp/workbench/plugins/learning-coach/skills/
 
 ## どれをいつ使う？（スキル/プラグイン早見表）
 
+導入済みのスキルは本体の `/skills` で一覧できます。どれを使うか迷ったら、自然文で「○○したい、どのスキルを使えばいい？」と
+Claude に聞くのが一番早い方法です（導入済みスキルの説明は Claude の文脈に載ります。ただしスキルが多すぎると説明の一部が省かれるので、入れるプラグインは必要なものに絞ってください）。下の表は導入前に「何を入れるか」を決めるためのものです。
+
 | やりたいこと | 使うもの | ひとこと |
 |--------------|----------|----------|
 | 機能をコードで end-to-end 実装したい | **pipeline**（`/feature-pipeline`） | 7エージェント連鎖＋3つの人間承認チェックポイント |
@@ -279,8 +282,8 @@ UI 試作では避けて軽量な `build-with-tests` を使う、です（参考
 
 ## 収録セクション
 
-トップレベルは **plugins/**（プラグイン導入可能）・**docs/**（リポジトリ内ドキュメント）の2分類です
-（コピーして使うテンプレートや独立ツールが増えたら `templates/`・`tools/` を追加する規約になっています。
+トップレベルは **plugins/**（プラグイン導入可能）・**tools/**（独立ツール）・**docs/**（リポジトリ内ドキュメント）の3分類です
+（コピーして使うテンプレートが増えたら `templates/` を追加する規約になっています。
 詳細なディレクトリ構成は [`CLAUDE.md`](CLAUDE.md) 参照）。
 
 ### plugins/ — プラグイン導入可能な9セクション
@@ -426,6 +429,14 @@ frontmatter の `count` から severity を自動決定します（**1〜2回目
 対応します。本体の `/goal` は再実装せず、外側の完了ゲートとして併用します（設計の経緯は
 [`docs/decisions/2026-09-05-learning-prompt-as-skill.md`](docs/decisions/2026-09-05-learning-prompt-as-skill.md)）。
 **プラグイン1コマンドで導入可能**（上の「導入方法」参照）。
+
+### tools/ — 独立ツール
+
+#### [`tools/progress/`](tools/progress/)
+
+pipeline・self-correct・backlog-loop・long-run が残す状態ファイルを読み、「いまどこまで進み、何があなたの判断を待っているか」を
+Claude Code のステータスライン1行と `.dashboard/index.html` 1枚に出します。LLM を使わない Python スクリプトなので費用は0。
+判断待ちは表示するだけで、作業を勝手に進めません。
 
 ### docs/ — リポジトリ内ドキュメント
 

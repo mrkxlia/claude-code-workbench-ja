@@ -186,11 +186,35 @@ jobs:
                               "「## 目次」を置く"
                           )
 
+          # 自動発火するスキル（disable-model-invocation でないもの）の description 合計の予算。
+          # 公式: スキル一覧の description には文脈の1%の予算があり、超えると一部の description が
+          # 落とされて発火語が消える。出典: https://code.claude.com/docs/en/skills（2026-10-03 取得）
+          # 実測: 合計約 9,400 字の状態で9プラグインを入れると、同居する他プラグインの6スキルが名前だけに
+          # なり、7,383 字に縮めると1スキルまで戻った（docs/decisions/2026-10-03-skill-description-budget.md）。
+          # 予算は他プラグインと共有なので、ここは「これ以上増やさない」ための上限。増やすときは実測をやり直す。
+          SKILL_DESC_BUDGET = 7500
+          skill_desc = 0
+          for p in sorted(pathlib.Path("plugins").glob("*/skills/*/SKILL.md")):
+              text = p.read_text(encoding="utf-8")
+              end = text.find("\n---", 4)
+              try:
+                  m = yaml.safe_load(text[4:end]) or {}
+              except Exception:
+                  continue
+              if m.get("disable-model-invocation") is True:
+                  continue
+              skill_desc += len(str(m.get("description", ""))) + len(str(m.get("when_to_use", "") or ""))
+          if skill_desc > SKILL_DESC_BUDGET:
+              bad.append(
+                  f"自動発火スキルの description 合計が {skill_desc} 字で予算 {SKILL_DESC_BUDGET} 字を超えた。"
+                  "スキル一覧の予算を超えると他スキルの description が落とされる"
+              )
+
           if bad:
               print("\n".join(bad))
               print("\n解説と背景: docs/skill-authoring.md")
               sys.exit(1)
-          print(f"OK: SKILL.md {checked} 件")
+          print(f"OK: SKILL.md {checked} 件 / 自動発火スキルの description 合計 {skill_desc} 字（予算 {SKILL_DESC_BUDGET} 字）")
           PY
 
       - name: agent frontmatter 検査（name/description/tools/model/color の存在と型・description 合計の予算）

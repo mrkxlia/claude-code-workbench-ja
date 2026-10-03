@@ -16,8 +16,8 @@ Claude Code のテーマから外れる独立ツール・サンプルは別リ�
 
 ## ディレクトリ構成
 
-トップレベルは **plugins/**（プラグイン導入可能な9セクション）・**docs/**（リポジトリ内ドキュメント）の2分類。
-コピーして使うテンプレートや独立ツールが増えたら `templates/`・`tools/` を追加する（規約1）。
+トップレベルは **plugins/**（プラグイン導入可能な9セクション）・**tools/**（独立ツール）・**docs/**（リポジトリ内ドキュメント）の3分類。
+コピーして使うテンプレートが増えたら `templates/` を追加する（規約1）。
 ルートの `.claude-plugin/` は分類対象外（規約1の例外、現位置維持）。
 
 ```
@@ -26,7 +26,7 @@ claude-code-workbench-ja/
 ├── CLAUDE.md                        # このファイル
 ├── LICENSE                          # MIT License
 ├── .gitattributes                   # git 属性定義
-├── .github/workflows/ci.yml         # CI（JSON 構文・SKILL.md 形式〔公式準拠: 許可キー・1024字・三人称・references 1階層と目次〕・agent frontmatter〔description 合計の予算〕・shellcheck・.ps1 の BOM・version 差分・内部リンク＝必須、claude plugin validate＝任意）
+├── .github/workflows/ci.yml         # CI（JSON 構文・SKILL.md 形式〔公式準拠: 許可キー・1024字・三人称・references 1階層と目次・自動発火スキルの description 合計の予算〕・agent frontmatter〔description 合計の予算〕・shellcheck・.ps1 の BOM・version 差分・内部リンク＝必須、claude plugin validate＝任意）
 ├── .claude-plugin/
 │   └── marketplace.json             # プラグインマーケットプレイス定義（名前: workbench-ja、source は ./plugins/<name>）
 ├── plugins/                         # プラグイン導入可能な9セクション（marketplace.json 登録対象・公式標準レイアウト）
@@ -92,6 +92,11 @@ claude-code-workbench-ja/
 │       ├── README.md
 │       ├── .claude-plugin/plugin.json
 │       └── skills/                  #     1種（deep-understand。エージェント・フックは持たない）
+├── tools/                           # 独立ツール（プラグインとして配布しない単体スクリプト）
+│   ├── README.md
+│   └── progress/                    #   各スキルの状態ファイル（pipeline status.md・self-correct state.json・backlog・long-run ブリーフ）を読み、進み具合を statusline と .dashboard/index.html に出す（LLM なし・Python 標準ライブラリのみ）
+│       ├── README.md
+│       └── progress.py
 └── docs/                            # リポジトリ内ドキュメント置き場
     ├── README.md
     ├── decisions/                   #   日付つきの決定記録・監査記録（追記のみ。覆すときは新記録を足す）
@@ -116,12 +121,17 @@ claude-code-workbench-ja/
     │   ├── 2026-09-07-plugin-inventory-and-official-spec-alignment.md  # 全10プラグインの棚卸しと公式一次情報への追随（削除ゼロ・codex-bridge/agent-review-panel/self-correct は先行OSSとの重複につき審議中・marketplace の単一情報源化・CI の許可キー追随・eval の skill-creator 形式化）
     │   ├── 2026-09-13-skill-duplication-check.md               # 全33スキルの車輪の再発明チェック（重なり度 A12/B13/C3/D5・審議中3件の決着・`claude plugin eval` は実在するという前回記述の訂正）
     │   ├── 2026-09-19-retire-codex-bridge-and-cli-bridge.md    # 上の示唆1〜6の適用（codex-bridge 廃止＝レビュー/実装は公式 codex-plugin-cc へ委譲・kiro-bridge を cli-bridge へ改名して統合・marketplace の renames・敵対的検証で直した5件・示唆2〜6は削除せず線引きを明記）
-    │   └── 2026-10-02-sonnet-5-5-model-effort-review.md        # Sonnet 5.5 ガイドに合わせた見直し（中継・レビュー系8エージェントを sonnet へ・sonnet 全エージェントに effort を明示・設定サンプルの xhigh を撤去・PROMPTS に 5.5 の API 破壊的変更・loop-judge は judge-eval で測ってから）
+    │   ├── 2026-10-02-sonnet-5-5-model-effort-review.md        # Sonnet 5.5 ガイドに合わせた見直し（中継・レビュー系8エージェントを sonnet へ・sonnet 全エージェントに effort を明示・設定サンプルの xhigh を撤去・PROMPTS に 5.5 の API 破壊的変更・loop-judge は judge-eval で測ってから）
+    │   ├── 2026-10-03-tsundoku-claude-code-16-items-adoption.md  # 積読インデックスの Claude Code 関連16件の採用可否レビュー（clarify に答えられないときの3分岐・PROMPTS に #11 テストの棚卸しの2点だけ取り込み）
+    │   ├── 2026-10-03-skill-usability-and-mattpocock.md        # mattpocock/skills 精読で前回の #1・#3 を覆した記録（委譲は disable-model-invocation で不成立・/which-skill は作らない・上流コマンド名は skills-guide に集約・敵対的検証24件の処理）
+    │   └── 2026-10-03-skill-description-budget.md              # スキル一覧の description 予算超過を実測（同居する他プラグインの6スキルが落ちる→長い10件を短縮で1件に）・CI に合計 7,500 字の予算・plugin eval 32ケースで短縮前後とも全件合格
     ├── lessons.md                   #   過去 PR から蒸留した「繰り返さない判断」（根拠の PR 番号つき）
     ├── skill-authoring.md           #   スキルの書き方（公式ガイド準拠。frontmatter 規約・分冊基準・監査結果）
     ├── evals/                       #   主要スキル11件の期待挙動シナリオ（Sonnet 5 / Opus 5 のパリティ実測用）
     │   ├── README.md                #     走らせ方・baseline 比較・20クエリの trigger eval・結果記録表
     │   ├── gen-evals.py             #     Markdown から evals.json を生成（公式 skill-creator の形式）
+    │   ├── triggers.md              #     同一プラグイン内の衝突組の発火ケース（正本）
+    │   ├── gen-trigger-cases.py     #     triggers.md から claude plugin eval のケースを一時ディレクトリへ生成
     │   ├── evals.json               #     生成物。手で編集しない
     │   └── {task-brief,verify-fresh,long-run,review-panel,adoption-review,self-correct,feature-pipeline,project-catchup,feedback-rule,deep-understand,codebase-onboard}.md
     ├── backlog-2026-09.md           #   Sonnet/Opus 実行用ブリーフ（完了条件・検証方法つき）
@@ -134,7 +144,7 @@ claude-code-workbench-ja/
 
 ## このリポジトリの規約
 
-1. **トップレベルは plugins/・docs/（＋将来追加しうる templates/・tools/）の分類、セクションはディレクトリ単位で管理する** — 新しいセクションを追加する場合、プラグイン導入可能なら `plugins/`、コピーして使うテンプレートなら `templates/`、独立ツールや配布パイプラインなら `tools/` に専用ディレクトリを作り、ルート直下にファイルを置かない（現状 `templates/`・`tools/` は対象セクションが無いため存在しない）。
+1. **トップレベルは plugins/・tools/・docs/（＋将来追加しうる templates/）の分類、セクションはディレクトリ単位で管理する** — 新しいセクションを追加する場合、プラグイン導入可能なら `plugins/`、コピーして使うテンプレートなら `templates/`、独立ツールや配布パイプラインなら `tools/` に専用ディレクトリを作り、ルート直下にファイルを置かない（現状 `templates/` は対象セクションが無いため存在しない）。
 2. **各ディレクトリには README.md を置く** — セクションの目的・使い方・ファイル構成を説明する README.md を必ず用意する。
 3. **リポジトリ全体の言語は日本語** — README.md・CLAUDE.md など、このリポジトリ自体のドキュメントは日本語で記述する。
 4. **マーケットプレイス定義はルートの `.claude-plugin/` に置く** — Claude Code プラグイン仕様上の必須配置であり、規約1の例外。
