@@ -207,11 +207,25 @@ Claude Code ではなく API 直で Sonnet 5 を使うアプリ開発（MODEL-GU
 [Prompting Claude Sonnet 5](https://platform.claude.com/docs/ja/build-with-claude/prompt-engineering/prompting-claude-sonnet-5)）:
 
 - **adaptive thinking が既定 ON**。`thinking` 未指定でも思考する（Sonnet 4.6 からの変更）。
-  完全にオフにするには `thinking: {type: "disabled"}`。`budget_tokens` 指定は 400 エラー。
+  完全にオフにするには `thinking: {type: "disabled"}`（**Sonnet 5 のみ。Sonnet 5.5 では 400 エラー** — 下記）。
+  `budget_tokens` 指定は 400 エラー。
 - **`temperature` / `top_p` / `top_k` の非既定値は 400 エラー**。スタイルの多様性は
   プロンプト構造で作る（→ #6 複数方向の提案）。
 - **新トークナイザで同じテキストが約30%多くトークン化される**。`max_tokens` は 4.6 時代の
   値から余裕を持たせないと、思考で予算を使い切って応答が切り詰められることがある。
+
+**Sonnet 5.5 へ移すときの破壊的変更**（出典: [Migrating to Claude Sonnet 5.5](https://platform.claude.com/docs/en/models/sonnet-5-5/migration-guide)。
+上の `budget_tokens`・サンプリング引数の 400 は 5.5 でもそのまま）:
+
+- **`thinking: {type: "disabled"}` は 400 エラー。** 前置きの思考を切るには `thinking: {type: "between_tools"}`
+  を送る。effort が `low`〜`high` のときだけ受け付け、`xhigh`・`max` との組み合わせは 400。`display`・
+  `budget_tokens` との併用も 400。
+- **応答の先頭が `thinking` ブロックになりうる。** `content[0].text` を読むコードは壊れるので、ブロックの
+  `type` で `text` を探して読む。
+- **`tool_choice` の `any`・`tool`（強制ツール選択）は 400 エラー。** `{type: "auto"}` を送り、ツール側を
+  `strict: true` にする（Amazon Bedrock では structured outputs が使えないので `strict` なしで送り、コードで検証する）。
+- **応答に推論を書かせる指示は外す。** `reasoning_extraction` の拒否を招く。推論が要るときは
+  `thinking: {type: "adaptive", display: "summarized"}` の要約を読む。
 
 ## 10. コンパクション保持指示（長時間作業・`/compact` を手動で行うとき）
 

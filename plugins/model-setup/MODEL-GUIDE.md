@@ -4,6 +4,8 @@
 > Fable 5.1（2026-09-01）のリリース、Sonnet 5 の $2/$10 恒久化を反映済み。
 > モデルの新世代が出たら要更新。前版（2026-07）は「Fable 5 は期間限定」を前提にしていたが、
 > Fable 5.1 は一般提供（期限なし）になったため、前提を「価格・プランの都合で常用しない」に改めた。
+> 2026-10-02 に Sonnet 5.5（2026-09-25）の仕様と effort の段階表を §1・§2・§3・§5 に反映した
+> （決定記録: `docs/decisions/2026-10-02-sonnet-5-5-model-effort-review.md`）。
 
 このドキュメントは、Fable 5.1（Mythos 級の最上位モデル。一般提供だが Sonnet 5 の5倍の単価で、
 会社 PC のプランでは使えない）を**常用しない**前提で、
@@ -17,43 +19,53 @@ Fable 5.1 が使える機会（試用・上位プラン等）があれば、§10
 
 ## 1. モデル仕様表
 
-| | Fable 5.1 | Opus 5 | Sonnet 5 | Haiku 4.5 |
-|---|---|---|---|---|
-| 位置づけ | 高難度の推論・長時間のエージェント作業 | 複雑なエージェント型コーディング・企業向け | 速度と知性の最良バランス | 最速・準フロンティア級知性 |
-| 価格（入力/出力 per MTok） | $10 / $50 | $5 / $25 | $2 / $10（導入価格がそのまま恒久化。$3/$15 への値上げは中止） | $1 / $5 |
-| キャッシュ読み取り | $0.25（入力の 2.5%） | $0.50 | $0.20 | $0.10 |
-| コンテキスト窓 | 1M tokens | 1M tokens | 1M tokens | 200k tokens |
-| 最大出力 | 128k tokens | 128k tokens | 128k tokens | 64k tokens |
-| thinking | adaptive 常時 ON（無効化不可） | adaptive 既定 ON（無効化は effort high 以下のみ） | adaptive 既定 ON | 拡張思考（extended thinking） |
-| effort 既定値 | high | high | high | — |
-| 知識カットオフ | 2026-06 | 2026-05 | 2026-01 | 2025-02 |
-| 公式推奨の開始点 | まず Opus 5 を試し、xhigh でも評価が届かないときに使う。**medium ≈ Fable 5 相当**、low でも Opus/Sonnet より高スコアで単価競合 | 既定 high から評価で調整。**low/medium を積極的に**使い、難しいコーディング・エージェント作業だけ xhigh | 最難タスクは **xhigh**、通常は既定の high | — |
-| リタイア | 2027-09-01 以降 | 2027-07-24 以降 | 2027-06-30 以降 | 2026-10-15 以降 |
+| | Fable 5.1 | Opus 5 | Sonnet 5 | Sonnet 5.5 | Haiku 4.5 |
+|---|---|---|---|---|---|
+| 位置づけ | 高難度の推論・長時間のエージェント作業 | 複雑なエージェント型コーディング・企業向け | 速度と知性の最良バランス | 範囲が明確な日常のコーディング・大量の作業・繰り返しのエージェント作業（調査・レビュー・下書き）。最難の長時間作業は Opus | 最速・準フロンティア級知性 |
+| 価格（入力/出力 per MTok） | $10 / $50 | $5 / $25 | $2 / $10（導入価格がそのまま恒久化。$3/$15 への値上げは中止） | $2 / $10（Sonnet 5 と同額） | $1 / $5 |
+| キャッシュ読み取り | $0.25（入力の 2.5%） | $0.50 | $0.20 | $0.20 | $0.10 |
+| コンテキスト窓 | 1M tokens | 1M tokens | 1M tokens | 1M tokens | 200k tokens |
+| 最大出力 | 128k tokens | 128k tokens | 128k tokens | 128k tokens | 64k tokens |
+| thinking | adaptive 常時 ON（無効化不可） | adaptive 既定 ON（無効化は effort high 以下のみ） | adaptive 既定 ON | adaptive 常時 ON（Claude Code では無効化不可。API の最低設定は `between_tools` で、`disabled` は 400） | 拡張思考（extended thinking） |
+| effort 既定値 | high | high | high | Claude Code は **medium**／API は high | — |
+| 知識カットオフ | 2026-06 | 2026-05 | 2026-01 | 2026-06 | 2025-02 |
+| 公式推奨の開始点 | まず Opus 5 を試し、xhigh でも評価が届かないときに使う。**medium ≈ Fable 5 相当**、low でも Opus/Sonnet より高スコアで単価競合 | 既定 high から評価で調整。**low/medium を積極的に**使い、難しいコーディング・エージェント作業だけ xhigh | 最難タスクは **xhigh**、通常は既定の high | 範囲が明確なエージェント的コーディングは **medium**、難しい・長い作業は **high**。`xhigh`・`max` は測定で品質向上を確かめたときだけ | — |
+| リタイア | 2027-09-01 以降 | 2027-07-24 以降 | 2027-06-30 以降 | —（未確認） | 2026-10-15 以降 |
 
 Opus 4.8 はレガシー扱い（価格・窓は Opus 5 と同じ $5/$25・1M）。`opusplan` 等の Opus 指定は
 Claude Code の既定 Opus に追従するため、本ガイドの「Opus」は Opus 5 を指す。Fable 5.1 は
 Fable 5 と同一価格で、キャッシュ読み取りだけ 1/4（$1 → $0.25）。安全分類器を持ち、
 攻撃的サイバーセキュリティ・生物学系の依頼は `refusal` で Opus に fallback する。
 
+2026-10 時点の Claude Code（Anthropic API）では、`sonnet` エイリアスは v2.1.284 以降で Sonnet 5.5、`opus`／`default` は Opus 5.5 を指す。Amazon Bedrock・Google Cloud 経由では `sonnet` が Sonnet 4.5 を指すなど、エイリアスの行き先は接続先とバージョンで変わる（[model-config](https://code.claude.com/docs/en/model-config)）。更新前に起動したセッションは古い版のまま動くので、版をまたぐときは起動し直す。
+
 出典: [Claude models overview](https://platform.claude.com/docs/en/about-claude/models/overview)、
 [Pricing](https://platform.claude.com/docs/en/about-claude/pricing)、
 [Claude Fable 5.1](https://platform.claude.com/docs/en/models/fable-5-1/overview)、
 [Claude Opus 5](https://platform.claude.com/docs/en/models/opus-5/overview)、
 [effort](https://platform.claude.com/docs/en/build-with-claude/effort)、
-[Prompting Claude Sonnet 5](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-sonnet-5)。
+[Prompting Claude Sonnet 5](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-sonnet-5)、
+[Building with Claude Sonnet 5.5](https://claude.dev/blog/building-with-claude-sonnet-5-5/)、
+[Prompting Claude Sonnet 5.5](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-sonnet-5-5)。
 
 ## 2. effort 早見表
 
 | 設定方法 | 効果 | 持続性 |
 |---|---|---|
-| `settings.json` の `"effortLevel": "high"` | **Sonnet 5 の既定値と同じ**。設定しても挙動は変わらない（no-op） | 恒久 |
-| `settings.json` の `"effortLevel": "xhigh"` | 実質的な格上げ。より粘り強く考える。トークン消費（コスト）は増える | 恒久 |
+| `settings.json` の `modelSettings.<モデル>.effortLevel` | モデルごとの保存値。`/effort low`〜`xhigh` を実行すると、使用中のモデルの欄にここへ書かれる（v2.1.251 以降） | 恒久 |
+| `settings.json` のトップレベル `"effortLevel"` | 保存値の無いモデルの既定。**ユーザー設定（`~/.claude/settings.json`）では Opus 5.5 とそれ以降のモデル（Sonnet 5.5 を含む）には効かない**（Opus 5・Sonnet 5・Fable 5.1 にだけ効く）。プロジェクト・ローカル設定ではすべてのモデルに効く | 恒久 |
+| スキル・サブエージェントの frontmatter `effort:` | そのスキル・サブエージェントが動いている間だけ上書きする。未指定時の継承の詳細は公式に明記が無いので、Sonnet 固定のエージェントには明示する | 実行中 |
 | `/effort` コマンド | セッション中にスライダーで変更。`max` はセッション限定 | セッション限定 |
 | プロンプトに `ultrathink` | そのターンだけ深い推論を要求 | ターン限定 |
 
-**注意**: 「settings.json に high を入れると粘る側に寄る」という紹介を見かけますが、
-Sonnet 5 の既定は既に `high` なので、それだけでは挙動は変わりません。本当に深くしたいときは
-`xhigh` を選び、コスト増と引き換えにします。
+**Sonnet 5.5 の段階表（公式）**: 範囲が明確なエージェント的コーディングは `medium`（Claude Code の既定）、
+難しい・長い作業は `high`。`xhigh`・`max` は思考も返答も大幅に長くなるので、自分の評価で品質向上を
+測れたときだけ使う。effort は世代ごとに較正し直されている（Sonnet 5.5 の `high` は Sonnet 5 の `high` と
+同じ思考量ではない）ので、Sonnet 5 で使っていた設定を持ち越さない。思考を減らしたいときは effort を下げる —
+プロンプトで「考えすぎるな」と書いても確実には減らない。`low`／`medium` では長い作業の途中で確認のために
+止まりやすく、`low` では検証を省きやすい。
+
+（旧注意）Sonnet 5 の既定は `high` だったので、`effortLevel: high` を入れても挙動は変わらなかった。
 
 effort レベルは 5 段階（`low` / `medium` / `high` / `xhigh` / `max`）。`medium` は
 Sonnet 4.6 の `high` 相当、Sonnet 5 の `high` は Sonnet 4.6 の `max` 相当という公式の
@@ -76,13 +88,15 @@ effort 名は世代間で同じ思考量を意味しない（Fable 5.1 の `medi
 ### 私用 PC（Opus 5 + Sonnet 5・git あり・Codex 不使用）
 
 ```json
-{ "model": "opusplan", "effortLevel": "xhigh" }
+{ "model": "opusplan" }
 ```
 
 `opusplan` は計画フェーズを Opus、実行フェーズを Sonnet で行うモデル設定。Opus が
 計画を立て、Sonnet がその計画を実行する分担がそのまま活きる（`opusplan` は Claude Code の既定 Opus に
-追従し、2026-09 時点では Opus 5）。`effortLevel: xhigh` は実行側の Sonnet を念頭にした値で、
-Opus 5 が実行側に回るときは §2 のとおり `/effort` で下げる。
+追従し、2026-10 時点では Opus 5.5／Sonnet 5.5）。以前はここに `effortLevel: xhigh` を置いていたが、
+ユーザー設定のトップレベル `effortLevel` は Opus 5.5・Sonnet 5.5 に効かず、効いたとしても §2 の段階表
+（`xhigh` は測定できたときだけ）に反するので外した。実行側の Sonnet 5.5 は既定の `medium` で動かし、
+難しい・長い作業だけ `/effort high` にする（モデル別に `modelSettings` へ保存される）。
 CLAUDE.md（ルール1〜9）の後ろに追補 `CLAUDE.private.md`（ルール10〜14）を追記して使う。
 
 **Opus 5 が実行側に回るとき（`/model opus` で切り替えた場合など）の注意。** 公式
@@ -105,12 +119,16 @@ CLAUDE.md（ルール1〜9）の後ろに追補 `CLAUDE.private.md`（ルール1
 ### 会社 PC（Sonnet 5 のみ・git なし・Codex CLI あり）
 
 ```json
-{ "model": "sonnet", "effortLevel": "xhigh" }
+{ "model": "sonnet" }
 ```
 
-根拠: 手戻りのコストはトークンのコストより高くつくことがほとんどなので、既定は xhigh。
-予算が厳しい場合は `effortLevel` を設定から外し、既定の `high` で運用しつつ、
-難しいタスクだけ `/effort xhigh` を都度指定する。
+effort は設定に書かない。Sonnet 5.5（Claude Code v2.1.284 以降・Anthropic API）では既定の `medium` で
+始め、難しい・長い作業は `/effort high`、それでも手戻りが2回続いたら `xhigh` に上げる（§7）。
+以前は「手戻りのコストはトークンより高い」として `effortLevel: xhigh` を既定にしていたが、ユーザー設定の
+トップレベル `effortLevel` は Sonnet 5.5 に効かず、段階表にも反するので外した。会社 PC が v2.1.284 未満で
+Sonnet 5 を使っている場合は、外すと既定の `high` で動く（Sonnet 5 の公式推奨も「通常は既定の high、
+最難タスクは xhigh」）。Bedrock・Google Cloud 経由では `sonnet` が Sonnet 4.5 を指すので、接続先の
+モデルで判断する（§1）。
 CLAUDE.md（ルール1〜9）の後ろに追補 `CLAUDE.company.md`（ルール10〜15）を追記して使う。
 
 git が無い環境での代替策:
@@ -136,12 +154,16 @@ git が無い環境での代替策:
 
 ## 5. Sonnet 5 運用の要点（公式 prompting guide より）
 
+Sonnet 5.5 の公式ガイドは「Sonnet 5 向けのプロンプトは変更なしでよく動く」としているので、以下は 5.5 でも
+有効。ただし effort の開始点は 5.5 で変わった（§2）。
+
 - **指示を字義どおりに実行する。** 「これを全部のセクションに適用して」のように、
   適用範囲は明示しないと一部にしか広げない。
 - **小出しの複数ターン指示は効率を落とす。** 最初のターンでタスク・意図・制約を
   完全に指定するほど、自律性と効率が上がる（→ `task-brief` を使う）。
-- **high・xhigh effort ではツール使用がより積極的になる。** 探索的なコーディング・
-  エージェント作業では xhigh から始めるのが公式推奨。
+- **high・xhigh effort ではツール使用がより積極的になる。** Sonnet 5 では、探索的なコーディング・
+  エージェント作業は xhigh から始めるのが公式推奨だった。**Sonnet 5.5 では `medium` から始め、
+  難しい・長い作業だけ `high` にする**（§2）。
 - **コードレビュー用途では「自己選別せず網羅で報告」を明示的に指示する。** 「重要なものだけ
   報告して」と言うと、Sonnet 5 は調査の深さ自体は落とさずに指摘の報告を絞り込みがちで、
   見かけ上の再現率（recall）が下がることがある。フィルタリングは別工程に任せ、

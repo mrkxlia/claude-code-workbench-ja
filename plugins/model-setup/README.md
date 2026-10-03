@@ -21,8 +21,8 @@ CLAUDE.md・スキル・サブエージェントとして常設化するテン�
 | [`CLAUDE.company.md`](CLAUDE.company.md) | プロファイル追補（Sonnet 単独・会社PC）: 追補ルール10〜15 |
 | [`MODEL-GUIDE.md`](MODEL-GUIDE.md) | モデル仕様・effort 選定・プロファイル・Fable 5.1 パリティマップ・AIDLC 簡易版ワークフロー（§9）・Fable 本人にやらせる仕事（§10） |
 | [`PROMPTS.md`](PROMPTS.md) | 都度貼りプロンプト集（Plan モード用初回テンプレート＋公式スニペット翻案） |
-| [`settings.private.json`](settings.private.json) | 私用 PC 向け設定サンプル（`opusplan` + `xhigh`） |
-| [`settings.company.json`](settings.company.json) | 会社 PC 向け設定サンプル（`sonnet` + `xhigh`） |
+| [`settings.private.json`](settings.private.json) | 私用 PC 向け設定サンプル（`opusplan`。effort は書かない — MODEL-GUIDE §2） |
+| [`settings.company.json`](settings.company.json) | 会社 PC 向け設定サンプル（`sonnet`。effort は書かない — MODEL-GUIDE §2） |
 | `skills/task-brief/` | 最初のターンでタスク仕様をブリーフ化するスキル |
 | `skills/backlog-loop/` | backlog.md 駆動の定型ループ（計画→承認ゲート→実施→完了処理→backlog更新） |
 | `skills/pr-merge/` | PR 作成〜マージ〜後片付けまでを一括で行うスキル（git/gh 専用） |
