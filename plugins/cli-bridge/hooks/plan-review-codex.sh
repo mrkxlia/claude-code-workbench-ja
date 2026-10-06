@@ -13,7 +13,8 @@
 #     （ExitPlanMode に対するフック実行と UI 提示の前後関係は公式ドキュメントに記載が無い）。
 #     deny なら ExitPlanMode が成立しないので、仕様の穴に依存せず「レビューが先」が決まる。
 #   - フック自身は codex を呼ばない: 数十秒ブロックしない／外部モデルの出力を無検証で文脈へ
-#     注入する経路を作らない／jq もエスケープも要らない。実行は codex-advisor に委譲する。
+#     注入する経路を作らない／jq もエスケープも要らない。実行は codex-ask スキル経由で
+#     公式 codex-plugin-cc の codex:codex-rescue（read-only 指定）に委譲する。
 #   - jq 不要: stdin から session_id だけを grep で取り出し、英数字とハイフン・アンダースコアに
 #     サニタイズして状態ファイル名に使う。出力はユーザー入力を一切含まない定数 JSON リテラル。
 #   - 無限ループしない: deny は 1 セッション 1 回まで（状態ファイルで機械的に固定）。
@@ -65,7 +66,7 @@ mkdir -p "$STATE_DIR" 2>/dev/null || exit 0
 
 # ユーザー入力を含まない定数 JSON を1つ出力するだけ（jq 不要・エスケープ不要）。
 cat <<'JSON'
-{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"プランをユーザーに提示する前に、まず codex-ask スキル（codex-advisor サブエージェント）で OpenAI Codex にこのプランをレビューさせてください。プラン全文と判断に必要なファイルの内容を heredoc で同梱し、read-only で実行します（codex exec resume は使わず、プランを更新したら毎回全文を渡し直すこと）。返ってきた指摘のうち P1・P2（致命的・重大）だけをプランに反映し、P3 以下は件数だけ添えて、そのうえで改めてプランを提示してください。codex が未導入・未認証の場合はレビューを飛ばし、その旨を1行添えて再提示して構いません。このゲートは1セッションにつき1回だけで、次の提示はそのまま通ります。"}}
+{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"プランをユーザーに提示する前に、まず codex-ask スキル（公式 codex-plugin-cc の codex:codex-rescue を read-only で呼ぶ）で OpenAI Codex にこのプランをレビューさせてください。プラン全文と判断に必要なファイルの内容をプロンプトに入れ、--write を付けず --fresh で実行します（プランを更新したら毎回全文を渡し直すこと）。返ってきた指摘のうち P1・P2（致命的・重大）だけをプランに反映し、P3 以下は件数だけ添えて、そのうえで改めてプランを提示してください。公式 Codex プラグインが未導入・未認証の場合はレビューを飛ばし、その旨を1行添えて再提示して構いません。このゲートは1セッションにつき1回だけで、次の提示はそのまま通ります。"}}
 JSON
 
 exit 0

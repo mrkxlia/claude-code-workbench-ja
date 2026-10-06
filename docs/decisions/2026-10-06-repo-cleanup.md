@@ -163,3 +163,18 @@ MIT、コミット `6fd9479`・2026-10-06 取得）に差し替えた。
 
 確認できなかったこと: 組み込みの `deep-research` を `Workflow` ツールで呼ぶときの `args` の形（問いの文字列で
 足りるはずだが、公式ドキュメントに明記が無い）。実機では未実行。
+
+## 第7段: codex-ask の実行を公式 codex-plugin-cc に任せる
+
+第6段（adoption-review）と同じ形にした。独自の `codex-advisor`（`codex exec --sandbox read-only` を自分で叩く
+中継役）は、公式 `openai/codex-plugin-cc` の `codex:codex-rescue` サブエージェント（Codex companion 経由の実行・
+スレッド管理つき）と重なるので廃止し、`codex-ask` スキルは**入口だけ**残した（cli-bridge 2.1.0）。
+
+- 残した理由は1点: 公式の `codex:codex-rescue` は、相談だと明示しないと**書き込みモード（`--write`）で起動する**のが
+  既定（`agents/codex-rescue.md`「Default to a write-capable Codex run by adding --write unless the user explicitly
+  asks for read-only behavior」、2026-10-06 取得）。`codex-ask` は毎回「`--write` なし・`--fresh`・編集禁止の相談」
+  として渡すことで、相談を安全側に固定する
+- 「codex-ask を使って」と名指しすれば発火するよう description に足した。`Skill(codex:rescue)` は呼ばない
+  （公式の注意書きどおり、同じコマンドに再入して止まる）。呼ぶのは `Agent`（`subagent_type: "codex:codex-rescue"`）
+- `plan-review-codex.sh` の deny 理由も、`codex-ask` 経由で公式に read-only で渡す文面に直した
+- 前提が「`codex` CLI」から「公式プラグインの導入と `/codex:setup`」に変わる。未導入なら手順を案内して止まる

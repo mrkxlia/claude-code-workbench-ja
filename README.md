@@ -156,7 +156,7 @@ git clone --depth 1 https://github.com/mrkxlia/claude-code-workbench-ja /tmp/wor
 # pipeline — pipeline-setup をパーソナルスキル化（以後どのリポジトリでも /pipeline-setup が使える）
 mkdir -p ~/.claude/skills && cp -r /tmp/workbench/plugins/pipeline/skills/pipeline-setup ~/.claude/skills/
 
-# cli-bridge — 外部 CLI 委譲スキル3種＋エージェント3種をプロジェクトへ
+# cli-bridge — 外部 CLI 委譲スキル3種＋エージェント2種をプロジェクトへ
 mkdir -p .claude/skills .claude/agents && cp -r /tmp/workbench/plugins/cli-bridge/skills/* .claude/skills/ && cp -r /tmp/workbench/plugins/cli-bridge/agents/* .claude/agents/
 
 # adoption-review — 採用可否レビューのスキル1種＋エージェント2種（どのリポジトリでも使うならグローバルへ）
@@ -284,9 +284,9 @@ UI 試作では避けて軽量な TDD スキル（superpowers の `test-driven-d
 
 #### [`plugins/cli-bridge/`](plugins/cli-bridge/)
 外部の AI コーディング CLI（**OpenAI Codex**・**Kiro**）に相談・レビューを委譲するスキル3種と
-サブエージェント3種。ユーザー自身は外部 CLI を操作せず、Claude Code が**非対話・read-only**で
-駆動し、冗長な生出力をサブエージェント内に隔離して要約だけを返します。`/codex-ask`（設計相談・
-セカンドオピニオンを Codex に答えさせ要約）、`/kiro-review`（差分/指定ファイルを Kiro にレビュー
+サブエージェント2種。ユーザー自身は外部 CLI を操作せず、Kiro は Claude Code が**非対話・read-only**で
+駆動し、Codex は公式プラグインに実行を任せて、要約だけを返します。`/codex-ask`（設計相談を、公式
+codex-plugin-cc の `codex:codex-rescue` に read-only 指定で答えさせ要約）、`/kiro-review`（差分/指定ファイルを Kiro にレビュー
 させ重大度 P1–P4 で要約）、`/kiro-ask`（同じく相談）を収録。さらに **プラン提示前に Codex レビューを挟む opt-in フック**を
 同梱します（AGENTS.md の生成は 2026-10-06 に削除。正本を AGENTS.md にして CLAUDE.md から `@AGENTS.md` で読む）。
 

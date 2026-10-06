@@ -35,9 +35,8 @@ cp plugins/model-setup/PROMPTS.md ~/.claude/model-setup-PROMPTS.md
 
 # cli-bridge: 会社でのみ Codex CLI が使えるため、単一モデル環境のセカンドオピニオン役として導入
 # （レビュー・実装の委譲そのものは公式プラグイン openai/codex-plugin-cc が担当。マーケット
-#   プレイスが使えない環境では codex-ask で相談だけ受けるか、公式を別途 zip で持ち込む）
+#   プレイスが使えない環境では公式を別途 zip で持ち込む。codex-ask は公式の codex:codex-rescue を前提にする）
 cp -r plugins/cli-bridge/skills/codex-ask ~/.claude/skills/
-cp plugins/cli-bridge/agents/codex-advisor.md ~/.claude/agents/
 ```
 
 - `pipeline` を会社 PC で使う場合は、手動コピーではなく
