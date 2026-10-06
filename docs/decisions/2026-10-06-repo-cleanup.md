@@ -185,3 +185,23 @@ MIT、コミット `6fd9479`・2026-10-06 取得）に差し替えた。
 同等品は無いが、中身は `gh pr create`・`gh pr checks`・`gh pr merge`・`git pull` の手順書で、「CI を確認してから
 マージして」と頼めばほぼ同じことが起きる。PR 作成は公式 `commit-commands` の `/commit-push-pr`、CI の修正は本体の
 `/autofix-pr` がある。代替より明確に良い点を挙げられないので、ユーザーの判断で削除した（model-setup 4.1.0）。
+
+## 第9段: 残したプラグインに、代替にだけあった機能を取り込む
+
+第3段の比較で「代替にだけある」とされた機能のうち、入れると代替と並ぶか上回るものを取り込んだ。
+作り直しではなく、既存の手順に数行ずつ足す形にした。
+
+| プラグイン | 取り込んだもの | 参考にした代替 |
+|---|---|---|
+| self-correct 0.4.0 | **PASS の裏取り**: `.claude/self-correct/checks.json` の検証コマンドを Stop フック自身が実行し、失敗したら完了させない（同じ状態への block は1回だけ・1コマンド120秒・Stop フックの timeout 600秒）。`checks.json` はガードフックが常に保護 | sdsrss/loop_eng（フックが検証を実行・証拠を偽れない） |
+| self-correct 0.4.0 | **vacuity チェック**: 着手前に今の成果物へ基準を当て、全部 PASS なら基準を作り直す（ラウンド0・attempt に数えない） | loop_eng（開始時に基準が RED であることを確認） |
+| pipeline 4.1.0 | 大きな設計判断が残るとき、ブリーフを2〜3案並列に作って比較表で選ぶ（feature-pipeline・task-pipeline） | 公式 feature-dev（code-architect を2〜3並列） |
+| pipeline 4.1.0 | 2回目の差し戻しから、ビルダーを `model: "opus"` で起動し直す（同じ条件で3回目を試さない） | superpowers（修正の4回目から上位モデルの新しい実装役） |
+| pipeline 4.1.0 | notes に「書かないもの」— 秘密情報を伏せる・commit や SPEC にあることは参照だけ | handoff 系スキル |
+| pipeline 4.1.0 | pipeline-improve の適用ごとに、効果の確かめ方（次回の実績 or `claude plugin eval` の Δ）を記録 | 公式 skill-creator（変更前後を eval で比べる） |
+| feedback-rules 0.3.0 | 引数なしの `/feedback-rule` で、直近の会話から訂正を拾って候補にする（ルール化は1件ずつ確認） | 公式 hookify の `/hookify` |
+| learning-coach 0.1.5 | 手を動かして身につけたいときは本体の Learning 出力スタイルへ案内（機能は作らない） | 本体 `/output-style learning` |
+
+見送ったもの: self-correct の「Stop の block 回数の上限」は、既存の「同じ状態への block は1回だけ」と
+`max_attempts` で既に満たしていた。pipeline の並列ビルダーの worktree 隔離は、導入先にコピー済みのフック資材を
+作り直すことになり既存の利用者が壊れるため見送り。

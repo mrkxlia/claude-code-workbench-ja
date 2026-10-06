@@ -33,6 +33,7 @@ argument-hint: "[理解したい対象（この変更 | ファイル | 機能名
 | 成果物が完了条件を満たすか検証してほしい | `verify-fresh`（model-setup） |
 | Claude がリポジトリを読みやすくする足場 | 公式ドキュメント「Monorepos and large repos」。あれは「Claude 側の理解」用 |
 | 理解した内容を記録に残したい | 理解の確認が済んでから `notes`（pipeline） |
+| 自分の手でコードを書いて身につけたい | 本体の Learning 出力スタイル（`/output-style learning`）。要所に `TODO(human)` を残して自分で書かせる。このスキルは実装しない（下の「やらないこと」） |
 
 ## 中核ルール
 

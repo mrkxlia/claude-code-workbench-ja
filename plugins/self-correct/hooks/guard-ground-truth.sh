@@ -55,6 +55,8 @@ else
     | sed -n 's/.*"protected"[[:space:]]*:[[:space:]]*\[\([^]]*\)\].*/\1/p' \
     | grep -Eo '"[^"]+"' | tr -d '"' | tr '\n' ' ')
 fi
+# 機械検証の定義（Stop フックが PASS の裏取りに実行する）は、ループ中は常に変更禁止にする
+PROTECTED="$PROTECTED .claude/self-correct/checks.json"
 [ -n "${PROTECTED// /}" ] || exit 0
 
 # --- stdin から書き込み先パスを取り出す ---------------------------------------
