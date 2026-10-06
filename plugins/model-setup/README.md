@@ -25,7 +25,6 @@
 | [`settings.private.json`](settings.private.json) | 私用 PC 向け設定サンプル（`opusplan`） |
 | [`settings.company.json`](settings.company.json) | 会社 PC 向け設定サンプル（`sonnet`） |
 | `skills/verify-fresh/` | 成果物を fresh context の検証エージェントに完了条件と突き合わせさせ、反証させる |
-| `skills/pr-merge/` | コミット分割〜PR 作成〜CI 確認〜マージ〜後片付けまで（git/gh 専用） |
 | `agents/fresh-verifier.md` | 成果物と完了条件だけを受け取り「完了と認めない理由」を探す検証専用（修正不可・sonnet） |
 
 ## ルールと、それぞれが塞ぐ失敗モード
@@ -45,12 +44,11 @@
 [Fable 5.1](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5-1)
 ガイドにスニペットがあります。必要なものを**原文のまま** CLAUDE.md に貼ってください（翻訳は原文の更新に追随できない）。
 
-## 2つのスキル
+## スキル
 
 | スキル | 使いどころ |
 |---|---|
 | `/verify-fresh [完了条件のパス\|対象]` | 完了報告・マージ・引き渡しの前に、経緯を知らない fresh context に「完了と認めない理由」を探させる。コード以外の成果物にも使える（本体の `/verify` はアプリを動かす確認、`/code-review` はバグ探しで、完了条件との突き合わせはしない） |
-| `/pr-merge [PRタイトル案]` | コミット分割〜PR作成〜CI確認〜マージ〜後片付けまで（公式 `commit-commands` は PR 作成まで） |
 
 ## 導入手順
 
@@ -61,7 +59,7 @@ claude plugin marketplace add mrkxlia/claude-code-workbench-ja
 claude plugin install model-setup@workbench-ja
 ```
 
-スキル2種・サブエージェント1種が自動配信されます。CLAUDE.md テンプレートと追補は自動配信の対象外なので、
+スキル1種・サブエージェント1種が自動配信されます。CLAUDE.md テンプレートと追補は自動配信の対象外なので、
 リポジトリを clone してファイルで配置します:
 
 ```bash
@@ -72,7 +70,7 @@ cat plugins/model-setup/CLAUDE.md plugins/model-setup/CLAUDE.private.md >> ~/.cl
 ### B. ファイルコピーで入れる（会社 PC = git なし想定）
 
 ```bash
-cp -r plugins/model-setup/skills/verify-fresh ~/.claude/skills/   # pr-merge は git 専用なので省く
+cp -r plugins/model-setup/skills/verify-fresh ~/.claude/skills/
 mkdir -p ~/.claude/agents && cp plugins/model-setup/agents/fresh-verifier.md ~/.claude/agents/
 cat plugins/model-setup/CLAUDE.md plugins/model-setup/CLAUDE.company.md >> ~/.claude/CLAUDE.md
 # ~/.claude/settings.json に settings.company.json の内容を統合する

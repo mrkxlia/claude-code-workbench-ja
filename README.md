@@ -31,7 +31,7 @@ flowchart TD
 
 まだ守るべき既存の型が無いので、最初から良い型で始められます。
 
-1. **個人の運用ルールを先に整える**（Claude Code のユーザー設定に一度入れれば全プロジェクトで効く）— `model-setup` を導入（4ルール＋プロファイル別追補＋`verify-fresh`／`pr-merge`）。
+1. **個人の運用ルールを先に整える**（Claude Code のユーザー設定に一度入れれば全プロジェクトで効く）— `model-setup` を導入（4ルール＋プロファイル別追補＋`verify-fresh`）。
 2. **プロジェクトの土台を選ぶ**（対象リポジトリに導入。何を作るかで変わる）
    - `pipeline` の `pipeline-setup` を実行（コード/成果物のモード選択つき。エージェント・CLAUDE.md・フックを対象リポジトリに自動導入）
 3. 別 AI への相談・レビュー委譲（`cli-bridge`）、多視点レビュー（`agent-review-panel`）、自己修正ループ（`self-correct`）、指摘の永続化と段階的強制（`feedback-rules`）、外部技術の採用可否レビュー（`adoption-review`）、変更内容を自分が理解するための学習コーチ（`learning-coach`）は、上記と独立して**いつ追加してもよい**。
@@ -61,7 +61,7 @@ flowchart TD
 | 種別 | 動き方 | 呼び出し方 | 入れると何が嬉しいか | 代表例 |
 |---|---|---|---|---|
 | 🔁 フック（完全自動） | プラグイン導入直後から、SessionStart/SessionEnd/PreToolUse 等のイベントで**頼まなくても毎回発火**する | 不要（無効化しない限り常時ON） | 「言い忘れ」「やり忘れ」を構造的に防げる。導入するだけで効果が始まる | 機密コミット防止、担当外/出力先外書き込みガード、仕様更新漏れの通知（下表） |
-| 💬 スキル（自然文トリガー） | 自然文の依頼を Claude が判断し、**自動的に適切なスキルを選ぶ**（`/スキル名` での明示起動も可） | 「〜して」と頼む、または `/スキル名` | 手順や合言葉を覚えていなくても、思った通りに頼めば正しい型が起動する | `verify-fresh`・`pr-merge`・`feature-pipeline`・`task-pipeline`・`grilling`・`notes`・`codex-ask`・`deep-understand` など大半のスキル |
+| 💬 スキル（自然文トリガー） | 自然文の依頼を Claude が判断し、**自動的に適切なスキルを選ぶ**（`/スキル名` での明示起動も可） | 「〜して」と頼む、または `/スキル名` | 手順や合言葉を覚えていなくても、思った通りに頼めば正しい型が起動する | `verify-fresh`・`feature-pipeline`・`task-pipeline`・`grilling`・`notes`・`codex-ask`・`deep-understand` など大半のスキル |
 | 🎯 明示専用スキル | 自然文では発火せず、**`/スキル名` で名指ししたときだけ**動く（`disable-model-invocation: true`） | `/スキル名` のみ | 導入・較正など一度きり／影響の大きい操作を誤発動させない | `pipeline-setup`・`pipeline-improve` |
 
 ### 🔁 自動フック一覧（導入するだけで効果が始まるもの）
@@ -117,7 +117,7 @@ Claude Code でそのまま実行します（clone 不要）。現在9のプラ�
   否定寄りなら「確認できなかったことを減点に使っていないか」を自己点検）。確認できなかった
   ことは推測で埋めません。詳しくは [adoption-review/README.md](plugins/adoption-review/) を参照。
 - **model-setup**（旧名 sonnet-setup） — 導入すると `/verify-fresh`（fresh context の検証役に完了条件と
-  突き合わせさせる）・`/pr-merge`（PR作成〜CI確認〜マージ〜後片付け、git/gh 専用）が使えます。
+  突き合わせさせる）が使えます。
   公式ガイドに無い4ルールの CLAUDE.md テンプレート・プロファイル別追補（Opus+Sonnet / Sonnet 単独）・
   プロファイル設計メモ（MODEL-GUIDE.md）も同梱（テンプレートと追補はファイルコピーが必要）。
   詳しくは [model-setup/README.md](plugins/model-setup/) を参照。
@@ -165,7 +165,7 @@ mkdir -p ~/.claude/skills ~/.claude/agents && cp -r /tmp/workbench/plugins/adopt
 # model-setup — 運用ルール（共通4ルール＋プロファイル追補のどちらか一方）をグローバル CLAUDE.md に追記
 #   私用PC(Opus+Sonnet)は CLAUDE.private.md、会社PC(Sonnet単独)は CLAUDE.company.md
 cat /tmp/workbench/plugins/model-setup/CLAUDE.md /tmp/workbench/plugins/model-setup/CLAUDE.company.md >> ~/.claude/CLAUDE.md
-# スキル（pr-merge は git 専用のため必要な環境のみ）とサブエージェント
+# スキルとサブエージェント
 cp -r /tmp/workbench/plugins/model-setup/skills/verify-fresh ~/.claude/skills/
 mkdir -p ~/.claude/agents && cp -r /tmp/workbench/plugins/model-setup/agents/* ~/.claude/agents/
 
@@ -212,7 +212,7 @@ Claude に聞くのが一番早い方法です（導入済みスキルの説明�
 | 既存コード/成果物から仕様書を逆引きしたい | 外部ツール（[cc-rsg](https://github.com/daishir0/cc-rsg) 等） | 本リポジトリは持たず外部ツールへ委譲。生成後は pipeline の researcher が一次資料として読む |
 | Opus+Sonnet や Sonnet 単独の運用ルールを整えたい | **model-setup** | 公式ガイドに無い4ルール＋プロファイル別追補、fresh context 検証（`/verify-fresh`）。公式スニペットは原文で貼る |
 | 完了条件を満たすまで自律で回したい | 本体の `/goal` | 本リポジトリは持たない（旧 `long-run` は 2026-10-06 に削除） |
-| PR 作成から CI 確認・マージ・後片付けまで一気に | model-setup（`/pr-merge`） | git/gh 専用。CI が赤ならマージしない |
+| PR 作成から CI 確認・マージ・後片付けまで一気に | 頼むだけでよい（「CI を確認してからマージして」）。PR 作成は公式 `commit-commands`、CI の修正は本体の `/autofix-pr` | 本リポジトリは持たない（旧 `pr-merge` は 2026-10-06 に削除） |
 | 巨大なリポジトリで Claude が的外れなファイルを読む／CLAUDE.md が長すぎる | 公式ドキュメント [Monorepos and large repos](https://code.claude.com/docs/en/large-codebases)・本体の `/doctor` | 本リポジトリは持たない（旧 `codebase-onboard` は 2026-10-06 に削除） |
 | モデルを更新したので古い指示を整理したい | 本体の `/doctor prompt-audit`（横断の陳腐化・矛盾）と `/doctor`（常時ロードの削減） | どちらも提案だけで、承認前に変更しない |
 | 作る→検査→直す→再検査を人間が毎回指示せずに回したい | **self-correct**（`/self-correct`） | Builder と Judge を別コンテキスト・別ツール権限に分離。停止条件と Ground Truth まで設計する |
@@ -273,8 +273,8 @@ UI 試作では避けて軽量な TDD スキル（superpowers の `test-driven-d
 #### [`plugins/model-setup/`](plugins/model-setup/)
 モデル運用テンプレート（旧名 sonnet-setup。Opus+Sonnet の私用PC / Sonnet 単独の会社PC の2プロファイル）。
 公式プロンプトガイドに無い4つの行動ルール（完了条件の事前定義・同エラー2回まで・初見レビュー・確信度と3点報告）と、
-評価と実行の境界・Plan モード起点の自動ルーティングを加えるプロファイル別追補、**verify-fresh**（fresh context 検証）・
-**pr-merge**（git/gh 専用）の2スキルと fresh-verifier エージェント、プロファイル設計メモ（`MODEL-GUIDE.md`）を収録しています。
+評価と実行の境界・Plan モード起点の自動ルーティングを加えるプロファイル別追補、**verify-fresh**（fresh context 検証）スキルと
+fresh-verifier エージェント、プロファイル設計メモ（`MODEL-GUIDE.md`）を収録しています。
 公式ガイドのスニペットは翻訳せず原文で貼る方針です（2026-10-06 に翻訳部分と、本体機能・既存 OSS と重なる
 スキル4種を削除）。**プラグイン1コマンドで導入可能**（テンプレートと追補はファイルコピーが必要）。
 

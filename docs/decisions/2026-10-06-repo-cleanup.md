@@ -178,3 +178,10 @@ MIT、コミット `6fd9479`・2026-10-06 取得）に差し替えた。
   （公式の注意書きどおり、同じコマンドに再入して止まる）。呼ぶのは `Agent`（`subagent_type: "codex:codex-rescue"`）
 - `plan-review-codex.sh` の deny 理由も、`codex-ask` 経由で公式に read-only で渡す文面に直した
 - 前提が「`codex` CLI」から「公式プラグインの導入と `/codex:setup`」に変わる。未導入なら手順を案内して止まる
+
+## 第8段: model-setup の pr-merge を削除
+
+`pr-merge`（コミット分割 → PR 作成 → CI 確認 → マージ → main 更新 → 後片付け）は、公式に「マージまで」をする
+同等品は無いが、中身は `gh pr create`・`gh pr checks`・`gh pr merge`・`git pull` の手順書で、「CI を確認してから
+マージして」と頼めばほぼ同じことが起きる。PR 作成は公式 `commit-commands` の `/commit-push-pr`、CI の修正は本体の
+`/autofix-pr` がある。代替より明確に良い点を挙げられないので、ユーザーの判断で削除した（model-setup 4.1.0）。
