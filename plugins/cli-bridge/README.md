@@ -1,13 +1,13 @@
 # cli-bridge — 外部の AI コーディング CLI（Codex・Kiro）に相談・レビューを委譲する
 
 Claude Code から **OpenAI Codex** と **Kiro** に相談・レビューを依頼するためのスキル3種と
-サブエージェント3種です。**ユーザー自身は外部 CLI を直接操作しません**。Claude Code が
-各 CLI を**非対話・read-only** で Bash 越しに駆動し、生出力をサブエージェント内に隔離して
-要約だけを返します。
+サブエージェント2種です。**ユーザー自身は外部 CLI を直接操作しません**。Kiro は Claude Code が
+`kiro-cli` を**非対話・read-only** で Bash 越しに駆動し、Codex は**公式プラグインに実行を任せ**て、
+どちらも要約だけを返します。
 
 | スラッシュコマンド | 役割 | 権限 | 委譲先エージェント |
 |-------------------|------|------|-------------------|
-| `/codex-ask <相談内容>` | 設計相談・セカンドオピニオンを Codex に答えさせ要約（コードは書かない） | `--sandbox read-only` | `codex-advisor` |
+| `/codex-ask <相談内容>` | 設計相談・セカンドオピニオンを Codex に答えさせ要約（コードは書かない） | read-only（`--write` を付けない） | 公式の `codex:codex-rescue` |
 | `/kiro-review [スコープ]` | 差分/指定ファイルを Kiro にレビューさせ、重大度 P1–P4 で要約 | `--trust-tools=read` | `kiro-reviewer` |
 | `/kiro-ask <相談内容>` | 設計相談・セカンドオピニオンを Kiro に答えさせ要約（コードは書かない） | `--trust-tools=read` | `kiro-advisor` |
 
@@ -31,8 +31,10 @@ Claude Code プラグインとして配布されており、レビューと実�
 
 **このプラグインが担当するのは、公式に無い2つと Kiro 側です。**
 
-- `/codex-ask` — read-only の**自由質問**（公式は review / rescue / transfer の3系統で、
-  「コードを書かせずに相談だけする」入口を持たない）
+- `/codex-ask` — read-only の**相談の入口**。実行は公式の `codex:codex-rescue` に任せる（2.1.0 で独自の
+  `codex-advisor` を廃止）。公式の rescue は相談と明示しないと書き込みモードで起動するのが既定なので、
+  毎回「`--write` なし・`--fresh`・編集禁止の相談」として渡すことだけをこのスキルが受け持つ。
+  「codex-ask を使って」と名指しすれば動く
 - **プラン提示前の Codex レビュー**（`plan-review-codex.sh`）— 公式のゲートは Stop 時のレビューだけ
 - `/kiro-review`・`/kiro-ask` — Kiro 側には公式相当のプラグインが見つかっていない
 
@@ -85,8 +87,8 @@ Claude Code プラグインとして配布されており、レビューと実�
 
 ## 前提
 
-1. **CLI の導入** — 使う側だけでかまいません。Codex は `codex --version`、Kiro は
-   `kiro-cli --version` で確認します。Windows では Codex 自体が WSL を推奨/必要とする場合が
+1. **CLI・プラグインの導入** — 使う側だけでかまいません。Codex は公式プラグイン（上記
+   `/plugin install codex@openai-codex` → `/codex:setup`）、Kiro は `kiro-cli --version` で確認します。Windows では Codex 自体が WSL を推奨/必要とする場合が
    あります（環境依存）。
 2. **認証** — Codex は ChatGPT ログインまたは `OPENAI_API_KEY`。Kiro は Kiro へのログインまたは
    `KIRO_API_KEY` で、非対話（ヘッドレス）実行には Pro 以上のサブスクリプションが必要です
@@ -113,7 +115,6 @@ cli-bridge/
 │   ├── kiro-review/SKILL.md
 │   └── kiro-ask/SKILL.md
 ├── agents/
-│   ├── codex-advisor.md        # read-only
 │   ├── kiro-reviewer.md        # read-only
 │   └── kiro-advisor.md         # read-only
 └── hooks/
@@ -196,7 +197,7 @@ Claude は「先に `/codex-ask` でプランをレビューさせ、致命的�
 
 **フック自身は codex を呼びません。** 呼ぶとフックが数十秒ブロックし、Codex の出力を JSON に
 埋めるため `jq` とエスケープが要り、外部モデルの出力を無検証で文脈へ注入する経路もできます。
-実行は `codex-advisor`（`--sandbox read-only` 固定・未導入時は日本語で案内）に委譲します。
+実行は `/codex-ask` 経由で公式の `codex:codex-rescue`（read-only 指定・未導入時は導入手順を案内）に委譲します。
 
 ```json
 {"hooks":{"PreToolUse":[{"matcher":"ExitPlanMode",
@@ -222,7 +223,7 @@ Claude は「先に `/codex-ask` でプランをレビューさせ、致命的�
 
 | 症状 | 原因 | 対処 |
 |------|------|------|
-| 「codex CLI が見つかりません」 | 未導入 | Codex CLI をインストールし、`codex --version` を確認 |
+| `codex:codex-rescue` が見つからない／`/codex:setup` を求められる | 公式 Codex プラグインが未導入・未認証 | 上記の導入手順と `/codex:setup` を実行する |
 | 「kiro-cli が見つかりません」 | 未導入 | Kiro CLI をインストールし、`kiro-cli --version` を確認 |
 | 「未認証です」と案内される | 未ログイン / APIキー未設定 / サブスクリプション不足 | ChatGPT ログインか `OPENAI_API_KEY`、Kiro ログインか `KIRO_API_KEY`（ヘッドレスは Pro 以上） |
 | `--trust-tools` がエラーになる／ツール名が通らない | バージョン差でフラグ・ツール名が異なる | `kiro-cli chat --help` で確認し、エージェント本文のコマンド例を実環境に合わせる |

@@ -35,15 +35,15 @@ claude-code-workbench-ja/
 │   │   ├── CLAUDE.md                #     コピーして使う CLAUDE.md サンプル（コードモード）
 │   │   ├── CLAUDE.task.md           #     コピーして使う CLAUDE.md サンプル（成果物モード）
 │   │   ├── .claude-plugin/plugin.json
-│   │   ├── skills/                  #     7種（feature-pipeline / task-pipeline / pipeline-setup〔モード選択・references 分冊。spec-summary.md に SPEC 抽出規則〕/ pipeline-improve / clarify / notes / design-docs〔設計書5フェーズの章立て。references 分冊: templates / consistency〕）
+│   │   ├── skills/                  #     7種（feature-pipeline / task-pipeline / pipeline-setup〔モード選択・references 分冊。spec-summary.md に SPEC 抽出規則〕/ pipeline-improve / grilling〔mattpocock/skills から無改変で同梱・MIT〕/ notes / design-docs〔設計書5フェーズの章立て。references 分冊: templates / consistency〕）
 │   │   ├── agents/                  #     9種（共有4: researcher / requirements-writer / brief-writer / final-reviewer＋コード専用3: backend/frontend-builder / test-verifier＋成果物専用2: deliverable-builder / design-doc-checker）
 │   │   ├── hooks/                   #     6種（block-secrets-commit・guard-builder-writes・guard-deliverable-writes・guard-builder-paths・inject-spec-summary・spec-sync-reminder。導入先へコピーする資材＝非自動配線）
 │   │   └── setup/settings.json      #     コピー導入用テンプレート（setup がモードに応じて guard を絞る）
 │   ├── cli-bridge/                  #   外部 AI コーディング CLI（Codex・Kiro）への相談・レビュー委譲（read-only 専用。旧 codex-bridge ＋ 旧 kiro-bridge）
 │   │   ├── README.md
 │   │   ├── .claude-plugin/plugin.json
-│   │   ├── skills/                  #     3種（codex-ask / kiro-review / kiro-ask。レビュー・実装の委譲は公式 openai/codex-plugin-cc、AGENTS.md は @AGENTS.md import に任せる）
-│   │   ├── agents/                  #     3種（codex-advisor / kiro-reviewer / kiro-advisor。いずれも read-only）
+│   │   ├── skills/                  #     3種（codex-ask〔実行は公式 codex-plugin-cc の codex:codex-rescue に read-only で任せる入口〕/ kiro-review / kiro-ask。レビュー・実装の委譲は公式 openai/codex-plugin-cc、AGENTS.md は @AGENTS.md import に任せる）
+│   │   ├── agents/                  #     2種（kiro-reviewer / kiro-advisor。いずれも read-only）
 │   │   └── hooks/                   #     plan-review-codex.sh（プラン提示前レビュー・opt-in・手動配線。常時発火のフックは持たない）
 │   ├── agent-review-panel/          #   複数ペルソナの敵対的パネルレビュー（codex / kiro 混成 opt-in。反グループシンク機構7つ）
 │   │   ├── README.md
@@ -54,7 +54,7 @@ claude-code-workbench-ja/
 │   │   ├── README.md
 │   │   ├── .claude-plugin/plugin.json
 │   │   ├── skills/                  #     1種（adoption-review＋references/source-checklists.md〔対象種別ごとの確認項目・条件付き分冊〕）
-│   │   └── agents/                  #     2種（adoption-researcher〔証拠収集・並列・read-only〕/ adoption-challenger〔採用しない論拠だけを作る敵対役。肯定寄りのときだけ起動〕）
+│   │   └── agents/                  #     1種（adoption-challenger〔採用しない論拠だけを作る敵対役。肯定寄りのときだけ起動〕。証拠収集は本体の /deep-research workflow に任せる）
 │   ├── model-setup/                 #   モデル運用テンプレート（旧名 sonnet-setup。Opus+Sonnet / Sonnet 単独の2プロファイル、公式ガイドに無い4ルール＋追補＋スキル2種＋エージェント1種）
 │   │   ├── README.md
 │   │   ├── CLAUDE.md                #     コピペ用テンプレート本体（4つの行動ルール。公式スニペットは原文で貼る）
@@ -97,9 +97,9 @@ claude-code-workbench-ja/
     ├── lessons.md                   #   過去 PR から蒸留した「繰り返さない判断」（根拠の PR 番号つき）
     ├── skill-authoring.md           #   スキルの書き方（公式ガイド準拠。frontmatter 規約・分冊基準・監査結果）
     ├── evals/                       #   主要スキル7件の期待挙動シナリオ（Sonnet / Opus のパリティ実測用）
-    │   ├── README.md                #     走らせ方・baseline 比較・20クエリの trigger eval・結果記録表
+    │   ├── README.md                #     claude plugin eval での走らせ方・結果記録表
     │   ├── triggers.md              #     同一プラグイン内の衝突組の発火ケース（正本）
-    │   ├── gen-trigger-cases.py     #     triggers.md から claude plugin eval のケースを一時ディレクトリへ生成
+    │   ├── gen-eval-cases.py        #     シナリオと triggers.md から claude plugin eval のケースを一時ディレクトリへ生成
     │   └── {verify-fresh,review-panel,adoption-review,self-correct,feature-pipeline,feedback-rule,deep-understand}.md
     └── skills-guide/                #   おすすめSkillsガイド（優先度・業務タイプ別）
         └── README.md

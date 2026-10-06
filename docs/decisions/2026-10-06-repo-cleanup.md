@@ -123,3 +123,58 @@ Codex の fallback filenames が CLAUDE.md の `@import` を展開するか。�
   learning-coach へ移す案ではなく削除を選んだ（ユーザー判断）。必要になったら `git show 9094ace:plugins/codebase-setup/` から戻せる
 - marketplace に `renames: { "codebase-setup": null }` を入れ、導入済みの利用者には廃止が通知されるようにした
 - 決定記録 `2026-09-05-large-codebase-harness.md` は、理由を説明する対象のコードが無くなったため、残す基準に従い削除した
+
+## 第5段: pipeline の `clarify` を mattpocock/skills の `grilling` に置き換え
+
+ユーザーの判断で、独自の `clarify` を上流の `grilling`（[mattpocock/skills](https://github.com/mattpocock/skills)、
+MIT、コミット `6fd9479`・2026-10-06 取得）に差し替えた。
+
+- `clarify` 自身が「grill-me と ryonakae/dig を参考にした」と明記しており、中核（推奨回答つきの徹底質問・調べれば
+  分かることは聞かない）は上流と同じだった。上流のほうが利用者も保守も厚い
+- 上流は「設計ツリーのフロンティアをラウンドごとにまとめて聞き、事実は自分で（サブエージェントで）調べる」方式で、
+  一問ずつの clarify より往復が少ない。失ったのは clarify 独自の「答えられないときの3分岐」1点
+- `plugins/pipeline/skills/grilling/` に **SKILL.md を無改変で**置き、MIT の著作権表示として上流の LICENSE を同じ
+  ディレクトリに置いた。上流の `agents/openai.yaml`（Codex アプリ用の表示名）は Claude Code では使わないので持ち込まない。
+  更新は上流から再コピーする（手で直さない）
+- `grill-me` は `disable-model-invocation: true` で中身が「grilling を呼べ」の1行なので持ち込まない。pipeline の
+  Phase 2・3 は Skill ツールで `grilling` を直接呼ぶ
+- 上流の description は英語で「grill」という語に反応する。日本語の自然文（「穴がないように質問して詰めて」）で
+  単体発火するかは `triggers.md` のケースで測る。pipeline 内の呼び出しは明示なので発火に依存しない
+- pipeline 4.0.0（`/clarify` が消えるため破壊的変更）
+
+## 第6段: adoption-review の証拠集めを本体の `/deep-research` に任せる
+
+`adoption-researcher`（1スコープ1体・最大3体の並列 Web 調査）は、本体同梱の `/deep-research` workflow
+（並列調査・ソース同士の照合・主張ごとの投票・裏の取れない主張の除外）の再発明だったので廃止した
+（adoption-review 0.3.0）。残したのは判定部分 — 採用しない理由を先に探す・`adoption-challenger`・7択の結論と
+6択の採用判断・確認できなかったことを減点に使わない — で、これは `/deep-research`（引用つきレポートを返すだけで
+採否を判定しない）に無い。
+
+ユーザーの要件「adoption-review スキルを使ってと言ったときに動くこと」への対応:
+
+- `/deep-research` は「利用者が呼んだときだけ動く」。ただし**利用者が呼んだスキルの手順が Workflow を呼ぶよう
+  指示している場合は、それが workflow の許可にあたる**。そこで、`/adoption-review` を打つか「adoption-review を
+  使って」と名指ししたときは、確認を挟まず `Workflow`（`name: "deep-research"`）を起動するよう SKILL.md に書いた。
+  description にも「adoption-review を使って」を発火句として足した
+- 自然文で自動発火しただけのとき（利用者がスキルを名指ししていない）は、複数エージェントの費用がかかるので
+  起動前に1行で確認する
+- workflows が無効・WebSearch が無い・起動を断られたときは、メインが直接 Web を調べて続け、「照合なし」と明記する
+- 名指し起動の挙動は `docs/evals/adoption-review.md` の S-8 で測れる
+
+確認できなかったこと: 組み込みの `deep-research` を `Workflow` ツールで呼ぶときの `args` の形（問いの文字列で
+足りるはずだが、公式ドキュメントに明記が無い）。実機では未実行。
+
+## 第7段: codex-ask の実行を公式 codex-plugin-cc に任せる
+
+第6段（adoption-review）と同じ形にした。独自の `codex-advisor`（`codex exec --sandbox read-only` を自分で叩く
+中継役）は、公式 `openai/codex-plugin-cc` の `codex:codex-rescue` サブエージェント（Codex companion 経由の実行・
+スレッド管理つき）と重なるので廃止し、`codex-ask` スキルは**入口だけ**残した（cli-bridge 2.1.0）。
+
+- 残した理由は1点: 公式の `codex:codex-rescue` は、相談だと明示しないと**書き込みモード（`--write`）で起動する**のが
+  既定（`agents/codex-rescue.md`「Default to a write-capable Codex run by adding --write unless the user explicitly
+  asks for read-only behavior」、2026-10-06 取得）。`codex-ask` は毎回「`--write` なし・`--fresh`・編集禁止の相談」
+  として渡すことで、相談を安全側に固定する
+- 「codex-ask を使って」と名指しすれば発火するよう description に足した。`Skill(codex:rescue)` は呼ばない
+  （公式の注意書きどおり、同じコマンドに再入して止まる）。呼ぶのは `Agent`（`subagent_type: "codex:codex-rescue"`）
+- `plan-review-codex.sh` の deny 理由も、`codex-ask` 経由で公式に read-only で渡す文面に直した
+- 前提が「`codex` CLI」から「公式プラグインの導入と `/codex:setup`」に変わる。未導入なら手順を案内して止まる

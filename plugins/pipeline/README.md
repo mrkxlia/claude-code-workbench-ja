@@ -25,7 +25,7 @@ Claude Code のサブエージェント・スキル・フックを組み合わ�
 
 > **旧 software-pipeline / task-pipeline からの移行**: 本プラグインは旧 software-pipeline 3.x と
 > 旧 task-pipeline 2.x を1つに統合した後継です（pipeline 1.0.0）。スキル名
-> （`/feature-pipeline`・`/task-pipeline`・`/clarify`・`/notes` 等)と
+> （`/feature-pipeline`・`/task-pipeline`・`/grilling`・`/notes` 等)と
 > 中間成果物のパス（`docs/pipeline/`・`docs/task-pipeline/`）は変わらないため、導入済み
 > プロジェクトの資産・`再開 <slug>` はそのまま使えます。プラグインとして入れ直す場合は
 > `/plugin install pipeline@workbench-ja`（旧2プラグインはアンインストール）。
@@ -190,7 +190,7 @@ flowchart TD
 | `/feature-pipeline <機能の説明>` | 機能を end-to-end で開発する（7エージェント連鎖 + 3チェックポイント） |
 | `/task-pipeline <依頼の説明>` | コード以外の成果物を作る（5エージェント連鎖 + 3チェックポイント。詳細は成果物モード節） |
 | `/design-docs <フェーズ> <対象>` | 設計書（要件定義/基本設計/詳細設計/DB設計/図表）を章立てを固定して書く。単発でも task-pipeline に乗せても使える |
-| `/clarify <詰めたい要件>` | 要件・仕様を一問ずつ徹底質問で詰める（パイプライン内では Phase 2/3 の writer 起動前に自動で回る） |
+| `/grilling <詰めたい要件>` | 要件・仕様を徹底質問で詰める（mattpocock/skills の `grilling` をそのまま同梱。パイプライン内では Phase 2/3 の writer 起動前に自動で回る） |
 | `/notes` | 実装ノートを手動で開始・更新する（パイプライン内ではビルダーが自動記録） |
 | `/pipeline-improve [期間や slug]` | 運用実績から失敗シグナルを検出し、エージェント定義・スキル・CLAUDE.md の改善案を提案・適用する（自己改善ループ） |
 | `/pipeline-setup` | パイプライン一式を対象リポジトリへ自動導入する（コード/成果物のモード選択つき） |
@@ -302,7 +302,7 @@ pipeline/
 │   ├── design-docs/                         # 設計書の章立てを固定する（5フェーズ）
 │   │   ├── SKILL.md
 │   │   └── references/                      #   templates.md（フェーズ別章立て）/ consistency.md（整合）
-│   ├── clarify/SKILL.md                     # 要件・仕様を一問ずつ詰める徹底質問スキル（dig/grill 由来）
+│   ├── grilling/{SKILL.md,LICENSE}          # 徹底質問スキル（mattpocock/skills の grilling を無改変で同梱・MIT）
 │   ├── notes/SKILL.md                       # 実装ノート（モード自動判定）
 │   ├── pipeline-improve/SKILL.md            # 自己改善ループ（失敗シグナル検出 → 定義の改善提案）
 │   └── pipeline-setup/                      # 一式を対象リポジトリへ自動導入（モード選択つき）
@@ -407,7 +407,7 @@ cp <このリポジトリ>/plugins/pipeline/agents/*.md .claude/agents/
 ```bash
 mkdir -p .claude/skills
 cp -r <このリポジトリ>/plugins/pipeline/skills/feature-pipeline .claude/skills/
-cp -r <このリポジトリ>/plugins/pipeline/skills/clarify .claude/skills/
+cp -r <このリポジトリ>/plugins/pipeline/skills/grilling .claude/skills/
 cp -r <このリポジトリ>/plugins/pipeline/skills/notes .claude/skills/
 cp -r <このリポジトリ>/plugins/pipeline/skills/pipeline-improve .claude/skills/
 ```
@@ -473,21 +473,19 @@ git init
 
 </details>
 
-## 個別スキルを単体で使う（clarify など）
+## 個別スキルを単体で使う（notes など）
 
-パイプライン全体を導入しなくても、**汎用スキルだけを単体で使う**ことができます。とくに
-`clarify`（要件・仕様を質問で詰める）はパイプラインに依存せず単体で使えます。**パーソナルスキル**
-（`~/.claude/skills/`）に入れると、どのリポジトリでも `/clarify` が使えます。パイプラインを通すほどでは
+パイプライン全体を導入しなくても、**汎用スキルだけを単体で使う**ことができます。要件を質問で詰めるだけなら、パイプラインに同梱した `grilling` の上流
+[mattpocock/skills](https://github.com/mattpocock/skills)（`/plugin install mattpocock-skills@mattpocock`）を直接入れてください。パイプラインを通すほどでは
 ない小さな実装は、superpowers の `test-driven-development` か mattpocock の `tdd` を使ってください
 （2026-10-06 に `build-with-tests` を削除。テストを先に失敗させる手順が無く、代替より弱かったため）。
 
 ```bash
 git clone --depth 1 https://github.com/mrkxlia/claude-code-workbench-ja /tmp/workbench
 mkdir -p ~/.claude/skills
-cp -r /tmp/workbench/plugins/pipeline/skills/clarify ~/.claude/skills/
+cp -r /tmp/workbench/plugins/pipeline/skills/notes ~/.claude/skills/
 ```
 
-- `clarify` … パイプライン非依存。単体で使える。
 - `pipeline-improve` … パイプラインの運用ログ（`docs/pipeline/`）を前提にするため、単体利用には向かない。
 - `notes` … パイプライン非依存。単体でそのままコピーして使える。仕様逆引きが必要な場合は
   [daishir0/cc-rsg](https://github.com/daishir0/cc-rsg) 等の外部ツールを使う。
@@ -653,7 +651,7 @@ Nicholas Carlini による「16体並列で C コンパイラを書く」実験�
 **どちらが良いというより最適化軸が違います。** 本テンプレートは「設計ミスを1ファイルも変更する前に
 人間が捕まえる」ことを重視して逐次＋チェックポイントを背骨にしつつ、並列ループの良い所
 ——**「独立な所だけ並列化する」「テストのカバレッジを能動的に埋める」「要件・仕様を一問ずつ詰める」**——
-を opt-in で取り込んでいます（並列実行グループ・テストギャップ分析・`clarify` スキル）。
+を opt-in で取り込んでいます（並列実行グループ・テストギャップ分析・徹底質問スキル）。
 
 なお、**厳格な TDD 役割分離**（テスト担当は仕様のみ・実装担当はテストのみを見る「知らないふり」）や
 **完全自走ループ**（人間を待たない）は、本テンプレートのチェックポイント哲学と一部対立するため
@@ -690,7 +688,7 @@ Nicholas Carlini による「16体並列で C コンパイラを書く」実験�
 - [Claude Code のスキルが毎日勝手に改善されていく仕組みを作った（SonicGarden）](https://zenn.dev/sonicgarden/articles/claude-code-self-improving-loop) — `/pipeline-improve` の着想元
 - [hiroro-work/claude-plugins](https://github.com/hiroro-work/claude-plugins) — マーケットプレイス構成と dev-workflow スキル（ルール更新・自己回顧）の参考実装
 - [並列ループエージェント実践ハンズオンガイド（kumai_yu / Qiita）](https://qiita.com/kumai_yu/items/54ded70a5a68a5ca15d5) — 並列実行グループ・比較コラムの着想元
-- [dig（ryonakae/dotfiles）](https://github.com/ryonakae/dotfiles/tree/master/config/.agents/skills/dig) と [grill-me / grilling（mattpocock/skills）](https://github.com/mattpocock/skills) — `clarify` スキル（一問ずつの徹底質問）の参考元
+- [grilling（mattpocock/skills、MIT）](https://github.com/mattpocock/skills/tree/main/skills/productivity/grilling) — `skills/grilling/` に無改変で同梱（上流コミット `6fd9479`・2026-10-06 取得。旧 `clarify` を置き換え）
 
 </details>
 
@@ -698,10 +696,10 @@ Nicholas Carlini による「16体並列で C コンパイラを書く」実験�
 
 ## スキル名の棚卸し（後方互換維持）
 
-`clarify` / `notes` は**モード自動判定の統合版**です。連携セクションが
+`notes` は**モード自動判定の統合版**です。連携セクションが
 「成果物がプログラムかそれ以外か」（進行中の `docs/pipeline/` / `docs/task-pipeline/`、無ければ
 成果物の種類）で**コードモード / 成果物モードを自動判定**します。
-プロジェクトへ直接コピーした場合は短い名（`/clarify` 等）で呼べます。
+プロジェクトへ直接コピーした場合は短い名（`/notes` 等）で呼べます。
 
 > 補足: 旧 software-pipeline / task-pipeline 時代は両プラグインが同名スキルを持ち、
 > 名前空間 prefix が失われる既知バグ
@@ -719,7 +717,7 @@ Nicholas Carlini による「16体並列で C コンパイラを書く」実験�
 | `task-pipeline` | 維持 | 固有名・`docs/task-pipeline/` と結合 |
 | `pipeline-setup` | 維持（旧 task-pipeline-setup を統合） | 固有名（パーソナルスキル） |
 | `pipeline-improve` | 維持 | 固有名 |
-| `clarify` | モード自動判定の統合版 | 両モードに対応 |
+| `grilling` | 上流（mattpocock/skills）を無改変で同梱 | 2026-10-06 に `clarify` から置き換え。更新は上流から再コピーする |
 | `notes` | モード自動判定の統合版 | 両モードに対応（feature-pipeline / task-pipeline 共通） |
 
 `/pipeline:task-pipeline` のようにプラグイン名とスキル名が別語になるケースも、実害が

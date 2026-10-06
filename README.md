@@ -61,7 +61,7 @@ flowchart TD
 | 種別 | 動き方 | 呼び出し方 | 入れると何が嬉しいか | 代表例 |
 |---|---|---|---|---|
 | 🔁 フック（完全自動） | プラグイン導入直後から、SessionStart/SessionEnd/PreToolUse 等のイベントで**頼まなくても毎回発火**する | 不要（無効化しない限り常時ON） | 「言い忘れ」「やり忘れ」を構造的に防げる。導入するだけで効果が始まる | 機密コミット防止、担当外/出力先外書き込みガード、仕様更新漏れの通知（下表） |
-| 💬 スキル（自然文トリガー） | 自然文の依頼を Claude が判断し、**自動的に適切なスキルを選ぶ**（`/スキル名` での明示起動も可） | 「〜して」と頼む、または `/スキル名` | 手順や合言葉を覚えていなくても、思った通りに頼めば正しい型が起動する | `verify-fresh`・`pr-merge`・`feature-pipeline`・`task-pipeline`・`clarify`・`notes`・`codex-ask`・`deep-understand` など大半のスキル |
+| 💬 スキル（自然文トリガー） | 自然文の依頼を Claude が判断し、**自動的に適切なスキルを選ぶ**（`/スキル名` での明示起動も可） | 「〜して」と頼む、または `/スキル名` | 手順や合言葉を覚えていなくても、思った通りに頼めば正しい型が起動する | `verify-fresh`・`pr-merge`・`feature-pipeline`・`task-pipeline`・`grilling`・`notes`・`codex-ask`・`deep-understand` など大半のスキル |
 | 🎯 明示専用スキル | 自然文では発火せず、**`/スキル名` で名指ししたときだけ**動く（`disable-model-invocation: true`） | `/スキル名` のみ | 導入・較正など一度きり／影響の大きい操作を誤発動させない | `pipeline-setup`・`pipeline-improve` |
 
 ### 🔁 自動フック一覧（導入するだけで効果が始まるもの）
@@ -112,7 +112,7 @@ Claude Code でそのまま実行します（clone 不要）。現在9のプラ�
   論文・SaaS・ツール名を渡すと、Web の一次情報を集めてから「実務で採用する価値があるか」を敵対的に
   判定）が使えます。**良い点より先に「採用しない理由」を探し**、代替手段（既存 OSS・本体機能・
   何もしない）と導入/運用/学習/撤退コストまで見たうえで、結論・採用判断・検証手順・スコアを返します。
-  証拠収集は `adoption-researcher` に**1スコープ1体（最大3体）**で並列委譲し、結論の向きで
+  証拠収集は本体同梱の `/deep-research` workflow（並列調査・照合・主張ごとの投票）に任せ、結論の向きで
   検証を分岐します（肯定寄りなら `adoption-challenger` に「採用しない論拠」だけを作らせ、
   否定寄りなら「確認できなかったことを減点に使っていないか」を自己点検）。確認できなかった
   ことは推測で埋めません。詳しくは [adoption-review/README.md](plugins/adoption-review/) を参照。
@@ -156,7 +156,7 @@ git clone --depth 1 https://github.com/mrkxlia/claude-code-workbench-ja /tmp/wor
 # pipeline — pipeline-setup をパーソナルスキル化（以後どのリポジトリでも /pipeline-setup が使える）
 mkdir -p ~/.claude/skills && cp -r /tmp/workbench/plugins/pipeline/skills/pipeline-setup ~/.claude/skills/
 
-# cli-bridge — 外部 CLI 委譲スキル4種＋エージェント3種をプロジェクトへ
+# cli-bridge — 外部 CLI 委譲スキル3種＋エージェント2種をプロジェクトへ
 mkdir -p .claude/skills .claude/agents && cp -r /tmp/workbench/plugins/cli-bridge/skills/* .claude/skills/ && cp -r /tmp/workbench/plugins/cli-bridge/agents/* .claude/agents/
 
 # adoption-review — 採用可否レビューのスキル1種＋エージェント2種（どのリポジトリでも使うならグローバルへ）
@@ -207,7 +207,7 @@ Claude に聞くのが一番早い方法です（導入済みスキルの説明�
 | 別 AI（Codex / Kiro）に**相談**したい | **cli-bridge**（`/codex-ask`・`/kiro-ask`・`/kiro-review`） | Claude が各 CLI を非対話・read-only で駆動。ユーザーは外部 CLI を触らない |
 | 重要な判断を複数の視点で敵対的にレビュー・討論させたい | **agent-review-panel**（`/review-panel`） | 既定3名がブラインド並列→相互批判→統合。deep で引用検証＋裁定者、codex・kiro で異種モデル混成（同時指定も可） |
 | 流れてきたツール・OSS・論文・X ポストを採用すべきか判断したい | **adoption-review**（`/adoption-review`） | Web の一次情報を集め、良い点より先に採用しない理由を探す。話題性・スター数は採用理由にしない |
-| 要件・仕様を質問で詰めたい | **clarify**（pipeline に同梱） | 単体利用も可（各プラグイン README の「単体利用」参照） |
+| 要件・仕様を質問で詰めたい | [mattpocock/skills](https://github.com/mattpocock/skills) の `grilling`（pipeline にも無改変で同梱） | 単体で使うなら上流を入れる |
 | 実装中の判断・逸脱を記録したい | **notes**（pipeline に同梱） | 単体利用も可。物証（file:line・テスト名）つきで記録 |
 | 既存コード/成果物から仕様書を逆引きしたい | 外部ツール（[cc-rsg](https://github.com/daishir0/cc-rsg) 等） | 本リポジトリは持たず外部ツールへ委譲。生成後は pipeline の researcher が一次資料として読む |
 | Opus+Sonnet や Sonnet 単独の運用ルールを整えたい | **model-setup** | 公式ガイドに無い4ルール＋プロファイル別追補、fresh context 検証（`/verify-fresh`）。公式スニペットは原文で貼る |
@@ -221,7 +221,7 @@ Claude に聞くのが一番早い方法です（導入済みスキルの説明�
 | レビュー役（Judge）自体が信用できるか確かめたい | self-correct（`/judge-eval`） | 正解つきサンプルで見逃し・過検出・重大度誤り・根拠欠落を採点。本番投入前の必須項目 |
 | Claude に書かせた変更を、自分でも説明できるようになりたい | **learning-coach**（`/deep-understand`） | 教師役が3層チェックリストで段階指導。先に自分の理解を述べさせ、クイズで実証するまで次へ進まない |
 
-> パイプラインのサブスキル（`clarify`・`notes`）は単体でも使えます。導入は各プラグイン README の
+> パイプラインのサブスキル（`notes`）は単体でも使えます。導入は各プラグイン README の
 > 「単体で使う（個別利用）」小節を参照してください。
 
 ### 仕様駆動開発まわりの違い
@@ -232,7 +232,7 @@ Claude に聞くのが一番早い方法です（導入済みスキルの説明�
 |--------|------|-------------|----------------|
 | `feature-pipeline` / `brief-writer`（pipeline） | **順方向** | アイデア/ストーリー → 技術ブリーフ → コード | これから作る機能を仕様化して実装まで通す |
 | `task-pipeline`（成果物モード） | 順方向（成果物） | 依頼 → 成果物要件 → 作業ブリーフ → 成果物 | 図/ドキュメント版。コード前提語を成果物前提に読み替えた点がコードモードとの違い |
-| `clarify`（pipeline） | 詰める | 曖昧な要望 → 確定した要件 | 仕様を書く前に穴・前提を質問で潰す。brief-writer の前段。モード自動判定の統合版 |
+| `grilling`（pipeline に同梱・上流は mattpocock/skills） | 詰める | 曖昧な要望 → 確定した要件 | 仕様を書く前に穴・前提を質問で潰す。brief-writer の前段 |
 | `notes`（pipeline） | 記録 | 実装中の判断・逸脱 → `implementation-notes.md` | あるべき姿（SPEC.md）ではなく**実装の経緯**を残す |
 | 仕様逆引き（外部ツール） | **逆方向** | 既存コード・成果物 → `SPEC.md`（確度ラベル付） | 本リポジトリは持たない。cc-rsg 等を使い、生成後は researcher が一次資料として読む |
 
@@ -284,9 +284,9 @@ UI 試作では避けて軽量な TDD スキル（superpowers の `test-driven-d
 
 #### [`plugins/cli-bridge/`](plugins/cli-bridge/)
 外部の AI コーディング CLI（**OpenAI Codex**・**Kiro**）に相談・レビューを委譲するスキル3種と
-サブエージェント3種。ユーザー自身は外部 CLI を操作せず、Claude Code が**非対話・read-only**で
-駆動し、冗長な生出力をサブエージェント内に隔離して要約だけを返します。`/codex-ask`（設計相談・
-セカンドオピニオンを Codex に答えさせ要約）、`/kiro-review`（差分/指定ファイルを Kiro にレビュー
+サブエージェント2種。ユーザー自身は外部 CLI を操作せず、Kiro は Claude Code が**非対話・read-only**で
+駆動し、Codex は公式プラグインに実行を任せて、要約だけを返します。`/codex-ask`（設計相談を、公式
+codex-plugin-cc の `codex:codex-rescue` に read-only 指定で答えさせ要約）、`/kiro-review`（差分/指定ファイルを Kiro にレビュー
 させ重大度 P1–P4 で要約）、`/kiro-ask`（同じく相談）を収録。さらに **プラン提示前に Codex レビューを挟む opt-in フック**を
 同梱します（AGENTS.md の生成は 2026-10-06 に削除。正本を AGENTS.md にして CLAUDE.md から `@AGENTS.md` で読む）。
 
@@ -317,10 +317,10 @@ kiro-cli には Codex の `--sandbox workspace-write` に相当する OS レベ�
 
 #### [`plugins/adoption-review/`](plugins/adoption-review/)
 外部の技術（OSS・AI ツール・SaaS・開発手法・論文・スライド・X ポスト・記事）を **Web の一次情報から
-敵対的にレビュー**し、「実務で採用する価値があるか」だけを判定するスキル1種とサブエージェント2種。
+敵対的にレビュー**し、「実務で採用する価値があるか」だけを判定するスキル1種とサブエージェント1種。
 **adoption-review**（`/adoption-review [対象]`）が、対象の種別を判定して想定用途を固定し、
-`adoption-researcher`（read-only・Web 検索）を一次情報／運用情報（Releases・License・Pricing・
-Security）／**外部評価**（Hacker News・Reddit・実運用事例）の3スコープへ**1スコープ1体で並列委譲**、
+本体の `/deep-research` workflow に一次情報／運用情報（Releases・License・Pricing・
+Security）／**外部評価**（Hacker News・Reddit・実運用事例）の裏取りを任せ（`/adoption-review` か名指しで頼めば確認なしで起動）、
 集めた事実を「明示的な主張／暗黙の主張／確認できた効果／証拠が弱い効果」に分けたうえで批判します。
 評価の順序が逆（良い点より先に**採用しない理由**を探す）で、**話題性・スター数・フォロワー数・
 紹介者・肩書きは採用理由にしません**。代替手段（既存 OSS・ツール本体の機能・小さい自作スクリプト・

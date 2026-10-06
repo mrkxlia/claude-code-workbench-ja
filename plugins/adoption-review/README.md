@@ -28,16 +28,24 @@
 
 | スキル | 呼び出し | 何をするか |
 |---|---|---|
-| **adoption-review** | `/adoption-review [対象]` ／自然文（「これ実務で使える？」「辛口で評価して」） | 種別判定 → 証拠収集（並列）→ 主張の分解 → 敵対的批判 → 代替手段 → コスト → 出力 |
+| **adoption-review** | `/adoption-review [対象]` ／自然文（「これ実務で使える？」「辛口で評価して」） | 種別判定 → 証拠収集（本体の `/deep-research`）→ 主張の分解 → 敵対的批判 → 代替手段 → コスト → 出力 |
 
-### サブエージェント2種
+### サブエージェント1種
 
 | エージェント | tools | 役割 |
 |---|---|---|
-| **adoption-researcher** | Read, Grep, Glob, WebSearch, WebFetch | 割り当てられた1スコープだけを調べ、**事実と出典 URL だけ**を返す（評価しない）。1スコープ1体・最大3体で並列起動 |
 | **adoption-challenger** | Read, Grep, Glob, WebFetch | 証拠だけを受け取り「**採用しない論拠**」だけを構築する敵対役。**結論が肯定寄りのときだけ**起動（1回のみ）。`WebFetch` は渡した出典の再取得＝引用の実在確認にのみ使う |
 
 フックはありません（導入しても勝手には発火しません）。
+
+**証拠集めは本体の `/deep-research` workflow に任せます**（0.3.0 で独自の `adoption-researcher` を廃止）。
+並列の Web 調査・ソース同士の照合・主張ごとの投票・裏の取れない主張の除外を本体がやるので、このスキルは
+「採用しない理由を先に探す・敵対役・結論の型」という判定部分だけを持ちます。
+
+- `/adoption-review` を打つか「adoption-review を使って」と名指しすれば、確認なしで `/deep-research` を起動します
+  （スキルの手順による起動なので、workflow の許可にあたります。権限モードによっては本体の承認ダイアログが出ます）
+- 自然文（「これ実務で使える？」）で自動発火しただけのときは、起動前に1行で確認します
+- workflows が無効・WebSearch が無いなどで使えないときは、メインが直接 Web を調べて続けます（照合なしと明記）
 
 ## 導入
 
@@ -113,7 +121,6 @@ adoption-review/
 │       └── references/
 │           └── source-checklists.md      # 対象種別ごとの確認項目（該当ブロックだけ読む）
 └── agents/
-    ├── adoption-researcher.md            # 証拠収集（read-only・Web 検索・並列）
     └── adoption-challenger.md            # 敵対役（肯定寄りのときだけ起動）
 ```
 

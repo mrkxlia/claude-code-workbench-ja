@@ -9,7 +9,7 @@ description: >-
   コードは書き換えない。
 tools: Read, Grep, Glob, Bash
 # 考えるのは Kiro 側で、こちらは依頼の組み立てと結果の要約を中継する範囲の決まった仕事。
-# panel-codex / codex-advisor と同じく Sonnet 5.5・medium。
+# panel-codex と同じく Sonnet 5.5・medium。
 # 根拠: docs/decisions/2026-10-02-sonnet-5-5-model-effort-review.md
 model: sonnet
 effort: medium
