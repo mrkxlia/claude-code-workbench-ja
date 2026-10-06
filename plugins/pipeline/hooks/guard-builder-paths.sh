@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # guard-builder-paths.sh — ビルダーが担当外フォルダへ書き込むのを止める PreToolUse フック
 #
-# 「backend-builder はバックエンドのフォルダだけ」という担当範囲は、これまでエージェント定義の
+# 「deliverable-builder は出力ディレクトリだけ」という担当範囲は、これまでエージェント定義の
 # プロンプトによる約束でしかなかった（README の「発展課題」）。このフックはそれを機械的に強制する。
 # 各ビルダーの frontmatter に宣言され、**そのサブエージェントが動いている間だけ**有効になる。
 #
-# 既存の guard-builder-writes.sh との違い:
-#   guard-builder-writes … 並列実行中の「共有ファイル衝突」を ask で確認する（全員に適用）
-#   guard-builder-paths  … 「担当グループの外」への書き込みを exit 2 で拒否する（ビルダー個別）
+# guard-deliverable-writes.sh との違い:
+#   guard-deliverable-writes … 出力ディレクトリ外への書き込みを ask で確認する（メインセッションにも適用）
+#   guard-builder-paths      … 「担当範囲の外」への書き込みを exit 2 で拒否する（ビルダー個別）
 # 前者はメインセッションの正当な書き込みも通す必要があるので ask、後者はサブエージェント内でしか
 # 動かないため確実に止めてよい。
 #
@@ -96,7 +96,7 @@ fi
   echo ""
   echo "このエージェントが書き込めるのは次の範囲だけです: $ALLOWED_PREFIXES"
   echo "（\`!\` 始まりは除外指定です）"
-  echo "（実装ノート docs/pipeline/<slug>/implementation-notes.md は常に書けます）"
+  echo "（実装ノート docs/task-pipeline/<slug>/implementation-notes.md は常に書けます）"
   echo ""
   echo "対処方法:"
   echo "  1. 担当外のファイルが必要なら、実装せずに実装ノートへ「必要な変更」として記録し、"

@@ -4,4 +4,4 @@
 
 | ディレクトリ | 概要 |
 |---|---|
-| [`progress/`](progress/) | pipeline・self-correct が残す状態ファイルを読み、進み具合を statusline と HTML 1枚に出す（LLM を使わない・Python 3 標準ライブラリのみ） |
+| [`progress/`](progress/) | pipeline（task-pipeline）が残す状態ファイルを読み、進み具合を statusline と HTML 1枚に出す（LLM を使わない・Python 3 標準ライブラリのみ） |

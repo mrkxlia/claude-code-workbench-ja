@@ -1,226 +1,10 @@
-# pipeline — 専門エージェントの連鎖で作る「パイプライン」テンプレート（コード / 成果物 両対応）
+# pipeline — コード以外の成果物を、専門エージェントの連鎖で作るパイプライン
 
-Claude Code のサブエージェント・スキル・フックを組み合わせて、作業を承認ゲート付きの
-流れ作業に変えるテンプレートです。2つの入口スキルを持ちます:
-
-- **`/feature-pipeline <機能の説明>`（コードモード）** — 機能開発を
-  **調査 → ストーリー → 技術ブリーフ → バックエンド → フロントエンド → 受け入れテスト → 最終検証**
-  の7工程に流す
-- **`/task-pipeline <依頼の説明>`（成果物モード）** — drawio 図・ドキュメント・レポートなど
-  コード以外の成果物を **調査 → 要件 → ブリーフ → 作成 → レビュー** の5工程に流す
-
-人間が判断するのはどちらも3つの承認チェックポイントだけで、その間の工程は専門エージェント
-（共有4種 + コード専用3種 + 成果物専用1種の計8種）が自走します。
-
-> 本セクションは @sairahul1 氏の記事
-> [How to Build a Software Factory with Claude Code That Ships Features While You Sleep](https://x.com/sairahul1/status/2058832033628241931)
-> のコンセプトに基づく独自実装です（記事のコピーではありません）。
-
-**30秒でわかる pipeline:**
-`/feature-pipeline <機能の説明>` と打つと、7つの専門エージェントが順番に起動し、
-調査レポート → ユーザーストーリー → 技術ブリーフ → 実装 → テスト → 最終検証まで自走します。
-あなたの仕事は途中3回の「承認」だけ。途中経過はすべて `docs/pipeline/<機能名>/` にファイルとして
-残るので、セッションが切れても続きから再開できます。コード以外の成果物は `/task-pipeline` で
-同じ型（中間成果物は `docs/task-pipeline/<slug>/`）に流せます。
-
-> **旧 software-pipeline / task-pipeline からの移行**: 本プラグインは旧 software-pipeline 3.x と
-> 旧 task-pipeline 2.x を1つに統合した後継です（pipeline 1.0.0）。スキル名
-> （`/feature-pipeline`・`/task-pipeline`・`/grilling`・`/notes` 等)と
-> 中間成果物のパス（`docs/pipeline/`・`docs/task-pipeline/`）は変わらないため、導入済み
-> プロジェクトの資産・`再開 <slug>` はそのまま使えます。プラグインとして入れ直す場合は
-> `/plugin install pipeline@workbench-ja`（旧2プラグインはアンインストール）。
-> 旧 `/task-pipeline-setup` は `/pipeline-setup` のモード選択（成果物モード）に統合されました。
-> **2.0.0での変更**: `spec-extract` スキルを削除しました。レガシーコードからの仕様逆引きは
-> [daishir0/cc-rsg](https://github.com/daishir0/cc-rsg) 等の外部ツールへ委譲します
-> （下記「実装ノートと仕様逆引き」参照）。
-
-本 README は主にコードモード（feature-pipeline）を軸に説明します。成果物モード固有の内容は
-「[成果物モード（task-pipeline）](#成果物モードtask-pipeline--コード以外の成果物)」節にまとめています。
-
----
-
-## なぜ「パイプライン」にするのか — 問題解決への影響
-
-1つのセッションに「この機能を作って」と頼むと、そのセッションはアナリスト・アーキテクト・
-バックエンド・フロントエンド・テスター・レビュアーの全役割を、**同じ散らかった1本の会話**の中で
-兼任することになります。序盤の間違った仮定がコンテキストに残り続け、増幅されていく。
-これが「作っては壊れ、直してはまた壊れ」の正体です。
-
-```mermaid
-flowchart LR
-    subgraph single["❌ 従来: 1セッションに全役割を兼任させる"]
-        direction TB
-        s1["序盤の間違った仮定が<br/>コンテキストに残り続ける"] --> s2["間違ったDB設計"]
-        s2 --> s3["間違ったAPI"]
-        s3 --> s4["間違ったUI"]
-        s4 --> s5["💥 10ファイル書き換えた後に発覚<br/>「作っては壊れ、直してはまた壊れ」"]
-    end
-    subgraph pipeline["✅ パイプライン: 役割分離 + 早期チェックポイント"]
-        direction TB
-        f1["調査 → ストーリー → ブリーフ<br/>（読み取り専用エージェント。<br/>コードを物理的に壊せない）"] --> f2{"🛑 人間がブリーフを承認"}
-        f2 -->|"設計ミスはここで捕まる。<br/>まだ1ファイルも変更されていない"| f3["実装<br/>（各ビルダーは担当フォルダにしか<br/>書き込めない）"]
-        f3 --> f4["受け入れテスト + 最終検証<br/>（作った本人以外が検査）"]
-        f4 --> f5["✅ 完成"]
-    end
-    single ~~~ pipeline
-    style s5 fill:#ffd6d6,stroke:#cc0000
-    style f2 fill:#fff3c4,stroke:#b8860b
-    style f5 fill:#d6f5d6,stroke:#2e8b57
-```
-
-パイプラインはこれを構造で解決します。
-
-- **役割ごとにクリーンなコンテキスト** — 各エージェントは自分の仕事に必要な成果物だけを受け取るため、間違いが他工程に漏れない
-- **権限の最小化** — 各エージェント定義の `tools` で使えるツール自体を制限。調査・執筆系のエージェントは Read/Grep/Glob しか持たないので、**物理的に**コードを壊せない
-- **早い段階の人間チェックポイント** — 間違った仮定は「ブリーフ承認」で捕まえる。10ファイル書き換えられた後ではなく
-
----
-
-## フェーズの流れ — 7工程と3つのチェックポイント
-
-```mermaid
-flowchart TB
-    req(["あなた: /feature-pipeline<br/>「7日以上未払いの請求書に支払いリマインダーを作って」"]) --> p1
-    p1["Phase 1 — researcher<br/>関連コード・既存パターン・リスクを調査"] --> p2
-    p2["Phase 2 — requirements-writer<br/>ユーザーストーリー + 受け入れ基準を作成"] --> c1{"🛑 チェックポイント1<br/>ストーリー承認"}
-    c1 -->|承認| p3["Phase 3 — brief-writer<br/>技術ブリーフ（設計図）を作成"]
-    p3 --> c2{"🛑 チェックポイント2<br/>ブリーフ承認<br/>＝設計ミスを捕まえる場所"}
-    c2 -->|"承認（ここまで1ファイルも未変更）"| p4["Phase 4 — backend-builder<br/>API・サービス・ジョブ + ユニットテスト<br/>→ API契約を発行"]
-    p4 --> p5["Phase 5 — frontend-builder<br/>API契約どおりにUI + コンポーネントテスト"]
-    p5 --> p6["Phase 6 — test-verifier<br/>受け入れ基準を外側から検証"]
-    p6 -->|"❌ 失敗"| rework["担当ビルダーへ差し戻し（上限3回）<br/>テスターは直さない"]
-    rework --> p6
-    p6 -->|"✅ 全基準パス"| p7["Phase 7 — final-reviewer<br/>全員の見落としを file:line つきで報告"]
-    p7 -->|"Critical あり（上限3回）"| rework
-    p7 -->|クリーン| c3{"🛑 チェックポイント3<br/>最終レビュー"}
-    c3 -->|承認| ship(["コミット / PR"])
-    style c1 fill:#fff3c4,stroke:#b8860b
-    style c2 fill:#fff3c4,stroke:#b8860b
-    style c3 fill:#fff3c4,stroke:#b8860b
-    style rework fill:#ffd6d6,stroke:#cc0000
-    style ship fill:#d6f5d6,stroke:#2e8b57
-```
-
-人間のチェックポイント（🛑）は3つだけ。あとは全部、自走します。
-進行状況は `docs/pipeline/<slug>/status.md` に永続化されるため、
-セッションが中断してもコンテキストが圧縮されても、`/feature-pipeline 再開 <slug>` で続きから再開できます。
-
-## 7人の専門エージェント 早見表
-
-| # | エージェント | 役割 | 許可ツール | モデル | 書き込み範囲 | 主な成果物 |
-|---|-------------|------|-----------|--------|-------------|-----------|
-| 1 | `researcher` | 作る前にコードをマッピングする | Read, Grep, Glob | sonnet | なし | 調査レポート（research.md） |
-| 2 | `requirements-writer` | アイデアを受け入れ基準つきストーリーにする | Read | sonnet | なし | ユーザーストーリー（story.md）🛑承認1 |
-| 3 | `brief-writer` | ストーリーを技術ブリーフにする | Read, Grep, Glob | inherit（opus可用時は`pipeline-setup`が opus に昇格） | なし | 技術ブリーフ（brief.md）🛑承認2 |
-| 4 | `backend-builder` | API・サービス・ジョブ・ユニットテスト | Read, Grep, Glob, Edit, Write, Bash | inherit | バックエンドのフォルダ + 実装ノート | 実装 + API契約（api-contract.md） |
-| 5 | `frontend-builder` | コンポーネント・ページ・フック・UIテスト | Read, Grep, Glob, Edit, Write, Bash | inherit | フロントエンドのフォルダ + 実装ノート | 実装 + サマリー |
-| 6 | `test-verifier` | ストーリーに対する受け入れテスト | Read, Grep, Glob, Edit, Write, Bash | sonnet | テストファイル + 実装ノート | 受け入れテスト + 検証レポート |
-| 7 | `final-reviewer` | 実装とストーリー/ブリーフのギャップ報告 | Read, Grep, Glob | sonnet | なし | Critical/Important/Minor レポート 🛑承認3 |
-
-モデルは工程ごとにコストと品質のバランスで階層化しています（公式ドキュメントの推奨プラクティス）。
-実装系・調査系はメインセッションと同じモデル（inherit）が既定です。設計ミスが最も高くつく
-`brief-writer` も既定は `inherit`（opus 契約の有無を問わず安全に動く）ですが、opus が使える
-環境では品質優先で opus に昇格させるのを推奨します。各エージェント定義の frontmatter の
-`model:` を書き換えれば変更できます。
-
-> **注意**: `pipeline-setup` は導入時に opus の可用性を確認し、使える環境では
-> `brief-writer.md` の `model: inherit` を自動的に `opus` に書き換える。手動でパイプライン
-> ファイルだけをコピーした場合は、この書き換えは行われないため、opus を使いたければ自分で変更すること。
-
-## 成果物と関係性 — `docs/pipeline/<slug>/` を中心としたデータの流れ
-
-各エージェントは前工程の**ファイル**だけを入力に動きます（会話履歴は受け渡さない）。
-何がどこから来てどこへ行くかは、この1枚で追えます。
-
-```mermaid
-flowchart TB
-    spec["cc-rsg 等（任意・外部ツール）<br/>レガシーコードの仕様を逆引き"] -.->|生成| specmd["SPEC.md<br/>（リポジトリルート）"]
-    specmd -.->|一次資料| r
-    r["1 researcher"] -->|出力| research
-    subgraph slug["docs/pipeline/＜slug＞/ — 機能ごとの成果物"]
-        research["research.md<br/>調査レポート"]
-        story["story.md<br/>ストーリー + 受け入れ基準 🛑1"]
-        brief["brief.md<br/>技術ブリーフ 🛑2"]
-        contract["api-contract.md<br/>API契約"]
-        notes["implementation-notes.md<br/>実装ノート（判断・逸脱・<br/>トレードオフ・ハマりどころ）"]
-        status["status.md<br/>進行状況（再開の正）"]
-    end
-    research --> sw["2 requirements-writer"] -->|出力| story
-    story --> spw["3 brief-writer"] -->|出力| brief
-    brief --> bb["4 backend-builder"] -->|発行| contract
-    contract --> fb["5 frontend-builder"]
-    brief --> fb
-    bb -->|直接追記| notes
-    fb -->|直接追記| notes
-    story --> tv["6 test-verifier"]
-    tv -->|直接追記| notes
-    tv --> iv["7 final-reviewer 🛑3"]
-    notes -->|"Decisions / Deferred を回収"| learn["docs/pipeline/LEARNINGS.md<br/>ルール候補の蓄積"]
-    learn -->|"🛑3 で承認されたら昇格"| cmd["CLAUDE.md のルール"]
-    notes -.->|"再開時に Status ブロックを読む"| resume["/feature-pipeline 再開 ＜slug＞"]
-    style notes fill:#e6f0ff,stroke:#3366cc
-    style learn fill:#e6f0ff,stroke:#3366cc
-```
-
-ポイントは2つの「記録」の役割分担です:
-
-- **`status.md`** — パイプラインの**進行管理**（フェーズ・承認・差し戻しカウンタ）。中断・再開の正
-- **`implementation-notes.md`** — 実装の**判断の記録**（仕様にない判断・逸脱・トレードオフ・
-  ハマりどころ・積み残し）。ビルダー3種が実装中に物証（`file:line`・テスト名・エラーメッセージ）
-  つきで直接追記し、次のセッション・次の機能・最終レビューがこれを読む
-
-## 使い方ガイド — どのスキルをいつ使うか
-
-```mermaid
-flowchart TD
-    q0{"やりたいことは？"}
-    q0 -->|"パイプラインをまだ導入していない"| setup["/pipeline-setup<br/>対象リポジトリに一式を自動導入"]
-    q0 -->|"機能を end-to-end で開発"| q1{"対象コードに<br/>仕様書はある？"}
-    q1 -->|"ない（レガシー）"| se["cc-rsg 等（外部ツール）<br/>現状の挙動を SPEC.md に固定"]
-    se --> ff["/feature-pipeline ＜機能の説明＞<br/>7エージェント + 3チェックポイント"]
-    q1 -->|"ある / 新規開発"| ff
-    q0 -->|"実装メモを手動で<br/>残したい・更新したい"| nt["/notes<br/>（通常はビルダーが自動記録）"]
-    q0 -->|"パイプラインの運用実績から<br/>定義を改善したい"| fi["/pipeline-improve<br/>失敗シグナル検出 + 修正提案"]
-    q0 -->|"コード以外の成果物<br/>（図・ドキュメント・レポート）"| tf["/task-pipeline ＜依頼＞<br/>（成果物モード・5エージェント連鎖）"]
-    style ff fill:#d6f5d6,stroke:#2e8b57
-```
-
-| スラッシュコマンド | 使用する場面 |
-|-------------------|-------------|
-| `/feature-pipeline <機能の説明>` | 機能を end-to-end で開発する（7エージェント連鎖 + 3チェックポイント） |
-| `/task-pipeline <依頼の説明>` | コード以外の成果物を作る（5エージェント連鎖 + 3チェックポイント。詳細は成果物モード節） |
-| `/design-docs <フェーズ> <対象>` | 設計書（要件定義/基本設計/詳細設計/DB設計/図表）を章立てを固定して書く。単発でも task-pipeline に乗せても使える |
-| `/grilling <詰めたい要件>` | 要件・仕様を徹底質問で詰める（mattpocock/skills の `grilling` をそのまま同梱。パイプライン内では Phase 2/3 の writer 起動前に自動で回る） |
-| `/notes` | 実装ノートを手動で開始・更新する（パイプライン内ではビルダーが自動記録） |
-| `/pipeline-improve [期間や slug]` | 運用実績から失敗シグナルを検出し、エージェント定義・スキル・CLAUDE.md の改善案を提案・適用する（自己改善ループ） |
-| `/pipeline-setup` | パイプライン一式を対象リポジトリへ自動導入する（コード/成果物のモード選択つき） |
-
----
-
-## 実装ノートと仕様逆引き
-
-- **notes（実装ノート）** — ビルダー3種が「ブリーフにない判断・逸脱・トレードオフ・
-  ハマりどころ・積み残し」を `docs/pipeline/<slug>/implementation-notes.md` に物証つきで記録します。
-  `/feature-pipeline 再開` は冒頭の Status ブロックを最初に読み、
-  最終レビュー（Phase 7）では Decisions / Deferred が LEARNINGS.md のルール候補として回収されます。
-  「なぜこう書いたのか」がセッションを跨いで残ります。パイプライン非依存の単体スキルとしても
-  使えます（`.claude/skills/notes/` へそのままコピー）
-- **仕様逆引き（レガシー → SPEC.md）** — 仕様書のないレガシーコードにパイプラインを導入する前に、
-  [daishir0/cc-rsg](https://github.com/daishir0/cc-rsg) 等の外部ツールで現状の挙動を `SPEC.md` に
-  逆引き固定してから導入するのを推奨します（本プラグインは仕様逆引き機能を持たず、外部ツールへ
-  委譲します）。レガシー導入の推奨フローは
-  **cc-rsg 等で SPEC.md を生成 → 人間レビュー → `/feature-pipeline`**。
-  researcher はリポジトリに `SPEC.md` / `SPEC-recovered.md` があればそれを一次資料として読みます
-
----
-
-## 成果物モード（task-pipeline） — コード以外の成果物
-
-`/task-pipeline <依頼の説明>` は、feature-pipeline のパイプラインパターンを
-**コード以外の成果物**（drawio 図・設計ドキュメント・調査レポート・議事録・スライド構成案など）向けに
-汎用化した5工程のオーケストレーターです。
+Claude Code のサブエージェント・スキル・フックを組み合わせて、図・ドキュメント・レポート・設計書などの
+**コード以外の成果物**づくりを、承認ゲート付きの流れ作業に変えるテンプレートです。
 
 ```
+/task-pipeline <依頼の説明>
  → Phase 1: researcher（素材・規約の調査）
  → Phase 2: requirements-writer（成果物要件） → 🛑 チェックポイント1: 要件承認（Plan モードレビュー）
  → Phase 3: brief-writer（作業ブリーフ）      → 🛑 チェックポイント2: ブリーフ承認（Plan モードレビュー）
@@ -228,25 +12,42 @@ flowchart TD
  → Phase 5: final-reviewer（レビュー）        → 🛑 チェックポイント3: 最終レビュー（差し戻し上限3回）
 ```
 
-コードモードとの違い:
+人間が判断するのは3つの承認チェックポイントだけで、その間は専門エージェントが自走します。途中経過は
+`docs/task-pipeline/<slug>/`（status.md / research.md / requirements.md / brief.md）にファイルとして残るので、
+セッションが切れても `/task-pipeline 再開 <slug>` で続きから再開できます。
 
-- **エージェント** — 調査・要件・ブリーフ・最終レビューの4種はコードモードと共有
-  （モード自動判定）。ビルダーは成果物専用の `deliverable-builder` で、**Skill ツール**を持ち、
-  CLAUDE.md の「利用可能なスキル」表で許可された drawio 等のユーザー導入スキルを呼び出せます
-- **中間成果物** — `docs/task-pipeline/<slug>/`（status.md / research.md / requirements.md / brief.md）。
-  成果物本体は CLAUDE.md で定めた出力ディレクトリ（例: `deliverables/`）に置きます
-- **CLAUDE.md サンプル** — [`CLAUDE.task.md`](CLAUDE.task.md)（成果物の種類と出力先・利用可能な
-  スキル表・表記/スタイル規約）。`/pipeline-setup` の成果物モードが差し替えて配布します
-- **フック** — [`hooks/guard-deliverable-writes.sh`](hooks/guard-deliverable-writes.sh) が
-  出力ディレクトリ許可リスト（`ALLOWED_PREFIXES`）外への Edit/Write を `ask` で人間確認に回します
-  （機密パターンはハードブロック）。CLAUDE.md の出力先・ビルダーの担当範囲・フックの許可リストは
-  setup が**同じ承認済みデータ**から生成する三者一致設計です
-- **SPEC.md** — 成果物仕様（要件 ID は `D-NN`）。既存の図・ドキュメント・規約からの逆引きは
-  cc-rsg 等の外部ツールに委ねます（上記「実装ノートと仕様逆引き」参照）
+> **コードの機能開発は superpowers を使ってください。** 以前あったコードモード（`/feature-pipeline`・
+> backend/frontend-builder・test-verifier）は 2026-10-06 に削除しました（pipeline 5.0.0）。
+> [obra/superpowers](https://github.com/obra/superpowers)（導入手順は上流の README）が
+> 計画・TDD・サブエージェント駆動の実装・レビュー・worktree 隔離まで、継続的に保守された形で持っているためです
+> （経緯は [`docs/decisions/2026-10-06-repo-cleanup.md`](../../docs/decisions/2026-10-06-repo-cleanup.md) の第10段）。
+> 導入済みプロジェクトの `docs/pipeline/` はそのまま残せますが、`/feature-pipeline 再開` はできなくなります。
 
-再開は `/task-pipeline 再開 <slug>`。承認チェックポイントの二段構え（Plan モードレビュー）や
-オーケストレーターのルールはコードモードと同一です。詳細は
-[`skills/task-pipeline/SKILL.md`](skills/task-pipeline/SKILL.md) を参照してください。
+> 本セクションは @sairahul1 氏の記事
+> [How to Build a Software Factory with Claude Code That Ships Features While You Sleep](https://x.com/sairahul1/status/2058832033628241931)
+> のコンセプトを、コード以外の成果物向けに汎用化した独自実装です（記事のコピーではありません）。
+
+## 専門エージェント
+
+| エージェント | 役割 |
+|---|---|
+| `researcher` | 既存ドキュメント・データ・過去の成果物・表記規約を調べる（read-only） |
+| `requirements-writer` | 依頼を、レビューで検証できる受け入れ基準つきの成果物要件にする（read-only） |
+| `brief-writer` | 要件を作業ブリーフ（構成案・作成手順・使用スキル・作成ファイル）にする（read-only） |
+| `deliverable-builder` | ブリーフどおりに成果物を作る。**Skill ツール**を持ち、CLAUDE.md の「利用可能なスキル」表で許可された drawio 等を呼べる |
+| `final-reviewer` | 成果物を要件・ブリーフと突き合わせ、ギャップを Critical / Important / Minor で報告する（read-only） |
+| `design-doc-checker` | 設計書のフェーズ間の矛盾・用語ゆれ・実コードとの乖離を検査する（read-only・design-docs 用） |
+
+## スキル
+
+| スキル | 使いどころ |
+|---|---|
+| `/task-pipeline <依頼>` | 成果物を5工程で作る（入口） |
+| `/design-docs [フェーズ] [対象]` | 要件定義・基本設計・詳細設計・DB設計・図表を、フェーズごとに固定した章立てで書く |
+| `/grilling <詰めたい要件>` | 要件・構成を徹底質問で詰める（[mattpocock/skills](https://github.com/mattpocock/skills) の `grilling` を無改変で同梱・MIT。パイプライン内では Phase 2/3 の writer 起動前に自動で回る） |
+| `/notes` | 作業中の判断・逸脱・ハマりどころを `implementation-notes.md` に記録し続ける |
+| `/pipeline-improve [期間]` | 運用実績（LEARNINGS・実装ノート・差し戻し回数・会話履歴）から失敗シグナルを拾い、エージェント定義・スキルの改善案を出す（明示専用） |
+| `/pipeline-setup` | 一式を対象リポジトリに導入する（明示専用） |
 
 ### 設計書を書く場合（design-docs）
 
@@ -261,224 +62,74 @@ flowchart TD
 | DB設計 | 実装担当エンジニア | テーブル定義・制約・ER図 |
 | 図表 | 全員 | シーケンス図・フローチャート（Mermaid） |
 
-- **フェーズ別のエージェントは作っていません。** 章立てが違うだけで、書き込み範囲も許可ツールも
-  同じになるため、既存の `deliverable-builder` に
-  [`references/templates.md`](skills/design-docs/references/templates.md) の章立てを渡す形に統合しています
-  （経緯は [`docs/decisions/2026-09-05-design-doc-subagents.md`](../../docs/decisions/2026-09-05-design-doc-subagents.md)）
-- **フェーズ間の整合だけは専用エージェント**（[`agents/design-doc-checker.md`](agents/design-doc-checker.md)）が
-  read-only で検査します。前段設計書との矛盾・用語ゆれ・実コードとの乖離・未回収の `【要確認】`・
-  テンプレ逸脱の5点。`final-reviewer`（要件・ブリーフとの照合）とは検査対象が違うので、両方を回します
-- **用語集は導入先の CLAUDE.md に1か所だけ置きます**（[`CLAUDE.task.md`](CLAUDE.task.md) の「用語集」節）。
-  設計書側に複写しないことで、フェーズ間の表記ズレを構造的に防ぎます
-- **`【要確認】` は人にしか答えられないことだけに立てます**（2.3.1）。Grep/Glob やマイグレーションで
-  確かめられるもの（クラス名・パス・テーブル名・カラム名・エンドポイント）はその場で確認して
-  `ファイル:行` の根拠つきで本文に書きます。調べれば分かることまでタグにすると、
-  checker が報告する「未回収の【要確認】: N件」が水増しされ、品質指標として機能しなくなります
-
----
+- フェーズ別のエージェントは作らず、`deliverable-builder` に [`references/templates.md`](skills/design-docs/references/templates.md)
+  の章立てを渡す（経緯は [`docs/decisions/2026-09-05-design-doc-subagents.md`](../../docs/decisions/2026-09-05-design-doc-subagents.md)）
+- フェーズ間の整合だけは `design-doc-checker` が検査する。`final-reviewer`（要件・ブリーフとの照合）とは対象が違うので両方回す
+- 用語集は導入先の CLAUDE.md に1か所だけ置く（[`CLAUDE.task.md`](CLAUDE.task.md) の「用語集」節）
+- `【要確認】` は人にしか答えられないことだけに立てる。Grep/Glob で確かめられるものはその場で確かめて根拠つきで書く
 
 ## ファイル構成
 
 ```
 pipeline/
-├── README.md                                # このファイル
-├── CLAUDE.md                                # コピーして使う CLAUDE.md サンプル（コードモード）
-├── CLAUDE.task.md                           # コピーして使う CLAUDE.md サンプル（成果物モード）
-├── .claude-plugin/
-│   └── plugin.json                          # プラグインマニフェスト（プラグイン導入用）
-├── agents/                                  # 9種の専門エージェント定義（共有4 + コード専用3 + 成果物専用2）
-│   ├── researcher.md                        #   共有: 調査（モード自動判定）
-│   ├── requirements-writer.md               #   共有: ストーリー/成果物要件
-│   ├── brief-writer.md                      #   共有: 技術/作業ブリーフ
-│   ├── final-reviewer.md                    #   共有: 最終検証/レビュー
-│   ├── backend-builder.md                   #   コード専用
-│   ├── frontend-builder.md                  #   コード専用
-│   ├── test-verifier.md                     #   コード専用
-│   ├── deliverable-builder.md               #   成果物専用（Skill ツールで drawio 等を呼べる）
-│   └── design-doc-checker.md                #   成果物専用: 設計書のフェーズ間整合を検査（read-only）
+├── README.md
+├── CLAUDE.task.md                           # コピーして使う CLAUDE.md サンプル（出力先・利用可能なスキル・表記規約）
+├── .claude-plugin/plugin.json
+├── agents/                                  # 6種（researcher / requirements-writer / brief-writer / deliverable-builder / final-reviewer / design-doc-checker）
 ├── skills/
-│   ├── feature-pipeline/SKILL.md            # コードモードのオーケストレーター（7工程）
-│   ├── task-pipeline/SKILL.md               # 成果物モードのオーケストレーター（5工程）
-│   ├── design-docs/                         # 設計書の章立てを固定する（5フェーズ）
-│   │   ├── SKILL.md
-│   │   └── references/                      #   templates.md（フェーズ別章立て）/ consistency.md（整合）
-│   ├── grilling/{SKILL.md,LICENSE}          # 徹底質問スキル（mattpocock/skills の grilling を無改変で同梱・MIT）
-│   ├── notes/SKILL.md                       # 実装ノート（モード自動判定）
-│   ├── pipeline-improve/SKILL.md            # 自己改善ループ（失敗シグナル検出 → 定義の改善提案）
-│   └── pipeline-setup/                      # 一式を対象リポジトリへ自動導入（モード選択つき）
-│       ├── SKILL.md
-│       └── references/                      #   code-mode.md / deliverable-mode.md / windows.md
+│   ├── task-pipeline/SKILL.md               # オーケストレーター（5工程）
+│   ├── design-docs/{SKILL.md,references/}   # 設計書の章立て（templates.md / consistency.md）
+│   ├── grilling/{SKILL.md,LICENSE}          # 徹底質問（mattpocock/skills から無改変で同梱・MIT）
+│   ├── notes/SKILL.md                       # 実装ノート
+│   ├── pipeline-improve/SKILL.md            # 自己改善ループ
+│   └── pipeline-setup/{SKILL.md,references/}# 導入（deliverable-mode.md / spec-summary.md / windows.md）
 ├── hooks/
-│   ├── block-secrets-commit.{sh,ps1}        # 機密ファイルのコミットをブロックするフック（両モード）
-│   ├── guard-builder-writes.{sh,ps1}        # 並列実装中の共有ファイル衝突を ask で確認（コードモード）
-│   ├── guard-deliverable-writes.{sh,ps1}    # 出力ディレクトリ外への書き込みを ask で確認（成果物モード）
+│   ├── block-secrets-commit.{sh,ps1}        # 機密ファイルのコミットをブロック
+│   ├── guard-deliverable-writes.{sh,ps1}    # 出力ディレクトリ外への書き込みを ask で確認
 │   ├── guard-builder-paths.{sh,ps1}         # ビルダーの担当外パスへの書き込みを exit 2 で拒否（frontmatter から）
 │   ├── inject-spec-summary.{sh,ps1}         # SPEC.md の [確定] 要件の目次を SessionStart/SubagentStart で注入
-│   └── spec-sync-reminder.{sh,ps1}          # SessionStart/Stop で SPEC.md の未同期を知らせる通知フック
-└── setup/
-    └── settings.json                        # フック配線の設定サンプル（setup がモードに応じて絞る）
+│   └── spec-sync-reminder.{sh,ps1}          # SPEC.md の未同期を知らせる通知
+└── setup/settings.json                      # フック配線のサンプル
 ```
 
-プラグイン化されているのは**スキル7種とエージェント9種**です（いずれもプラグイン導入で自動配信）。
-CLAUDE.md サンプル・フックはプロジェクトごとの差し替え（担当範囲など）が前提のため、プラグインからは
-自動配信せず、`pipeline-setup` が対象リポジトリへコピー&カスタマイズします。
-
----
+プラグイン導入で自動配信されるのはスキルとエージェントです。CLAUDE.md サンプル・フックはプロジェクトごとの
+差し替え（出力ディレクトリなど）が前提なので、`pipeline-setup` が対象リポジトリへコピーしてカスタマイズします。
 
 ## セットアップ
 
-導入方法は3つ。**方式A（プラグイン）が最も簡単**です。
-どの方式でも最後は `/pipeline-setup`（または手動コピー）が対象リポジトリに
-エージェント・CLAUDE.md・フックを導入します。
-
-### 方式A: プラグインで導入する（推奨・2コマンド）
-
-Claude Code でそのまま実行します（clone 不要）:
+### 方式A: プラグインで導入する（推奨）
 
 ```
 /plugin marketplace add mrkxlia/claude-code-workbench-ja
 /plugin install pipeline@workbench-ja
 ```
 
-新しいセッションを開始して、導入したいリポジトリで実行します:
+新しいセッションを開始して、導入したいリポジトリで `/pipeline:pipeline-setup` を実行します。
+出力ディレクトリ・成果物の種類・利用可能なスキルを解析し、**解析結果の承認**を求めて止まったあと、
+CLAUDE.md・エージェント・スキル・フック・settings.json を導入します。既存の CLAUDE.md / settings.json は
+上書きせずマージを提案します。CLAUDE.md の出力先・ビルダーの担当範囲・フックの許可リストは、
+**同じ承認済みデータ**から生成するので食い違いません。
 
-```
-/pipeline:pipeline-setup
-```
-
-プラグインのスキルは `/pipeline:pipeline-setup` のように**プラグイン名の名前空間付き**で
-呼び出します。pipeline-setup がプロジェクトへスキルをコピーした後は、プロジェクト側が優先される
-ため、短い `/feature-pipeline` などがそのまま使えます。
-プラグインの更新は `/plugin update pipeline@workbench-ja` で取り込めます。
-
-<details>
-<summary><b>方式B: git clone + pipeline-setup</b>／<b>pipeline-setup がやること</b></summary>
-
-### 方式B: git clone + pipeline-setup（2コマンド）
-
-プラグインを使わない場合は、clone して `pipeline-setup` をパーソナルスキルとして
-1回だけインストールします（以後どのリポジトリでも使えます）:
+### 方式B: git clone + pipeline-setup
 
 ```bash
 git clone --depth 1 https://github.com/mrkxlia/claude-code-workbench-ja /tmp/workbench
 mkdir -p ~/.claude/skills && cp -r /tmp/workbench/plugins/pipeline/skills/pipeline-setup ~/.claude/skills/
 ```
 
-導入したいリポジトリで Claude Code を開き、実行します:
+導入したいリポジトリで `/pipeline-setup` を実行します。
 
-```
-/pipeline-setup
-```
+### git 管理されていないプロジェクト
 
-### pipeline-setup がやること（方式A・B共通）
-
-スキルが `package.json` / `pyproject.toml` / `go.mod` などからスタックと
-test / lint / typecheck コマンドを検出し、ディレクトリ構成からバックエンド／フロントエンドの
-境界を推定して、CLAUDE.md・エージェント7種（「担当範囲」も自動差し替え）・スキル6種・フック・
-settings.json をまとめて導入します。手動セットアップで一番ズレやすかった
-**「CLAUDE.md の境界とビルダーの担当範囲の不一致」が、同じ検出結果から両方を生成することで
-構造的に起きなくなる**のがポイントです。
-
-パイプライン本体と同じ思想で、書き込む前に**解析結果の承認**を求めて停止します。検出ミスはそこで直せます。
-既存の CLAUDE.md / settings.json は上書きせず、マージを提案します。
-導入後は新しいセッションを開始してから（エージェント定義はセッション開始時に読み込まれるため）、
-下の「試運転」へ進んでください。
-
-</details>
-
-<details>
-<summary><b>方式C: 手動セットアップ（5ステップ）</b> — オフライン環境や、仕組みを理解しながら導入したい場合</summary>
-
-#### 1. CLAUDE.md をコピーして差し替える
-
-[`CLAUDE.md`](CLAUDE.md) を自分のプロジェクトのルートにコピーし、
-`<!-- 差し替え -->` とマークされた箇所（スタック・コマンド・フォルダ構成）を自分のプロジェクトに合わせて書き換えます。
-100〜300行に保つのがコツです。
-
-#### 2. エージェント定義をコピーする
-
-```bash
-mkdir -p .claude/agents
-cp <このリポジトリ>/plugins/pipeline/agents/*.md .claude/agents/
-```
-
-#### 3. スキルをコピーする
-
-```bash
-mkdir -p .claude/skills
-cp -r <このリポジトリ>/plugins/pipeline/skills/feature-pipeline .claude/skills/
-cp -r <このリポジトリ>/plugins/pipeline/skills/grilling .claude/skills/
-cp -r <このリポジトリ>/plugins/pipeline/skills/notes .claude/skills/
-cp -r <このリポジトリ>/plugins/pipeline/skills/pipeline-improve .claude/skills/
-```
-
-（`pipeline-setup` は自動セットアップ用のパーソナルスキルなので、プロジェクトにはコピーしません）
-
-#### 4. フックを設定する
-
-```bash
-mkdir -p .claude/hooks
-cp <このリポジトリ>/plugins/pipeline/hooks/block-secrets-commit.sh .claude/hooks/
-cp <このリポジトリ>/plugins/pipeline/hooks/guard-builder-writes.sh .claude/hooks/
-chmod +x .claude/hooks/block-secrets-commit.sh .claude/hooks/guard-builder-writes.sh
-```
-
-**⚠️ すでに `.claude/settings.json` がある場合は、上書きせず `hooks` キーをマージしてください。**
-ない場合はそのままコピーで構いません:
-
-```bash
-cp <このリポジトリ>/plugins/pipeline/setup/settings.json .claude/settings.json
-```
-
-#### 5. ビルダーの担当範囲を自分のプロジェクトに合わせる
-
-`.claude/agents/backend-builder.md`・`frontend-builder.md`・`test-verifier.md` の
-「担当範囲」セクションのフォルダパス（`src/server/` など）を、自分のプロジェクトの構成に書き換えます。
-**この境界が CLAUDE.md のアーキテクチャルールと一致していることを確認してください。**
-ここがズレていると、ビルダー同士が互いの領域を踏みます。
-なお「上記に加えて〜（差し替え対象外）」とある `docs/pipeline/<slug>/implementation-notes.md` の行は
-プロジェクト構成に依存しないため、そのまま残してください。
-
-</details>
-
-<details>
-<summary><b>Git 管理されていないプロジェクトへの導入</b>（git なしでも動く）</summary>
-
-導入先が git リポジトリでなくても、パイプラインは導入・運用できます。対応は2通りです。
-
-#### 選択肢A: `git init` してから導入する（推奨）
-
-```bash
-git init
-```
-
-の1コマンドで、機密コミット防止フック・セットアップ失敗時の巻き戻し・履歴管理が
-すべてそのまま有効になります。リモート（GitHub 等）への push は必須ではありません。
-
-#### 選択肢B: git なしのまま導入する（非gitモード）
-
-`/pipeline-setup` が git の有無を自動判定し、非 git なら「`git init` の提案 → 断られたら
-非gitモードで続行」と案内します。コマンドは通常と同じ `/pipeline-setup` の1つだけです。
-7エージェントの連鎖（調査 → ストーリー → ブリーフ → 実装 → 検証）は git に依存しないため
-そのまま動きますが、以下の3点が通常モードと異なります:
-
-| 項目 | 通常モード | 非gitモード |
-|------|-----------|------------|
-| 機密コミット防止フック | `git commit` 直前にステージを検査 | 待機状態（コミット自体が無いため何もしない） |
-| セットアップの巻き戻し | `git checkout` / `git revert` | 変更前ファイルを `.claude/pipeline-backup/` にバックアップ |
-| feature-pipeline の最終工程 | コミット・PR の提案 | 変更ファイル一覧の提示 |
-
-フックは非gitモードでもそのまま配置されます（git の無い環境では何もせず素通りする
-作りになっています）。後から `git init` すれば、フックを含む全機能がその時点から有効になります。
-
-</details>
+`/pipeline-setup` が git の有無を判定し、「`git init` の提案 → 断られたら非gitモードで続行」と案内します。
+非gitモードでは、機密コミット防止フックが待機状態になり、セットアップの巻き戻しは `.claude/pipeline-backup/` の
+バックアップで行います。後から `git init` すれば、その時点から全機能が有効になります。
 
 ## 個別スキルを単体で使う（notes など）
 
-パイプライン全体を導入しなくても、**汎用スキルだけを単体で使う**ことができます。要件を質問で詰めるだけなら、パイプラインに同梱した `grilling` の上流
-[mattpocock/skills](https://github.com/mattpocock/skills)（`/plugin install mattpocock-skills@mattpocock`）を直接入れてください。パイプラインを通すほどでは
-ない小さな実装は、superpowers の `test-driven-development` か mattpocock の `tdd` を使ってください
-（2026-10-06 に `build-with-tests` を削除。テストを先に失敗させる手順が無く、代替より弱かったため）。
+`notes` はパイプラインに依存せず単体で使えます。要件を質問で詰めるだけなら、同梱した `grilling` の上流
+[mattpocock/skills](https://github.com/mattpocock/skills)（`/plugin install mattpocock-skills@mattpocock`）を
+直接入れてください。
 
 ```bash
 git clone --depth 1 https://github.com/mrkxlia/claude-code-workbench-ja /tmp/workbench
@@ -486,248 +137,44 @@ mkdir -p ~/.claude/skills
 cp -r /tmp/workbench/plugins/pipeline/skills/notes ~/.claude/skills/
 ```
 
-- `pipeline-improve` … パイプラインの運用ログ（`docs/pipeline/`）を前提にするため、単体利用には向かない。
-- `notes` … パイプライン非依存。単体でそのままコピーして使える。仕様逆引きが必要な場合は
-  [daishir0/cc-rsg](https://github.com/daishir0/cc-rsg) 等の外部ツールを使う。
-
-> プロジェクト単位で導入したい場合は、上の「セットアップ → 方式C（手動セットアップ）」の
-> スキルコピー手順（`.claude/skills/` 宛）を参照してください。ここではどこでも使える
-> パーソナルスキル化（`~/.claude/skills/` 宛）を案内しています。
+`pipeline-improve` はパイプラインの運用ログ（`docs/task-pipeline/`）を前提にするため、単体利用には向きません。
 
 ## 試運転とチューニング
 
-### 1. 小さな機能で試運転する
-
-```
-/feature-pipeline ヘルスチェック用の GET /api/health エンドポイントとステータス表示を作って
-```
-
-のような小さい機能を流し、どこでつまずくか観察します。
-
-### 2. 3つのチェックポイントを体験する
-
-- **ストーリー承認**: 受け入れ基準が「テストで検証できる文」になっているか確認し、「承認」または修正指示を返す
-- **ブリーフ承認**: 変更ファイル一覧と設計を読み、危険な設計（例:「IDをメモリ上に保持」）をここで捕まえる
-- **最終レビュー**: validator のレポートを確認し、承認後にコミット・PRへ
-
-中止したいときは、どのチェックポイントでも「中止」と伝えればパイプラインは止まります。
-
-### 3. ルールを足してチューニングする
-
-AIが「えっ」と驚くミスをするたびに自問します——**「CLAUDE.md にルールがあれば、これは防げたか？」**
-防げたならルールを足す。差し戻しが多かったエージェントの「ルール」セクションも調整します。
-3〜4機能も流せば、パイプラインはあなたのコードベースに馴染んでいきます。
-
-このチューニングは半自動化されています。回収ルートは2つ:
-
-- ビルダーが実装中に気づいた「このルールがあれば助かった」はサマリー経由で
-  `docs/pipeline/LEARNINGS.md` に自動で蓄積されます
-- `implementation-notes.md` に記録された **Decisions / Deferred** のうち他機能にも
-  一般化できるものも、Phase 7 で LEARNINGS.md の候補として回収されます
-
-どちらも最終レビューのチェックポイントで「CLAUDE.md に昇格させるか」を確認され、
-承認したものだけがルールになります。
-
-### 4. `/pipeline-improve` で自己改善ループを回す
-
-LEARNINGS.md の回収が「CLAUDE.md のルール候補」止まりなのに対し、`/pipeline-improve` は
-**エージェント定義とスキル本文そのものを改善**する定期メンテナンスです（数機能ごと／週1回が目安）。
-
-<details>
-<summary>使い方と cron での定期実行・着想元</summary>
-
-数機能流したら（または週に1回）実行してください:
-
-```
-/pipeline-improve 直近1週間
-```
-
-スキルが LEARNINGS.md・実装ノート・差し戻しカウンタ・会話履歴から**失敗シグナル**
-（ユーザーの訂正指示、同じ指示の繰り返し、サブエージェントの問題、チェックポイントでの
-同種修正）を検出し、「どの定義ファイルを直せば再発しないか」を証拠の引用つき diff で
-提案します。適用は人間の承認後。ハードルール（チェックポイント・機密・越境禁止）を
-弱める提案は構造的にしません。
-
-**毎日勝手に改善させたい場合**は、ヘッドレスモード（`claude -p`）を cron などで定期実行します:
-
-```bash
-# 毎朝9時に改善提案をまとめてレポートに残す例（提案の生成まで。適用は人間が中身を見てから）
-0 9 * * 1-5 cd /path/to/project && claude -p "/pipeline-improve 直近1日 — 提案の提示までを行い、適用はせず docs/pipeline/improve-report.md に提案を書き出して終了して" --permission-mode acceptEdits >> ~/pipeline-improve.log 2>&1
-```
-
-レポートを朝に確認し、採用する提案だけ対話セッションの `/pipeline-improve` で適用する運用が
-安全です。完全自動で適用 + PR 化まで行いたい場合は `--permission-mode` の調整と
-git 権限の設定が必要になります（定義ファイルの無人書き換えはリスクを理解した上で）。
-
-> この自己改善ループは SonicGarden の記事
-> [「Claude Code のスキルが毎日勝手に改善されていく仕組みを作った」](https://zenn.dev/sonicgarden/articles/claude-code-self-improving-loop)
-> と [hiroro-work/claude-plugins の dev-workflow スキル](https://github.com/hiroro-work/claude-plugins/tree/main/skills/dev-workflow)
-> （ルール更新 + 自己回顧）の設計を参考にしています。
-
-</details>
-
----
+1. **小さな成果物で試運転する** — 例: `/task-pipeline 認証フローのシーケンス図を drawio で描いて`
+2. **3つのチェックポイントを体験する** — 要件承認では受け入れ基準が「レビューで確かめられる文」か、
+   ブリーフ承認では構成案と作成ファイルを、最終レビューでは final-reviewer のレポートを見る。
+   どのチェックポイントでも「中止」と伝えれば止まる
+3. **ルールを足す** — AI が驚くミスをするたびに「CLAUDE.md にルールがあれば防げたか？」を自問する。
+   最終レビューで LEARNINGS.md（`docs/task-pipeline/LEARNINGS.md`）の候補が提示され、承認したものだけがルールになる
+4. **`/pipeline-improve` を回す** — 数件流したら（または週1回）実行する。エージェント定義とスキル本文そのものの
+   改善案を証拠つき diff で出す。適用は人間の承認後で、ハードルール（チェックポイント・機密・越境禁止）を
+   弱める提案はしない。毎日回したいときはヘッドレスモード（`claude -p`）を cron で定期実行し、
+   提案の書き出しまでに留める
 
 ## フックについての補足
 
-同梱フックは6つ（モードごとに導入されるのは5本）。`block-secrets-commit.sh`（`git commit` 直前に機密ファイルを検査して exit 2 でブロック）・
-`guard-builder-writes.sh`（並列実装中の共有ファイル衝突を `ask` で確認）・`guard-deliverable-writes.sh`
-（出力ディレクトリ外への書き込みを `ask` で確認。成果物モード）・`guard-builder-paths.sh`（ビルダーの担当外
-パスへの書き込みを exit 2 で拒否。各ビルダーの frontmatter から呼ばれ、そのエージェント実行中だけ有効）・
-`inject-spec-summary.sh`（SPEC.md の `[確定]` 要件の目次を SessionStart / SubagentStart で注入）・
-`spec-sync-reminder.sh`（SessionStart/Stop で SPEC.md の未同期をやさしく通知。非ブロッキング）。
-いずれも git 無し環境・SPEC.md 不在では素通りします。
+- `block-secrets-commit` — `git commit` 直前にステージを検査し、`.env`・`*.key`・`*.pem`・`secrets.json` を exit 2 でブロック
+  （`.env.example` 等は許可）。`.git/hooks/pre-commit` にコピーすれば人間の手コミットも守れる
+- `guard-deliverable-writes` — 出力ディレクトリ許可リスト（`ALLOWED_PREFIXES`）外への Edit/Write を `ask` で人間確認に回す
+- `guard-builder-paths` — `deliverable-builder` の frontmatter から呼ばれ、担当外パスへの書き込みを exit 2 で拒否する
+  （そのサブエージェントが動いている間だけ有効。Claude Code 2.1.218 以降は workspace trust の承認後のみ動き、`claude -p` では動かない）
+- `inject-spec-summary` / `spec-sync-reminder` — SPEC.md（要件 ID `D-NN`）の要約注入と、未同期の通知。SPEC.md が無ければ素通り
+- **Windows**: `.sh` が基本（Git Bash / WSL）。純 PowerShell 向けに UTF-8 BOM 付きの `.ps1` を同梱し、`/pipeline-setup` が
+  `command -v bash` で振り分ける（詳細は [`references/windows.md`](skills/pipeline-setup/references/windows.md)）
 
-**Windows**: 実行環境は **Git Bash / WSL の bash が前提**（baseline は `.sh`）。加えて純 PowerShell 環境向けに
-同等の `.ps1` を同梱しており、`/pipeline-setup` が「`command -v bash` が使えるか」で `.sh`/`.ps1` を振り分けます
-（`block-secrets` の `.git/hooks/pre-commit` 用途のみ `.sh` 固定）。`.ps1` は **Windows PowerShell 5.1 でも動作**します
-（UTF-8 BOM 付きで配布し、`powershell -NoProfile -ExecutionPolicy Bypass -File ...` で起動。PowerShell 7 があれば `pwsh`）。
+## 制限事項
 
-<details>
-<summary>block-secrets-commit.sh の詳細</summary>
-
-`block-secrets-commit.sh` は Claude Code の `PreToolUse` フックとして動き、
-Claude が `git commit` を実行する直前にステージ内容を検査します。
-`.env`（`.env.example` / `.env.sample` / `.env.template` は許可）・`*.key`・`*.pem`・`secrets.json`
-が含まれていると exit 2 でコミットをブロックし、理由と対処法を Claude に伝えます。
-
-このフックが守るのは **Claude 経由のコミットだけ**です。人間の手コミットも守りたい場合は、
-同じスクリプトを `.git/hooks/pre-commit` にコピーすれば動きます
-（stdin が JSON でない場合は自動でコマンド判定をスキップする作りになっています）。
-git 管理されていないリポジトリでは、このフックは何もせず素通りします
-（`git diff` が失敗した時点で exit 0 するため、置いたままで無害です）。
-
-</details>
-
-## 制限事項（知っておくべきこと）
-
-- **`tools` 制限はツール単位であり、フォルダ単位です（2.1.0 で機械的に強制するようになりました）。** 「backend-builder はバックエンドのフォルダのみ」という境界は、以前はエージェント定義のプロンプトによる約束でしたが、現在は [`guard-builder-paths.sh`](hooks/guard-builder-paths.sh) が各ビルダーの frontmatter から呼ばれ、担当外パスへの Edit/Write/MultiEdit を **exit 2 で拒否**します（そのサブエージェントが動いている間だけ有効）。許可プレフィックスは `pipeline-setup` が Step 5 で「担当範囲」セクションと同じ承認済みデータから書き換えます。`!` 始まりで除外を書けます（例: `src/app/ !src/app/api/`）。
-  - 既存の `guard-builder-writes.sh` との住み分け: あちらは**並列実行中の共有ファイル衝突**を全員に対して `ask` で確認するもの（メインセッションの正当な書き込みも通す必要があるため `ask`）。こちらは**担当グループの越境**をビルダー個別に拒否するもの（サブエージェント内でしか動かないので確実に止めてよい）。
-  - **限界**: プロジェクトの `.claude/agents/` に置いた frontmatter フックは、Claude Code 2.1.218 以降ではそのフォルダの workspace trust を承認したあとにのみ動きます。`claude -p`（headless）のセッションでは動きません。厳密さが要る場合は settings.json 側の `guard-builder-writes` と併用してください
-- **並列実行時のフックが守るのは「共有ファイル衝突」だけで、「グループ境界の越境」ではありません。** 同梱の [`guard-builder-writes.sh`](hooks/guard-builder-writes.sh) は、並列フェーズ中（`docs/pipeline/<slug>/.parallel-active` が存在）に schema/マイグレーション/`package.json`/型バレル等の共有ファイルへ書き込もうとすると `ask` で確認します。一方「グループAのビルダーがグループBのサブツリーへ書く」越境はフックでは検出できない（brief の所有宣言がフックに渡らないため）ので、これは brief の所有パス宣言＋オーケストレーターの越境チェックで守ります。共有ファイル禁止リスト（`SHARED_PATTERNS`）は自分のスタックに合わせて調整してください
-- **スキルは文字どおりには「一時停止」できません。** チェックポイントは「明示的承認まで次フェーズ進行禁止」という強い指示で実現しています。承認の言葉（「承認」「OK」「進めて」）は明確に伝えてください
-- **サブエージェントはサブエージェントを呼べません。** そのため feature-pipeline はメインセッションのスキルとして動き、そこから7エージェントを順番に起動する設計です
-
----
-
-<details>
-<summary><b>コラム: サブエージェント方式と Agent Teams の使い分け</b></summary>
-
-Claude Code には本テンプレートが使う**サブエージェント**のほかに、実験的機能の
-**Agent Teams**（`CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` で有効化）があります。
-
-| | サブエージェント | Agent Teams |
-|---|---|---|
-| 形態 | 1セッション内で起動される働き手 | 相互にメッセージし合う複数の独立セッション |
-| 連携 | 結果をメインセッションに報告するだけ | 共有タスクリスト + エージェント間の直接対話 |
-| 向くタスク | 結果だけが必要な逐次・決定的なパイプライン | 並列調査・競合仮説のデバッグ・相互レビュー |
-| トークンコスト | 低い（要約だけが親に戻る） | 高い（各メンバーが独立セッション） |
-
-ソフトウェアパイプラインは「調査 → ストーリー → ブリーフ → 実装 → 検証」を**既定では逐次**に進める
-パイプラインで、各工程は前工程の成果物（`docs/pipeline/<slug>/` のファイル）だけを入力に動きます。
-エージェント同士が議論する必要はなく、間違いの伝播を防ぐにはむしろ**会話させない**ほうが安全です。
-そのため本テンプレートはサブエージェント方式を採用しています。
-ただし実装フェーズだけは、brief が「並列実行プラン」で**互いに独立（所有パスが交わらず共有ファイルを
-書かない）と認めたグループ**に限り、複数ビルダーを並列起動できます（下記コラム参照）。
-「複数の仮説を並列に立てて議論させたい」探索型のタスクには Agent Teams を検討してください。
-
-</details>
-
-## コラム: 逐次パイプラインと「並列ループエージェント」の使い分け
-
-本テンプレートのような**逐次パイプライン + 人間チェックポイント**方式とは別に、
-[並列ループエージェント](https://qiita.com/kumai_yu/items/54ded70a5a68a5ca15d5)
-（独立タスクを並列実装し、完了条件まで自走させる）という方式があります。Anthropic の
-Nicholas Carlini による「16体並列で C コンパイラを書く」実験が元ネタです。
-
-| | 逐次パイプライン（本テンプレート） | 並列ループエージェント |
-|---|---|---|
-| 実行形態 | 既定は逐次（独立グループのみ並列） | 独立タスクを積極的に並列 + 完了まで自走 |
-| 人間の関与 | チェックポイント3つで必ず停止 | 最小（基本は自走） |
-| 最適化する軸 | 正確性・制御・低トークン（誤りの伝播を断つ） | スループット・自走 |
-| 向く仕事 | 既存コードベースへの機能追加、設計ミスが高くつく領域 | 分割しやすいグリーンフィールド、大量の独立タスク |
-| 弱点 | 並列の余地を使い切らない（遅い） | 競合・統合事故、設計ミスの早期捕捉が弱い |
-
-**どちらが良いというより最適化軸が違います。** 本テンプレートは「設計ミスを1ファイルも変更する前に
-人間が捕まえる」ことを重視して逐次＋チェックポイントを背骨にしつつ、並列ループの良い所
-——**「独立な所だけ並列化する」「テストのカバレッジを能動的に埋める」「要件・仕様を一問ずつ詰める」**——
-を opt-in で取り込んでいます（並列実行グループ・テストギャップ分析・徹底質問スキル）。
-
-なお、**厳格な TDD 役割分離**（テスト担当は仕様のみ・実装担当はテストのみを見る「知らないふり」）や
-**完全自走ループ**（人間を待たない）は、本テンプレートのチェックポイント哲学と一部対立するため
-既定では採用していません。前者は builder の判断力（既存パターン再利用・逸脱の記録）を削ぐ副作用があり、
-後者は「ブリーフ承認の前で設計ミスを捕まえる」というパイプラインの価値と衝突するためです。
-
-<details>
-<summary><b>発展設定</b>（memory / maxTurns / パス検査フック / 自動フォーマット）</summary>
-
-テンプレートの既定はシンプルに保っていますが、エージェント定義の frontmatter には
-さらに以下のフィールドを足せます（[公式ドキュメント](https://code.claude.com/docs/en/sub-agents)参照）:
-
-- **`memory: project`** — セッションを跨いでエージェントが学習内容を持ち越す。
-  `researcher` に付けると、調査のたびにリポジトリの土地勘が蓄積されていきます
-- **`maxTurns: <数>`** — エージェントの最大ターン数を制限。暴走時の安全弁として
-- **Edit/Write のパス検査フック** — 「担当範囲」をプロンプトによる約束ではなく機械的に補強したい場合、
-  ビルダーの書き込みパスを検査する `PreToolUse` フックを追加できます。成果物モードの
-  [`guard-deliverable-writes.sh`](hooks/guard-deliverable-writes.sh)
-  （許可リスト外への書き込みを `permissionDecision: "ask"` でユーザー確認に回す方式）が参考実装です
-- **PostToolUse の自動フォーマット** — Edit/Write の直後にフォーマッタ（prettier / ruff format 等）を
-  走らせるフックも定番です。スタック依存のためテンプレートには含めていません
-  （[フックのドキュメント](https://code.claude.com/docs/en/hooks)参照）
-
-</details>
-
-<details>
-<summary><b>参考リンク</b></summary>
-
-- [サブエージェント（公式ドキュメント）](https://code.claude.com/docs/en/sub-agents) — frontmatter の全フィールド（model / color / memory / maxTurns など）
-- [Agent Skills のベストプラクティス（公式ドキュメント）](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices) — description の書き方・チェックリストパターン・本文500行ルール
-- [プラグイン / プラグインマーケットプレイス（公式ドキュメント）](https://code.claude.com/docs/en/plugins) — 方式A の仕組み（plugin.json / marketplace.json）
-- [Agent Teams（公式ドキュメント）](https://code.claude.com/docs/en/agent-teams) — 実験的機能。上記コラム参照
-- [フック（公式ドキュメント）](https://code.claude.com/docs/en/hooks) — PreToolUse ほかのイベント一覧
-- [Claude Code のスキルが毎日勝手に改善されていく仕組みを作った（SonicGarden）](https://zenn.dev/sonicgarden/articles/claude-code-self-improving-loop) — `/pipeline-improve` の着想元
-- [hiroro-work/claude-plugins](https://github.com/hiroro-work/claude-plugins) — マーケットプレイス構成と dev-workflow スキル（ルール更新・自己回顧）の参考実装
-- [並列ループエージェント実践ハンズオンガイド（kumai_yu / Qiita）](https://qiita.com/kumai_yu/items/54ded70a5a68a5ca15d5) — 並列実行グループ・比較コラムの着想元
-- [grilling（mattpocock/skills、MIT）](https://github.com/mattpocock/skills/tree/main/skills/productivity/grilling) — `skills/grilling/` に無改変で同梱（上流コミット `6fd9479`・2026-10-06 取得。旧 `clarify` を置き換え）
-
-</details>
-
----
-
-## スキル名の棚卸し（後方互換維持）
-
-`notes` は**モード自動判定の統合版**です。連携セクションが
-「成果物がプログラムかそれ以外か」（進行中の `docs/pipeline/` / `docs/task-pipeline/`、無ければ
-成果物の種類）で**コードモード / 成果物モードを自動判定**します。
-プロジェクトへ直接コピーした場合は短い名（`/notes` 等）で呼べます。
-
-> 補足: 旧 software-pipeline / task-pipeline 時代は両プラグインが同名スキルを持ち、
-> 名前空間 prefix が失われる既知バグ
-> （[anthropics/claude-code#22063](https://github.com/anthropics/claude-code/issues/22063)）の
-> 影響を「両版バイト同一」で無害化していました。1プラグインへの統合により、
-> 同名スキルの二重ロード自体が原理的に発生しなくなっています。
-
-破壊的な改名は行いません（オーケストレータ名は `docs/pipeline/<slug>/` や `/feature-pipeline 再開 <slug>`、
-成果物側は `docs/task-pipeline/<slug>/` や `/task-pipeline 再開 <slug>` と結合しており、改名すると過去
-セッションの再開資産を壊すため）。全スキルの判定は次のとおり:
-
-| スキル | 判定 | 理由 |
-|--------|------|------|
-| `feature-pipeline` | 維持 | 固有名・`docs/pipeline/` と結合 |
-| `task-pipeline` | 維持 | 固有名・`docs/task-pipeline/` と結合 |
-| `pipeline-setup` | 維持（旧 task-pipeline-setup を統合） | 固有名（パーソナルスキル） |
-| `pipeline-improve` | 維持 | 固有名 |
-| `grilling` | 上流（mattpocock/skills）を無改変で同梱 | 2026-10-06 に `clarify` から置き換え。更新は上流から再コピーする |
-| `notes` | モード自動判定の統合版 | 両モードに対応（feature-pipeline / task-pipeline 共通） |
-
-`/pipeline:task-pipeline` のようにプラグイン名とスキル名が別語になるケースも、実害が
-ないため**維持**します（後方互換優先）。
-
----
+- **スキルは文字どおりには「一時停止」できません。** チェックポイントは「明示的承認まで次フェーズ進行禁止」という
+  強い指示で実現しています。承認の言葉（「承認」「OK」「進めて」）は明確に伝えてください
+- **サブエージェントはサブエージェントを呼べません。** そのため task-pipeline はメインセッションのスキルとして動き、
+  そこから各エージェントを順番に起動します
+- 既存の図・ドキュメントからの仕様逆引き（SPEC.md の作成）は持ちません。[daishir0/cc-rsg](https://github.com/daishir0/cc-rsg)
+  等の外部ツールに委ねます
 
 ## ライセンス・出典
 
-このセクションは [@sairahul1 氏の記事](https://x.com/sairahul1/status/2058832033628241931)
-「How to Build a Software Factory with Claude Code That Ships Features While You Sleep」の
-コンセプト（7エージェント構成・3チェックポイント・CLAUDE.md の育て方）に基づく独自実装です。
-ファイルの内容はこのリポジトリで書き起こしたものであり、リポジトリの [LICENSE](../../LICENSE)（MIT）に従います。
+[@sairahul1 氏の記事](https://x.com/sairahul1/status/2058832033628241931)のコンセプト（専門エージェントの連鎖・
+3チェックポイント・CLAUDE.md の育て方）に基づく独自実装です。リポジトリの [LICENSE](../../LICENSE)（MIT）に従います。
+`skills/grilling/` は [mattpocock/skills](https://github.com/mattpocock/skills)（MIT、上流コミット `6fd9479`・2026-10-06 取得）を
+無改変で同梱しており、同ディレクトリの LICENSE に従います。

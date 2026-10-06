@@ -45,7 +45,7 @@ def pipeline_entry(path, kind):
     waiting = gate = None
     if current and "🛑" in current:
         # 「→ 🛑 ストーリー承認（承認: ／方式: ）」から承認名を取り出す
-        gate = re.split(r"[（(]", current.split("🛑", 1)[1], 1)[0].strip()
+        gate = re.split(r"[（(]", current.split("🛑", 1)[1], maxsplit=1)[0].strip()
         # 未チェック行の 🛑 は「このフェーズの終わりにある関門」。そのフェーズの成果物
         # （「→ brief.md 保存」）が既にあるときだけ承認待ちとみなす。判別できなければ関門の予告に留める
         saved = re.findall(r"(\S+\.md) 保存", current)
@@ -68,40 +68,10 @@ def pipeline_entry(path, kind):
     }
 
 
-def self_correct_entry(path):
-    try:
-        with open(path, encoding="utf-8") as f:
-            s = json.load(f)
-    except (OSError, ValueError):
-        return None
-    status = s.get("status", "?")
-    attempt, max_attempts = s.get("attempt", 0), s.get("max_attempts", "?")
-    open_ids = s.get("open_ids") or []
-    waiting = "エスカレーション（人の判断が必要）" if status == "ESCALATED" else None
-    return {
-        "kind": "self-correct",
-        "name": s.get("task", "self-correct"),
-        "source": path,
-        "done": attempt,
-        "total": max_attempts,
-        "current": f"{status} / 判定 {s.get('verdict', '?')} / 未解決 {', '.join(map(str, open_ids)) or 'なし'}",
-        "short": f"{attempt}/{max_attempts} {s.get('verdict', status)}" + (f"({len(open_ids)})" if open_ids else ""),
-        "waiting": waiting,
-        "rejects": [],
-        "finished": status == "PASS",
-    }
-
-
 def collect(root):
     entries = []
-    for kind, pattern in (("pipeline", "docs/pipeline/*/status.md"), ("task-pipeline", "docs/task-pipeline/*/status.md")):
-        for p in sorted(glob.glob(os.path.join(root, pattern))):
-            e = pipeline_entry(p, kind)
-            if e:
-                entries.append(e)
-    sc = os.path.join(root, ".claude/self-correct/state.json")
-    if os.path.isfile(sc):
-        e = self_correct_entry(sc)
+    for p in sorted(glob.glob(os.path.join(root, "docs/task-pipeline/*/status.md"))):
+        e = pipeline_entry(p, "task-pipeline")
         if e:
             entries.append(e)
     return entries

@@ -93,7 +93,7 @@ AWS Labs [AI-DLC (aidlc-workflows)](https://github.com/awslabs/aidlc-workflows) 
 | Inception: 要件確認 | Plan モードでのまとめた質問／深い要件は `grilling`〔pipeline 導入時〕 |
 | Inception: 設計・計画 | Plan モードの実行計画（使うスキル分担・検証チェックポイントを明記） |
 | 承認ゲート（Human in the Loop） | Plan 承認（唯一のゲート）／パイプラインの3チェックポイント |
-| Construction: 実装 | 軽微なら直接実行。機能開発 → `feature-pipeline`、非コード成果物 → `task-pipeline` |
+| Construction: 実装 | 軽微なら直接実行。機能開発 → superpowers〔導入時〕、非コード成果物 → `task-pipeline` |
 | Units of Work（並列作業単位） | 本体のサブエージェント委譲・dynamic workflows・`/batch`／pipeline の並列実行グループ |
 | 検証（レビュー役の分離） | `/verify-fresh`（`fresh-verifier`）。コードは外部 CLI へのレビュー委譲、設計・文書は `review-panel`〔導入時〕 |
 | 複雑度適応 | 軽微な変更（1〜2ファイル・完了条件が自明）はパイプラインを通さず直接実行 |

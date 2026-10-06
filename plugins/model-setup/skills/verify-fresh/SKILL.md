@@ -25,7 +25,7 @@ AIDLC 簡易版ワークフロー（`model-setup/MODEL-GUIDE.md` §5）では検
   指示は過剰検証を招く（公式ガイド）。引き渡し前の1回に限る（`MODEL-GUIDE.md` §2）
 - 実装**前**の計画・設計の相談 → fresh context の Task サブエージェント
 - 外部 CLI による第二の目（コードレビュー） → `kiro-review`（cli-bridge）・公式 Codex プラグイン
-- feature-pipeline 実行中のストーリー/ブリーフ突き合わせ → `final-reviewer`（同パイプライン Phase 7）
+- task-pipeline 実行中の要件/ブリーフ突き合わせ → `final-reviewer`（同パイプライン Phase 5）
 
 ## 中核ルール
 

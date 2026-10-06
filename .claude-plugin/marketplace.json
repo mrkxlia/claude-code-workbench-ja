@@ -26,11 +26,6 @@
       "category": "workflow"
     },
     {
-      "name": "self-correct",
-      "source": "./plugins/self-correct",
-      "category": "workflow"
-    },
-    {
       "name": "feedback-rules",
       "source": "./plugins/feedback-rules",
       "category": "productivity"
@@ -49,6 +44,7 @@
   "renames": {
     "kiro-bridge": "cli-bridge",
     "codex-bridge": null,
-    "codebase-setup": null
+    "codebase-setup": null,
+    "self-correct": null
   }
 }
