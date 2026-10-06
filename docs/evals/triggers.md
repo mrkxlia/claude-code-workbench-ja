@@ -1,7 +1,7 @@
 # triggers — 発火 eval のケース（同一プラグイン内の衝突組）
 
 `claude plugin eval` で「発火すべきときに発火し、隣のスキルの依頼では発火しないか」を測るケース集。
-1行が1ケースで、`gen-trigger-cases.py` がこの表から `claude plugin eval` のケース（`prompt.md` と `graders/*.md`）を生成する。
+1行が1ケースで、`gen-eval-cases.py` がこの表から `claude plugin eval` のケース（`prompt.md` と `graders/*.md`）を生成する。
 表の書き方は次のとおり。
 
 - **期待**: `should` はそのスキルが発火すべき依頼、`not` は発火すべきでない依頼

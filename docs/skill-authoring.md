@@ -276,7 +276,7 @@ description: ... /self-correct [対象] での手動起動で発動する。
 
 ## 2026-09-05 監査の結果
 
-全20スキルを上記の基準で照合した。**変更しなかったものも全件挙げる**（model-setup ルール9）。
+全20スキルを上記の基準で照合した。**変更しなかったものも全件挙げる**。
 
 > 監査後に追加した `design-docs`（pipeline 2.3.0）・`deep-understand`（learning-coach 0.1.0）は、
 > この監査基準に沿って新規作成した（山括弧なし・`argument-hint` クオート済み。`design-docs` は

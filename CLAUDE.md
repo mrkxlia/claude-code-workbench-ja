@@ -97,9 +97,9 @@ claude-code-workbench-ja/
     ├── lessons.md                   #   過去 PR から蒸留した「繰り返さない判断」（根拠の PR 番号つき）
     ├── skill-authoring.md           #   スキルの書き方（公式ガイド準拠。frontmatter 規約・分冊基準・監査結果）
     ├── evals/                       #   主要スキル7件の期待挙動シナリオ（Sonnet / Opus のパリティ実測用）
-    │   ├── README.md                #     走らせ方・baseline 比較・20クエリの trigger eval・結果記録表
+    │   ├── README.md                #     claude plugin eval での走らせ方・結果記録表
     │   ├── triggers.md              #     同一プラグイン内の衝突組の発火ケース（正本）
-    │   ├── gen-trigger-cases.py     #     triggers.md から claude plugin eval のケースを一時ディレクトリへ生成
+    │   ├── gen-eval-cases.py        #     シナリオと triggers.md から claude plugin eval のケースを一時ディレクトリへ生成
     │   └── {verify-fresh,review-panel,adoption-review,self-correct,feature-pipeline,feedback-rule,deep-understand}.md
     └── skills-guide/                #   おすすめSkillsガイド（優先度・業務タイプ別）
         └── README.md

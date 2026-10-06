@@ -156,7 +156,7 @@ git clone --depth 1 https://github.com/mrkxlia/claude-code-workbench-ja /tmp/wor
 # pipeline — pipeline-setup をパーソナルスキル化（以後どのリポジトリでも /pipeline-setup が使える）
 mkdir -p ~/.claude/skills && cp -r /tmp/workbench/plugins/pipeline/skills/pipeline-setup ~/.claude/skills/
 
-# cli-bridge — 外部 CLI 委譲スキル4種＋エージェント3種をプロジェクトへ
+# cli-bridge — 外部 CLI 委譲スキル3種＋エージェント3種をプロジェクトへ
 mkdir -p .claude/skills .claude/agents && cp -r /tmp/workbench/plugins/cli-bridge/skills/* .claude/skills/ && cp -r /tmp/workbench/plugins/cli-bridge/agents/* .claude/agents/
 
 # adoption-review — 採用可否レビューのスキル1種＋エージェント2種（どのリポジトリでも使うならグローバルへ）
