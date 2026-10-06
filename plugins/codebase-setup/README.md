@@ -5,22 +5,21 @@ Claude Code は RAG のようにコードベースを事前インデックス化
 （legibility）」に効く。小規模リポジトリ向けの既定のまま巨大なリポジトリで使うと、
 コンテキストが**無関係な指示と無関係なファイル読み込み**で埋まる。
 
-このプラグインは、その足場を「実測 → 設計 → 適用 → 定期棚卸し」の型で入れるためのもの。
+このプラグインは、その足場を「実測 → 設計 → 適用」の型で入れるためのもの（定期棚卸しは本体の `/doctor prompt-audit` に任せる）。
 加えて、**参画した案件を人がキャッチアップする**ためのレポート生成（`project-catchup`）を持つ。
 前者は Claude が読むための設定を書き、後者は人が読むためのレポートを書く。
 
 ## 収録物
 
-### スキル4種
+### スキル3種
 
 | スキル | 起動 | 何をするか |
 |---|---|---|
 | **codebase-onboard** | `/codebase-onboard`（明示専用） | リポジトリを実測し、CLAUDE.md の階層化・生成物の遮断・LSP プラグイン・ディレクトリ別スキルなど**効くものだけ**を、2つの承認チェックポイントを挟んで導入する |
 | **codebase-map** | 自然文 / `/codebase-map` | トップレベルが多い・命名が独特なリポジトリの「1行説明つき目次」を `docs/codebase-map.md` に作る |
-| **context-audit** | 自然文 / `/context-audit` | 常時ロードされる指示（CLAUDE.md 階層・rules・**本体 auto memory の `MEMORY.md`**）を5分類で棚卸しし、陳腐化・矛盾・導出可能・過剰ロードを削除／移設する |
 | **project-catchup** | 自然文 / `/project-catchup` | 参画した案件を「読んだ人が実装者として振る舞える」水準まで書き下した引き継ぎレポートを作る。**インフラ構成・リクエストの通り道・データモデルは図を必須**とし、各章の「悪い例／良い例」で具体度の下限を縛る。**設計判断の理由は ADR・PR・commit・コメント・人に聞いた答えを出典に持つものだけ**を書き、無いものは「未確認」に落とす |
 
-`project-catchup` だけは**人間が読む成果物**を作る。残り3つは Claude が読む設定・地図を作る。
+`project-catchup` だけは**人間が読む成果物**を作る。残り2つは Claude が読む設定・地図を作る。
 
 ### サブエージェント3種（読み取り専用）
 
@@ -62,7 +61,7 @@ cp -r /tmp/workbench/plugins/codebase-setup/agents/* ~/.claude/agents/
 1. /codebase-onboard        …… 実測 → 診断の承認 → 階層化・遮断・LSP の導入 → 検証
 2. /codebase-map            …… トップレベルが多いなら地図を作る（onboard から呼ばれることもある）
 3. （3〜6か月後・モデル更新後）
-   /context-audit           …… 積み上がった指示を棚卸しして削る
+   /doctor prompt-audit     …… 本体機能。積み上がった指示の陳腐化・矛盾を棚卸しする
 ```
 
 0 と 1 は独立していて、どちらから始めてもよい。0 で分かった構成をそのまま 1 の材料にできる。
@@ -85,7 +84,7 @@ cp -r /tmp/workbench/plugins/codebase-setup/agents/* ~/.claude/agents/
 SHA を解決できないとき（shallow clone・ブランチ削除・`git fetch` 未実施）は**鮮度不明**として扱い、
 「確認済み」とは書かない。
 
-`context-audit` の棚卸しとは軸が違う — あちらは**モデルの更新で指示が陳腐化する**軸、
+本体 `/doctor prompt-audit` の棚卸しとは軸が違う — あちらは**モデルの更新で指示が陳腐化する**軸、
 こちらは**コードが変わって成果物が古くなる**軸。
 
 ## なぜこの構成か（本体機能との住み分け）
@@ -96,14 +95,14 @@ Claude Code 本体が既にやることは**呼ぶだけ**にして再実装し�
 | やりたいこと | 担当 |
 |---|---|
 | ルート CLAUDE.md を1枚生成する | **本体の `/init`**（`codebase-onboard` Step 4 が呼ぶ） |
-| 1つの CLAUDE.md を機械的に短くする | **本体の `/doctor`**（`context-audit` Step 2 が材料にする） |
+| 1つの CLAUDE.md を機械的に短くする | **本体の `/doctor`** |
 | 定義ジャンプ・参照検索・編集直後の診断 | **公式の LSP プラグイン**（`typescript-lsp` 等。`codebase-onboard` Step 6 が案内） |
 | 生成物を読ませない | **本体の `permissions.deny`**（設定を書くのがこのプラグインの仕事） |
 | auto memory を閲覧・編集・削除する／丸ごと切る | **本体の `/memory`・`autoMemoryEnabled`・`CLAUDE_CODE_DISABLE_AUTO_MEMORY`**（`MEMORY.md` の分量の上限と是正も本体が持つ） |
-| auto memory の内容を CLAUDE.md・rules・スキルと**横断照合する** | このプラグイン（`context-audit` Step 3。`/memory` は突き合わせをせず、git 差分にも出ないため他に見つける手段がない） |
+| 指示ファイル（CLAUDE.md 階層・rules・スキル・サブエージェント）を**横断で**陳腐化・矛盾の観点から棚卸しする | **本体の `/doctor prompt-audit`**（v2.1.283〜。提案のみ）。auto memory の `MEMORY.md` は対象外なので、`/memory` で開いて目視する |
 | 複数パッケージを実測して**何を入れるか決める** | このプラグイン |
 | 参画した案件を**人が実装者として動ける水準**まで理解する | このプラグイン（`project-catchup`） |
-| 常時ロードされる指示を**モデルの進化に合わせて捨てる** | このプラグイン |
+| 常時ロードされる指示を**モデルの進化に合わせて捨てる** | **本体の `/doctor prompt-audit`・`/doctor`**（2026-10-06 に `context-audit` を削除。[整理の記録](../../docs/decisions/2026-10-06-repo-cleanup.md)） |
 
 フックは持たない。「セッション終了時に CLAUDE.md の更新案を出す」型の自己改善は
 公式プラグイン（`claude-md-management` 等）と重複するため、このプラグインでは実装していない。

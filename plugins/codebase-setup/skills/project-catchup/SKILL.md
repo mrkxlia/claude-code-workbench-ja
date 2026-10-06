@@ -33,7 +33,7 @@ argument-hint: "[対象パス（省略時はリポジトリ全体）]"
 | 参画した案件を、実装者として動ける水準まで理解する | **このスキル** |
 | どこに何があるかの1行目次・地図が欲しい | `codebase-map` |
 | Claude 向けの設定（CLAUDE.md 階層化・生成物の遮断・LSP）を導入する | `codebase-onboard` |
-| 常時ロードされる指示を棚卸しして削る | `context-audit` |
+| 常時ロードされる指示を棚卸しして削る | 本体の `/doctor prompt-audit`・`/doctor` |
 | 「この機能はどこに実装されている？」の単発探索 | 内蔵の Explore / Task サブエージェント |
 | 自分の作業の中断・再開メモ | `notes`（pipeline） |
 | これから作るものの設計書 | `design-docs`（pipeline） |

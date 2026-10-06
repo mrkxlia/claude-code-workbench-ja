@@ -55,10 +55,10 @@ claude-code-workbench-ja/
 │   │   ├── .claude-plugin/plugin.json
 │   │   ├── skills/                  #     1種（adoption-review＋references/source-checklists.md〔対象種別ごとの確認項目・条件付き分冊〕）
 │   │   └── agents/                  #     2種（adoption-researcher〔証拠収集・並列・read-only〕/ adoption-challenger〔採用しない論拠だけを作る敵対役。肯定寄りのときだけ起動〕）
-│   ├── codebase-setup/              #   大規模リポジトリを Claude Code から読みやすくする足場（実測→設計→適用→定期棚卸し）＋参画した案件の人間向けキャッチアップ
+│   ├── codebase-setup/              #   大規模リポジトリを Claude Code から読みやすくする足場（実測→設計→適用。定期棚卸しは本体の /doctor prompt-audit へ委譲）＋参画した案件の人間向けキャッチアップ
 │   │   ├── README.md
 │   │   ├── .claude-plugin/plugin.json
-│   │   ├── skills/                  #     4種（codebase-onboard〔明示専用・references 分冊: settings-recipes / lsp-plugins〕/ codebase-map / context-audit / project-catchup〔悪い例・良い例で具体度を縛り図を必須化。references 分冊: stack-probes / interview〕）
+│   │   ├── skills/                  #     3種（codebase-onboard〔明示専用・references 分冊: settings-recipes / lsp-plugins〕/ codebase-map / project-catchup〔悪い例・良い例で具体度を縛り図を必須化。references 分冊: stack-probes / interview〕）
 │   │   └── agents/                  #     3種（subtree-surveyor〔面の調査〕/ instruction-auditor / flow-tracer〔線の調査〕。いずれも read-only。フックは持たない）
 │   ├── model-setup/                 #   モデル運用テンプレート（旧名 sonnet-setup。Opus 5 + Sonnet 5 / Sonnet 単独の2プロファイル、9ルール＋追補＋スキル6種＋エージェント3種）
 │   │   ├── README.md

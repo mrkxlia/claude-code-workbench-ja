@@ -130,8 +130,8 @@ Claude Code でそのまま実行します（clone 不要）。現在9のプラ�
 - **codebase-setup** — 導入すると `/codebase-onboard`（大規模リポジトリを実測して CLAUDE.md の
   階層化・生成物を読ませない `permissions.deny`・コードインテリジェンス（LSP）プラグイン・
   ディレクトリ別スキルのうち**効くものだけ**を承認ゲート付きで導入）・`/codebase-map`
-  （1行説明つきの目次を `docs/codebase-map.md` に作成）・`/context-audit`（常時ロードされる
-  指示を5分類で棚卸しし、陳腐化・矛盾・導出可能・過剰ロードを削除／移設）が使えます。
+  （1行説明つきの目次を `docs/codebase-map.md` に作成）が使えます。常時ロードされる指示の定期棚卸しは
+  本体の `/doctor prompt-audit`・`/doctor` に任せます（2026-10-06 に `/context-audit` を削除）。
   読み取り専用サブエージェント2種（subtree-surveyor / instruction-auditor）に並列委譲するため、
   大量のファイル読み込みでメインの文脈が埋まりません。詳しくは
   [codebase-setup/README.md](plugins/codebase-setup/) を参照。
@@ -232,7 +232,7 @@ Claude に聞くのが一番早い方法です（導入済みスキルの説明�
 | 巨大なリポジトリで Claude が的外れなファイルを読む／CLAUDE.md が長すぎる | **codebase-setup**（`/codebase-onboard`） | 実測して効く設定だけ入れる。ルート CLAUDE.md の生成自体は本体 `/init` に委譲 |
 | どこに何があるか分からないリポジトリの地図が欲しい | codebase-setup（`/codebase-map`） | 1行説明つきの目次。地図が要らないリポジトリには「作らない」と答える |
 | 参画した案件を実装者レベルで理解したい／引き継ぎ資料が欲しい | codebase-setup（`/project-catchup`） | 構成・経路・データモデルに図を必須化。設計判断の理由は ADR・PR・commit に出典を持つものだけを書き、無いものは未確認に落とす |
-| モデルを更新したので古い指示を整理したい | codebase-setup（`/context-audit`） | 「正しいか」でなく「毎回載せる価値があるか」で5分類。承認前に変更しない |
+| モデルを更新したので古い指示を整理したい | 本体の `/doctor prompt-audit`（横断の陳腐化・矛盾）と `/doctor`（常時ロードの削減） | どちらも提案だけで、承認前に変更しない |
 | 作る→検査→直す→再検査を人間が毎回指示せずに回したい | **self-correct**（`/self-correct`） | Builder と Judge を別コンテキスト・別ツール権限に分離。停止条件と Ground Truth まで設計する |
 | 同じ指摘を何度もしている／CLAUDE.md に書いても守られない | **feedback-rules**（`/feedback-rule`） | 指摘をファイル化し、指摘回数に応じて warn → ask → deny と強制力が上がる。count を上げるのは人間だけ |
 | ルールが増えすぎた／どのルールが効いているか分からない | feedback-rules（`/feedback-audit`） | 発火ログを集計して形骸化・誤検知・昇格候補を仕分け。削除より無効化を優先し記録を残す |
@@ -370,9 +370,8 @@ Claude Code はコードベースを事前インデックス化せず人間と�
 CLAUDE.md の階層化・`permissions.deny` による生成物の遮断・LSP プラグイン・ディレクトリ別スキル・
 `claudeMdExcludes`・`worktree.sparsePaths` のうち**そのリポジトリで効くものだけ**を2つの承認
 チェックポイント付きで導入し、最後に**設定の所有者と次回棚卸し時期**を決めます。
-**codebase-map** は1行説明つきの目次を、**context-audit** は常時ロードされる指示の棚卸し
-（陳腐化・矛盾・導出可能・過剰ロードの5分類）を担当します。ルート CLAUDE.md の生成は本体の
-`/init`、1ファイルの機械的な短縮は本体の `/doctor`、定義ジャンプは公式 LSP プラグインに委譲し、
+**codebase-map** は1行説明つきの目次を担当します。ルート CLAUDE.md の生成は本体の
+`/init`、指示ファイル横断の陳腐化・矛盾の棚卸しは本体の `/doctor prompt-audit`、常時ロードの削減は本体の `/doctor`、定義ジャンプは公式 LSP プラグインに委譲し、
 **再実装していません**（設計の経緯は
 [`docs/decisions/2026-09-05-large-codebase-harness.md`](docs/decisions/2026-09-05-large-codebase-harness.md)）。
 **プラグイン1コマンドで導入可能**（上の「導入方法」参照）。

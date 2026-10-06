@@ -24,7 +24,7 @@ argument-hint: "[対象パス（省略時はリポジトリルート）]"
 - 参画した案件を「実装者として動ける水準」まで理解したい → `project-catchup`
   （地図が「どこに何があるか」なのに対し、あちらは「どう動いているか」を図つきで書く）
 - 既存コードから仕様書を逆引きしたい → cc-rsg 等の外部ツール（このスキルは仕様を書かない）
-- 常時ロードされる指示（CLAUDE.md）の棚卸し → `context-audit`
+- 常時ロードされる指示（CLAUDE.md）の棚卸し → 本体の `/doctor prompt-audit`
 - 設定の足場づくり全体 → `codebase-onboard`（このスキルはその Step の一部としても呼ばれる）
 
 ## 中核ルール
@@ -137,5 +137,5 @@ git diff --name-status abc1234..HEAD -- .   # 生成時点からの変更をパ�
 
 - 足場づくり全体 → `codebase-onboard`（Step 2 の測量結果をそのまま地図にできる）
 - 案件キャッチアップのレポート → `project-catchup`（この地図を調査の入力として使える）
-- 常時ロードされる指示の棚卸し → `context-audit`
+- 常時ロードされる指示の棚卸し → 本体の `/doctor prompt-audit`
 - 測量の実行役 → `subtree-surveyor` サブエージェント

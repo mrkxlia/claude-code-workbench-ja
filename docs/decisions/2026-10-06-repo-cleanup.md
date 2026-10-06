@@ -1,6 +1,6 @@
 # 2026-10-06 リポジトリの整理（使われていないもの・役目を終えたものの削除）
 
-- 状態: **適用済み（第1段: docs）**。第2段（プラグイン単位の公式機能との重複）は下の「プラグイン」節に追記する
+- 状態: **適用済み**（第1段: docs、第2段: プラグイン単位の公式機能との重複）
 - 依頼: 「レポジトリ内を積極的に整理して、いらないもの・使われないものを削除する。adoption-review スキルも使う」
 - 基準: `/adoption-review` の判定枠組みを自リポジトリに当てた — **代替手段（git 履歴・本体機能・何もしない）**、
   **保守コスト**（毎セッション読み込まれる CLAUDE.md の量、リンク・索引の追随）、**中核ルール11**
@@ -46,6 +46,23 @@
 なっていない記録は、結論を1行で残したうえで削除してよい。CLAUDE.md の決定記録一覧（30行）は毎セッション
 読み込まれるため1行に畳み、一覧は `docs/README.md` だけに置く（CLAUDE.md 22.9KB → 約16.5KB）。
 
-## プラグイン
+## プラグイン（公式機能との重複。前回 2026-09-13 以降の差分を一次情報で取り直した）
 
-（Web の一次情報による公式機能との重複調査の結果を追記する）
+`adoption-researcher` 相当の証拠収集（Web・read-only）で、前回の重複チェック以降（Claude Code 2.1.271〜2.1.291、
+2026-09-14〜10-06）の公式ドキュメント・CHANGELOG・公式プラグインを取り直した。削除の向きの結論には
+Step 6 の自己点検3問（「確認できなかった」だけになっていないか／想定用途に効くか／代替が同じ用途を満たすか）を当てた。
+
+| 対象 | 公式の現況（出典は 2026-10-06 取得） | 判定 |
+|---|---|---|
+| **codebase-setup / `context-audit`** | **`/doctor prompt-audit`（2.1.283、2026-09-25）** が CLAUDE.md・CLAUDE.local.md・AGENTS.md と `.claude/`・`~/.claude/` 配下の rules・skills・commands・subagents・output styles を対象に「旧モデル向けに書かれた指示」「存在しないファイル・コマンドへの参照」「互いに矛盾するファイル」を検出し、編集を提案する（[Memory](https://code.claude.com/docs/en/memory)「Audit your instruction files」）。`/doctor` はコードから導ける記述の削減と、常時ロードの指示をスキル・ネストした CLAUDE.md へ移すことまで行う | **削除**。前回残した理由「矛盾はレイヤーをまたいで起きるので横断照合が要る」は、公式がまさにその横断照合を持ったため成り立たない（問3: 同じ用途を満たす）。残る差分は `MEMORY.md` が監査対象外であることだけで、スキル1本＋5分類の手順を保守する理由にはならない（`/memory` で開いて目視すれば足りる）。`instruction-auditor` は `codebase-onboard` Step 4 が使うので残す。codebase-setup 0.7.0 |
+| model-setup / `fan-out` | `/batch` は 5〜30 単位に分けて worktree 隔離のサブエージェントに実装・テスト・公開させる。dynamic workflows はスクリプトで並列を組める（[Commands](https://code.claude.com/docs/en/commands)・[Workflows](https://code.claude.com/docs/en/workflows)） | **残す**。`/batch` は「1つの変更を多数の worktree・PR に割る」用途で、fan-out の「セッション内で分担し `fresh-verifier` で検証してから統合する」は満たさない（問3 で崩れる） |
+| self-correct | `/goal` の評価器は依然としてツールを呼ばず、会話に出たものだけで判定する。リグレッション検出・機械可読な停止条件は無い（[Goal](https://code.claude.com/docs/en/goal)） | 残す（差分は維持） |
+| feedback-rules | 公式 `hookify` は `warn`/`block` のみで回数による段階強化が無い。auto memory の `type: feedback` にもフック強制は無い | 残す |
+| cli-bridge | `openai/codex-plugin-cc` は 2026-07-07 以降更新なし。相談専用コマンドと CLAUDE.md→AGENTS.md 生成は無い。Kiro の公式プラグインは見つからなかった | 残す |
+| agent-review-panel | `/code-review ultra`・`pr-review-toolkit` はマルチエージェントだが、**異種ベンダー混成は公式に無い** | 残す |
+| learning-coach | 組み込みの Learning 出力スタイルは Insight と `TODO(human)` だけで、クイズ・理解の実証は無い（[Output styles](https://code.claude.com/docs/en/output-styles)） | 残す |
+| pipeline | 公式 `feature-dev` は7フェーズ・3エージェント。要件・ブリーフ文書、ビルダー分離、テスト検証役、フック、成果物モードは無い | 残す |
+| `docs/evals/` の Markdown シナリオ | `claude plugin eval`（2.1.269〜）は `llm` グレーダーとスキル無し baseline 比較を持ち、応答の中身も採点できる（[Plugin evals](https://code.claude.com/docs/en/plugin-evals)） | 残す（ただし手動手順は役目を終えつつある）。シナリオは `plugin eval` のケースへ移す材料。移植は別作業 |
+
+確認できなかったこと: 週次の What's new（第38〜40週）が 404、`claude-plugins-official` の一部プラグインのバージョン、
+`/batch` の「publishes its change」が PR 作成を指すか。いずれも判定には使っていない。
