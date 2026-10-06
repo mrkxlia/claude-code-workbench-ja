@@ -21,11 +21,6 @@
       "category": "workflow"
     },
     {
-      "name": "codebase-setup",
-      "source": "./plugins/codebase-setup",
-      "category": "productivity"
-    },
-    {
       "name": "cli-bridge",
       "source": "./plugins/cli-bridge",
       "category": "workflow"
@@ -53,6 +48,7 @@
   ],
   "renames": {
     "kiro-bridge": "cli-bridge",
-    "codex-bridge": null
+    "codex-bridge": null,
+    "codebase-setup": null
   }
 }

@@ -105,7 +105,7 @@ Anthropic公式リポジトリのスキル。安定性が最も高く、今す�
 | 答えを持つ人に質問票を送る | 無し（`clarify` は「確認先・現在の仮定」つきで持ち越すだけ） | `/to-questionnaire` | 上流を使う |
 | 紙の上で決めきれない設計を試作で確かめる | 無し | `prototype` | 上流を使う |
 | 再現しにくいバグを診断する | 無し | `diagnosing-bugs` | 上流を使う |
-| 用語集と ADR を育てる | 無し（`project-catchup` は読み解き用の用語表まで） | `domain-modeling` | 上流を使う |
+| 用語集と ADR を育てる | 無し | `domain-modeling` | 上流を使う |
 | 1セッションに収まらない大きな計画 | 無し（`backlog-loop` は 2026-10-06 に削除。タスク管理は Backlog.md） | `/wayfinder`（決まっていない判断を issue で地図化する） | 上流か Backlog.md を使う |
 
 - 上流の `/teach`・`/to-questionnaire`・`/handoff`・`/ask-matt` などは**ユーザーが打つスキル**（`disable-model-invocation: true`）で、
