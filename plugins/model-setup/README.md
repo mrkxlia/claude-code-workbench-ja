@@ -1,95 +1,56 @@
-# model-setup — モデル運用テンプレート（Opus 5 + Sonnet 5 / Sonnet 単独）
+# model-setup — モデル運用テンプレート（Opus + Sonnet / Sonnet 単独）
 
-**Opus 5 と Sonnet 5 の両方**（および補助の Haiku 4.5）を対象に、上位モデル
-（Fable 5.1 級）の「振る舞い」—— 成功条件を先に決める・検証してから完了を名乗る・
-不確かさを隠さない・並列に委譲して fresh な目で検証する —— をプロファイル別の
-CLAUDE.md・スキル・サブエージェントとして常設化するテンプレート／プラグインです。
-「Opus+Sonnet が使える私用 PC」と「Sonnet しか使えない会社 PC」の2プロファイルを同梱します。
+「Opus+Sonnet が使える私用 PC」と「Sonnet しか使えない会社 PC」の2プロファイルで Claude Code を
+使うための、CLAUDE.md テンプレートと検証の仕組みです。
 
-> プロンプトは一時的、構造は永続的。毎回長いプロンプトを貼る代わりに、環境そのものに仕事の型を置きます。
+**公式ガイドや本体機能で足りるものは持ちません。** 2026-10-06 に、公式プロンプトガイドの翻訳
+（ルール・PROMPTS の大半・モデル仕様表）と、本体機能・既存 OSS の再発明だったスキル4種
+（`task-brief`→Plan モード、`fan-out`→本体の委譲・dynamic workflows・`/batch`、`long-run`→`/goal`、
+`backlog-loop`→[Backlog.md](https://github.com/MrLesk/Backlog.md)）とエージェント2種
+（`task-worker`・`bulk-scanner`→本体の汎用エージェント・Explore）を削除しました。経緯は
+[整理の記録](../../docs/decisions/2026-10-06-repo-cleanup.md)。
 
-> **旧名 `sonnet-setup` からの改名**: 名前が Sonnet 専用に見えるため `model-setup` に改名しました。
-> 旧プラグインを導入済みの場合は `claude plugin uninstall sonnet-setup` →
-> `claude plugin install model-setup@workbench-ja` で入れ替えてください（自動更新はされません）。
+> **旧名 `sonnet-setup` からの改名**: 旧プラグインを導入済みの場合は `claude plugin uninstall sonnet-setup` →
+> `claude plugin install model-setup@workbench-ja` で入れ替えてください。
 
 ## 何が入っているか
 
 | ファイル/ディレクトリ | 内容 |
 |---|---|
-| [`CLAUDE.md`](CLAUDE.md) | コピペ用テンプレート本体（9つの行動ルール・Opus/Sonnet 共通基盤） |
-| [`CLAUDE.private.md`](CLAUDE.private.md) | プロファイル追補（Opus+Sonnet・私用PC）: 追補ルール10〜14 |
-| [`CLAUDE.company.md`](CLAUDE.company.md) | プロファイル追補（Sonnet 単独・会社PC）: 追補ルール10〜15 |
-| [`MODEL-GUIDE.md`](MODEL-GUIDE.md) | モデル仕様・effort 選定・プロファイル・Fable 5.1 パリティマップ・AIDLC 簡易版ワークフロー（§9）・Fable 本人にやらせる仕事（§10） |
-| [`PROMPTS.md`](PROMPTS.md) | 都度貼りプロンプト集（Plan モード用初回テンプレート＋公式スニペット翻案） |
-| [`settings.private.json`](settings.private.json) | 私用 PC 向け設定サンプル（`opusplan`。effort は書かない — MODEL-GUIDE §2） |
-| [`settings.company.json`](settings.company.json) | 会社 PC 向け設定サンプル（`sonnet`。effort は書かない — MODEL-GUIDE §2） |
-| `skills/task-brief/` | 最初のターンでタスク仕様をブリーフ化するスキル |
-| `skills/backlog-loop/` | backlog.md 駆動の定型ループ（計画→承認ゲート→実施→完了処理→backlog更新） |
-| `skills/pr-merge/` | PR 作成〜マージ〜後片付けまでを一括で行うスキル（git/gh 専用） |
-| `skills/fan-out/` | 独立サブタスクの並列委譲＋fresh 検証マージのオーケストレーション |
-| `skills/long-run/` | 長時間自律作業の完走プロトコル（停止条件の閉じた列挙・証拠つき区切り報告） |
-| `skills/verify-fresh/` | 成果物を fresh context の検証エージェントに反証させるスキル |
-| `agents/` | サブエージェント3種（task-worker / fresh-verifier / bulk-scanner） |
-| `hooks/` | `reinject-brief.{sh,ps1}` — `/long-run` 起動時だけ武装する opt-in フック（下記「フック」節） |
-| `.claude-plugin/plugin.json` | プラグインマニフェスト |
+| [`CLAUDE.md`](CLAUDE.md) | コピペ用テンプレート本体（公式ガイドに無い4ルール＋公式スニペットへの案内） |
+| [`CLAUDE.private.md`](CLAUDE.private.md) | プロファイル追補（Opus+Sonnet・私用PC）: ルール5〜6 |
+| [`CLAUDE.company.md`](CLAUDE.company.md) | プロファイル追補（Sonnet 単独・会社PC）: ルール5〜6 |
+| [`MODEL-GUIDE.md`](MODEL-GUIDE.md) | プロファイル・エスカレーション・Fable 5.1 パリティマップ・AIDLC 簡易版ワークフロー（公式情報はリンクのみ） |
+| [`PROMPTS.md`](PROMPTS.md) | 都度貼りプロンプト（Plan モード用初回テンプレート・テストの棚卸し・AI レビューが収束しないとき） |
+| [`settings.private.json`](settings.private.json) | 私用 PC 向け設定サンプル（`opusplan`） |
+| [`settings.company.json`](settings.company.json) | 会社 PC 向け設定サンプル（`sonnet`） |
+| `skills/verify-fresh/` | 成果物を fresh context の検証エージェントに完了条件と突き合わせさせ、反証させる |
+| `skills/pr-merge/` | コミット分割〜PR 作成〜CI 確認〜マージ〜後片付けまで（git/gh 専用） |
+| `agents/fresh-verifier.md` | 成果物と完了条件だけを受け取り「完了と認めない理由」を探す検証専用（修正不可・sonnet） |
 
-## 9つのルールと、それぞれが塞ぐ失敗モード
+## ルールと、それぞれが塞ぐ失敗モード
 
 | ルール | 塞ぐ失敗モード |
 |--------|----------------|
 | 1. 完了条件を先に定義 | 「とりあえず実装して、あとで調整」に走る |
-| 2. 複数解釈を勝手に選ばない | それらしい解釈を選んで突っ走り、手戻りする |
-| 3. ついで改善の禁止 | スコープ膨張・頼んでいないリファクタ |
-| 4. 「検証した」を報告 | 「動くはず」のまま完了を名乗る |
-| 5. 同じエラーは2回まで | 間違った方向に粘って時間が溶ける |
-| 6. 完了前に初見レビュー | 作った本人の甘い自己採点 |
-| 7. 確信度と3点報告 | 流暢な文体の中に不確かさが隠れる |
-| 8. スコープを字義どおりに守る | 指示にない範囲へ勝手に広げる（Sonnet 5 は字義どおり実行するため、逆に範囲の明示漏れが起きやすい） |
-| 9. レビューは網羅で報告 | 「重要そうなものだけ」に絞って低重要度の指摘を黙って落とす |
+| 2. 同じエラーは2回まで | 間違った方向に粘って時間が溶ける |
+| 3. 完了前に初見レビュー（壊れうる隣接機能を1つ挙げる） | 作った本人の甘い自己採点 |
+| 4. 確信度と3点報告 | 流暢な文体の中に不確かさが隠れる |
+| 5. 評価と実行の境界（追補） | 問題の報告を聞いただけで修正に走る |
+| 6. ワークフローの既定（追補） | 依頼のたびにスキル名を指定させる・検証を挟み忘れる |
 
-## 6つのスキル
+複数解釈の確認・依頼外の変更をしない・証拠つきの報告・網羅レビュー・自律完走は、公式の
+[Opus 5](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-opus-5)・
+[Sonnet 5.5](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-sonnet-5-5)・
+[Fable 5.1](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5-1)
+ガイドにスニペットがあります。必要なものを**原文のまま** CLAUDE.md に貼ってください（翻訳は原文の更新に追随できない）。
+
+## 2つのスキル
 
 | スキル | 使いどころ |
 |---|---|
-| `/task-brief <依頼内容>` | 着手前に、最初のターンでゴール・完了条件・スコープ・制約・検証方法・報告形式を一括確定させる |
-| `/backlog-loop [パス\|タスク名]` | backlog.md を起点に、Step 承認ゲート付きで計画→実施→完了処理→backlog更新まで回す |
-| `/pr-merge [PRタイトル案]` | コミット分割〜PR作成〜CI確認〜マージ〜後片付けまで（git/gh が使える環境専用） |
-| `/fan-out <分割したいタスク>` | 書き込み範囲が交わらないサブタスクに分解し、task-worker へ並列委譲→fresh-verifier で検証→マージ |
-| `/long-run <タスク内容>` | 長時間の自律作業を、早期切り上げ・許可待ち・証拠のない進捗報告なしで完走させる |
-| `/verify-fresh [完了条件のパス\|対象]` | 完了報告・マージ・引き渡しの前に、経緯を知らない fresh context に「完了と認めない理由」を探させる |
-
-> **本体・専用ツールとの住み分け**（2026-09-19 の棚卸しで明示）
->
-> - `/fan-out` … worktree 隔離と PR 作成まで要るなら**本体の `/batch`**。本スキルは
->   セッション内で完結する分担に徹する
-> - `/long-run` … 完了条件の充足判定そのものは**本体の `/goal`**（毎ターン判定）。本スキルは
->   その外側の実行プロトコル（早期切り上げ・許可待ちを止める規律＋ブリーフ再注入）。併用可
-> - `/backlog-loop` … カンバン・依存関係・MCP 連携まで要るなら
->   [`Backlog.md`](https://github.com/MrLesk/Backlog.md)。本スキルはステップ承認ゲートの規律
->
-> 出典: [Slash commands](https://code.claude.com/docs/en/slash-commands)・
-> [Skills](https://code.claude.com/docs/en/skills)（2026-09-19 取得）。
-
-いずれも自然な依頼文（「ブリーフを作って」「backlog.md に基づき実施して」「手分けして進めて」
-「最後までやり切って」「新鮮な目でチェックして」）でも自動発動します。詳細な住み分け
-（clarify・feature-pipeline・codex-review・commit-commands との境界）は
-各 SKILL.md 内に明記してあります。
-
-## 3つのサブエージェント
-
-| エージェント | 役割 | model |
-|---|---|---|
-| `task-worker` | ブリーフ6項目を受け取り、その範囲だけを実装して証拠つきで返す汎用並列作業員 | sonnet |
-| `fresh-verifier` | 成果物と完了条件だけを受け取り「完了と認めない理由」を反証的に探す検証専用（修正不可） | sonnet |
-| `bulk-scanner` | 一覧化・分類・一次スクリーニングなど機械的な大量スキャン（読み取り専用） | haiku |
-
-サブエージェント（`agents/`）とフック（`hooks/`）はスキルと同じくプラグイン導入だけで自動配信されます。
-プロファイル追補（`CLAUDE.private.md` / `CLAUDE.company.md`）と `PROMPTS.md` は
-skills/agents/hooks のいずれでもなくプラグインの自動配信対象外のため、**プラグイン導入
-（方法A）の場合もファイルコピー（下記）が必要**です。特に追補のルール14/15
-（ワークフローの既定 — Plan モード起点の自動ルーティング・AIDLC 簡易版）は本テンプレートの
-中核なので、コピーを忘れると「普通の依頼から適切なスキルが裏で呼ばれる」動きになりません。
-Fable 5.1 のどの挙動を何が担うかの対応は [`MODEL-GUIDE.md`](MODEL-GUIDE.md) §8 を参照。
+| `/verify-fresh [完了条件のパス\|対象]` | 完了報告・マージ・引き渡しの前に、経緯を知らない fresh context に「完了と認めない理由」を探させる。コード以外の成果物にも使える（本体の `/verify` はアプリを動かす確認、`/code-review` はバグ探しで、完了条件との突き合わせはしない） |
+| `/pr-merge [PRタイトル案]` | コミット分割〜PR作成〜CI確認〜マージ〜後片付けまで（公式 `commit-commands` は PR 作成まで） |
 
 ## 導入手順
 
@@ -100,179 +61,38 @@ claude plugin marketplace add mrkxlia/claude-code-workbench-ja
 claude plugin install model-setup@workbench-ja
 ```
 
-プラグインがスキル6種・サブエージェント3種を自動配信します。プロファイル追補（CLAUDE.md）
-だけは自動配信の対象外なので、続けてファイルコピーで配置する（リポジトリを clone した上で）:
+スキル2種・サブエージェント1種が自動配信されます。CLAUDE.md テンプレートと追補は自動配信の対象外なので、
+リポジトリを clone してファイルで配置します:
 
 ```bash
 # 共通ルール + プロファイル追補（私用 PC = private / 会社 PC = company のどちらか一方）
 cat plugins/model-setup/CLAUDE.md plugins/model-setup/CLAUDE.private.md >> ~/.claude/CLAUDE.md
 ```
 
-更新するときは:
-
-```bash
-claude plugin marketplace update workbench-ja && claude plugin update model-setup
-```
-
 ### B. ファイルコピーで入れる（会社 PC = git なし想定）
 
-リポジトリを zip 等で持ち込んだ上で:
-
 ```bash
-# スキルを配置（pr-merge は git 専用なので、git が無い環境では省いてよい）
-cp -r plugins/model-setup/skills/task-brief ~/.claude/skills/
-cp -r plugins/model-setup/skills/backlog-loop ~/.claude/skills/
-cp -r plugins/model-setup/skills/fan-out ~/.claude/skills/
-cp -r plugins/model-setup/skills/long-run ~/.claude/skills/
-cp -r plugins/model-setup/skills/verify-fresh ~/.claude/skills/
-
-# サブエージェントを配置
-mkdir -p ~/.claude/agents && cp -r plugins/model-setup/agents/* ~/.claude/agents/
-
-# フックを配置（long-run のブリーフ再注入。下記「フック」節を参照）
-mkdir -p ~/.claude/hooks && cp plugins/model-setup/hooks/reinject-brief.sh ~/.claude/hooks/
-
-# CLAUDE.md に追記（共通ルール + 会社プロファイル追補。既存ファイルがあれば末尾へ）
+cp -r plugins/model-setup/skills/verify-fresh ~/.claude/skills/   # pr-merge は git 専用なので省く
+mkdir -p ~/.claude/agents && cp plugins/model-setup/agents/fresh-verifier.md ~/.claude/agents/
 cat plugins/model-setup/CLAUDE.md plugins/model-setup/CLAUDE.company.md >> ~/.claude/CLAUDE.md
-
-# settings をマージ（会社 PC 用プロファイル）
 # ~/.claude/settings.json に settings.company.json の内容を統合する
 ```
 
-私用 PC で git がある場合は `settings.private.json` と `CLAUDE.private.md`、会社 PC では
-`settings.company.json` と `CLAUDE.company.md` を使う（追補はどちらか一方だけ）。
-どちらのプロファイルを選ぶ根拠・effort の考え方は [`MODEL-GUIDE.md`](MODEL-GUIDE.md) を参照。
+## 他の行動原則系 CLAUDE.md との併用
 
-## フック（`hooks/reinject-brief.{sh,ps1}`）
-
-長時間作業の途中でコンテキストが自動圧縮されると、`CLAUDE.md`（恒久ルール）は再ロードされますが、
-**そのタスク固有のブリーフ（完了条件・スコープ・制約）は要約に溶けて薄れます**。このフックは、
-`/long-run` が固定したブリーフファイル（`docs/long-run/brief.md`、無ければ `.claude/long-run-brief.md`）を
-圧縮直後の文脈へ戻します。ブリーフファイルが無ければ何も出力しません。
-
-**このプラグインは常時発火するフックを持ちません。** 上記フックは `long-run` スキルの frontmatter に
-宣言してあり、**`/long-run` を起動したときだけ登録**され、セッションが終われば外れます。
-そのため `settings.json` を編集する必要はありません（bash が使える環境の場合）。
-
-**フックが埋めるのは圧縮直後の1点だけです。** 圧縮のときに何が自動で戻るかは公式が明示しており、
-プロジェクト直下の CLAUDE.md・スコープ無しの rules・auto memory・**Plan モードで書いた計画ファイル**は
-disk から再注入されます。**起動済みスキル本体**も再注入されますが、1スキル 5,000 トークン・合計
-25,000 トークンが上限で、超過分は古い順に脱落し、切り詰めはファイル先頭を残します。戻らないのは
-「会話の中だけで足した制約」であり、ブリーフファイルはそこを埋めるためのものです。
-圧縮を手前に倒したい・焦点を指定したいときは、本体の `/autocompact <トークン数>`・`/compact <指示>`・
-CLAUDE.md の `# Compact instructions` 節が使えます（`# Compact instructions` が自動圧縮にも効くかは
-公式ドキュメントに記載が無いため、効く前提で運用しないでください）。
-出典: [What survives compaction](https://code.claude.com/docs/en/context-window#what-survives-compaction)、
-[Manage costs effectively](https://code.claude.com/docs/en/costs#manage-context-proactively)（ともに 2026-09-06 取得）。
-
-| 導入経路 | フックを動かすために必要なこと |
-|---|---|
-| A. プラグイン | **なし**。`hooks/` は自動配信され、frontmatter が `${CLAUDE_PLUGIN_ROOT}` 経由で見つけます |
-| B. ファイルコピー | 上記 B の `cp` で `~/.claude/hooks/reinject-brief.sh` に置くだけ。frontmatter がそこにフォールバックします |
-| bash が無い純 PowerShell | frontmatter のフックは動きません。下記のとおり `.ps1` を `settings.json` に配線してください |
-
-### bash が無い Windows 環境（`.ps1` を settings.json に配線する）
-
-`~/.claude/hooks/` に `reinject-brief.ps1` を置き、`~/.claude/settings.json` の `hooks.SessionStart` に
-次のエントリを追記します（既存のキー・エントリは消さないこと）。
-
-```json
-{"hooks":{"SessionStart":[{"matcher":"compact",
-  "hooks":[{"type":"command","command":"powershell -NoProfile -ExecutionPolicy Bypass -File .claude/hooks/reinject-brief.ps1"}]}]}}
-```
-
-- PowerShell 7 がある環境では `powershell` の代わりに `pwsh` を使ってかまいません。
-- `.ps1` は **UTF-8 BOM 付き**のまま配置してください（BOM を外すと PowerShell 5.1 で日本語が文字化けします）。
-- **`settings.json` を手で編集する前にバックアップを取り、編集後に構文を検証してください。**
-  JSON が壊れると、そのファイルのフックがすべて止まります。
-
-```bash
-cp ~/.claude/settings.json ~/.claude/settings.json.bak
-python3 -c "import json;json.load(open('$HOME/.claude/settings.json'));print('JSON OK')"
-```
-
-### 既に導入済みの場合（更新手順）
-
-プラグイン導入なら `claude plugin update model-setup` で `hooks/` も更新されます。
-ファイルコピー導入なら、`skills/long-run` と `hooks/reinject-brief.sh` の2つを上書きコピーしてください
-（frontmatter にフック宣言が入ったのは 3.3.0 からです)。
-
-## モデル・effort の選び方
-
-Fable 5.1 / Opus 5 / Sonnet 5 / Haiku 4.5 の仕様比較、effort レベルの意味、私用・会社プロファイル、
-Opus で計画→Sonnet で実行する流れ、Sonnet 5 特有の運用注意(字義どおりの実行・網羅レビュー
-指示)、LLM アプリ開発で「賢さでなく構造」で差を埋める7作法、そして
-**Fable 5.1 の挙動を何で再現するかのパリティマップ（§8）**までは
-[`MODEL-GUIDE.md`](MODEL-GUIDE.md) にまとめてある。
-
-## 他の行動原則系 CLAUDE.md との併用（重複に注意）
-
-[multica-ai/andrej-karpathy-skills](https://github.com/multica-ai/andrej-karpathy-skills) などの
-行動原則系 CLAUDE.md と併用する場合、ルール 2（複数解釈を勝手に選ばない）・3（ついで改善の禁止）・
-4（「検証した」を報告）は Think Before Coding / Surgical Changes / Goal-Driven Execution と趣旨が
-重複しやすいので、**どちらか片方に寄せてください**（二重に書くとシグナルが薄まります）。
-
-## プロンプト最適化（既存 OSS の活用）
-
-`task-brief` スキルが使える環境なら、着手前のブリーフ化はそれに任せてください。
-スキルが導入できない環境向けの手動テンプレートとしては、次の5項目を埋めるだけでも効きます:
-
-```text
-## ゴール（1行）
-## 完了条件（機械的に判定できる形で）
-## やらないこと
-## 検証方法
-## 報告形式（検証の証拠つき。不確かな箇所は確信度 高/中/低 を明記）
-```
-
-さらに入力プロンプト側の型を強化したい場合は、既存 OSS
-[severity1/claude-code-prompt-improver](https://github.com/severity1/claude-code-prompt-improver)
-（MIT License）も参考になる。フックでプロンプトを評価し、曖昧なときだけ質問で確認してから
-実行してくれるツール。
-
-```bash
-claude plugin marketplace add severity1/severity1-marketplace
-# その後 /plugin からインストール（最新の手順は本家 README を参照）
-```
-
-## CLAUDE.md では埋まらない差（正直な注意書き）
-
-以下は設定では完全には埋まりません。**手戻りが2回続いたタスクだけ上位モデルに切り替える**のが
-現実的な使い分けです（詳細は `MODEL-GUIDE.md` §7）。
-
-- 長時間の作業で序盤の制約を終盤まで保持し続ける力
-  （`/long-run` の「ブリーフ固定＋区切りごとの再読」で部分的には補えるようになったが、完全ではない）
-- 受け入れ条件を書くこと自体が仕事の核心になる仕事（設計判断・移行計画の穴探しなど）
-- 「何がシンプルか」のようなルール適用の判断そのもの
+[multica-ai/andrej-karpathy-skills](https://github.com/multica-ai/andrej-karpathy-skills) などと併用する場合、
+ルール1（完了条件）は Goal-Driven Execution と趣旨が重なるので、どちらか片方に寄せてください。
 
 ## カスタマイズの指針
 
-- CLAUDE.md テンプレートは短く保つ。追記する場合も「これを消したら Claude は間違えるか？」を
-  基準に、答えが No の行は入れないでください。
-- コードから分かること・リンターが保証することは書かない（[公式ベストプラクティス](https://code.claude.com/docs/en/memory)）。
+- CLAUDE.md は短く保つ。追記する場合も「これを消したら Claude は間違えるか？」を基準に、答えが No の行は
+  入れない（[公式 Best practices](https://code.claude.com/docs/en/best-practices)）。
+- 本体の `/doctor prompt-audit` で、旧モデル向けに書かれた指示・矛盾を定期的に洗い出す。
 
 ## 出典
 
-- ルール1〜7: X 記事「Sonnet 5をFable 5にする方法〜Claude本人にインタビューして聞いた7つの神設定」
-  （[@armadillo_ai](https://x.com/armadillo_ai) 氏）を参照・要約・翻案したものです。著作権は同氏に帰属します。
-- ルール8〜9・MODEL-GUIDE.md: Claude 公式ドキュメント（2026-09時点。Opus 5 / Fable 5.1 の各ガイドを含む）に基づく。
-  日本語版 [Prompting Claude Sonnet 5（ja）](https://platform.claude.com/docs/ja/build-with-claude/prompt-engineering/prompting-claude-sonnet-5) も参照。
-- 追補ルール14/15（ワークフローの既定）・MODEL-GUIDE §9・PROMPTS.md #0:
-  AWS Labs [aidlc-workflows](https://github.com/awslabs/aidlc-workflows)（AI-DLC）の簡易化。
-  役割分離・外部検証の裏づけ論文（MetaGPT / ChatDev / Huang et al. ICLR 2024 / Kamoi et al. 2024）は
-  MODEL-GUIDE §9 に記載。
-- PROMPTS.md #1〜#9: 公式 Prompting Claude Sonnet 5 / Prompting best practices のスニペット翻案。
-- 追補ルール10〜13・fan-out / long-run / verify-fresh スキル・パリティマップ:
-  [Prompting Claude Fable 5](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5)
-  （自律実行・進捗の証拠監査・並列委譲・fresh 検証・境界の各公式スニペット）と
-  [Prompting Claude Fable 5.1](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5-1)
-  （Finish the whole task・進捗更新・変更とテストの範囲限定・コンパクション保持指示）の翻案。
-  Opus 5 実行時の読み替え（検証・委譲の抑制）は
-  [Prompting Claude Opus 5](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-opus-5) に基づく。
-- effort・モデル仕様: [Claude Code 公式 model-config](https://code.claude.com/docs/en/model-config)・
-  [effort ドキュメント](https://platform.claude.com/docs/en/build-with-claude/effort)・
-  [Prompting Claude Sonnet 5](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-sonnet-5)・
-  [Prompting best practices](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices)
-- サブエージェントの `model:` / `effort:` frontmatter:
-  [Claude Code 公式 sub-agents ドキュメント](https://code.claude.com/docs/en/sub-agents)
-- CLAUDE.md 運用: [Claude Code 公式 memory ドキュメント](https://code.claude.com/docs/en/memory)
+- ルール1〜4: X 記事「Sonnet 5をFable 5にする方法〜Claude本人にインタビューして聞いた7つの神設定」
+  （[@armadillo_ai](https://x.com/armadillo_ai) 氏）を参照・要約・翻案したもの。著作権は同氏に帰属します。
+- 追補ルール6・MODEL-GUIDE §5・PROMPTS.md #0: AWS Labs [aidlc-workflows](https://github.com/awslabs/aidlc-workflows)（AI-DLC）の簡易化。
+- Opus 5 実行時の読み替え（検証・委譲の抑制）: [Prompting Claude Opus 5](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-opus-5)。
+- PROMPTS.md #11・#12: catnose99 氏・npaka 氏の記事の翻案（各節に出典）。

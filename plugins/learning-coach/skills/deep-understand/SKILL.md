@@ -31,7 +31,7 @@ argument-hint: "[理解したい対象（この変更 | ファイル | 機能名
 | 1つの疑問にすぐ答えてほしい | 通常の応答（このスキルは呼ばない。1問1答に教師役は過剰） |
 | コードの欠陥・改善点を挙げてほしい | `/code-review`・`/kiro-review`・`/review-panel` |
 | 成果物が完了条件を満たすか検証してほしい | `verify-fresh`（model-setup） |
-| Claude がリポジトリを読みやすくする足場 | `codebase-onboard`（codebase-setup）。あれは「Claude 側の理解」用 |
+| Claude がリポジトリを読みやすくする足場 | 公式ドキュメント「Monorepos and large repos」。あれは「Claude 側の理解」用 |
 | 理解した内容を記録に残したい | 理解の確認が済んでから `notes`（pipeline） |
 
 ## 中核ルール
@@ -198,7 +198,5 @@ argument-hint: "[理解したい対象（この変更 | ファイル | 機能名
   項目の管理と指導は本スキル、「全部済んだか」の宣言は `/goal` に任せてもよい
 - **`verify-fresh`（model-setup）** — 成果物が完了条件を満たすかの検証。**理解の検証とは別物**。
   引き渡し前に両方やる場合は、verify-fresh（成果物）→ deep-understand（人間）の順が自然
-- **`codebase-onboard`（codebase-setup）** — Claude 側がリポジトリを読むための足場作り。
-  人間の理解は本スキル
 - **`notes`（pipeline）** — 理解した内容を記録に残す。**理解の実証が済んでから**呼ぶ
   （記録を作ることが理解の代わりにならないようにする）

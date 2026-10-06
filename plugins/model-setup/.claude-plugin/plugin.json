@@ -1,7 +1,7 @@
 {
   "name": "model-setup",
-  "version": "3.7.1",
-  "description": "モデル運用テンプレート（Opus 5 + Sonnet 5 / Sonnet 単独。旧名 sonnet-setup）。上位モデル（Fable 5.1 級）の振る舞いをプロファイル別に再現する。スキル6種（task-brief / backlog-loop / pr-merge / fan-out / long-run / verify-fresh）に加え、サブエージェント3種（task-worker / fresh-verifier / bulk-scanner）・プロファイル別 CLAUDE 追補2種（private / company。Plan モード起点の自動ルーティング＝AIDLC 簡易版ワークフローのルール14/15 を含む・ファイルコピー配布）・モデル/effort 選定ガイド（MODEL-GUIDE.md・Fable 5.1 パリティマップ／AIDLC 対応表付き）・都度貼りプロンプト集（PROMPTS.md）・CLAUDE.md テンプレート（9ルール）・settings サンプル・long-run 起動時だけ武装する opt-in フック（reinject-brief。圧縮後にブリーフを文脈へ戻す）を収録する。",
+  "version": "4.0.0",
+  "description": "モデル運用テンプレート（Opus + Sonnet / Sonnet 単独。旧名 sonnet-setup）。公式プロンプトガイドに無い行動ルール4つ＋プロファイル別追補（評価と実行の境界・Plan モード起点の自動ルーティング＝AIDLC 簡易版）・プロファイル設計メモ（MODEL-GUIDE.md）・都度貼りプロンプト（PROMPTS.md）・settings サンプルと、スキル2種（verify-fresh＝fresh context の検証役に完了条件と突き合わせさせる／pr-merge＝PR 作成から CI 確認・マージ・後片付けまで）・サブエージェント1種（fresh-verifier）を収録する。4.0.0 で本体機能・既存 OSS と重なるスキル4種（task-brief / backlog-loop / fan-out / long-run）・エージェント2種・reinject-brief フックと、公式ガイドの翻訳部分を削除した。",
   "author": {
     "name": "mrkxlia",
     "url": "https://github.com/mrkxlia"

@@ -32,8 +32,8 @@ argument-hint: "[対象パス（省略時はリポジトリ全体）]"
 |---|---|
 | 参画した案件を、実装者として動ける水準まで理解する | **このスキル** |
 | どこに何があるかの1行目次・地図が欲しい | `codebase-map` |
-| Claude 向けの設定（CLAUDE.md 階層化・生成物の遮断・LSP）を導入する | `codebase-onboard` |
-| 常時ロードされる指示を棚卸しして削る | `context-audit` |
+| Claude 向けの設定（CLAUDE.md 階層化・生成物の遮断・LSP）を導入する | 公式ドキュメント「Monorepos and large repos」 |
+| 常時ロードされる指示を棚卸しして削る | 本体の `/doctor prompt-audit`・`/doctor` |
 | 「この機能はどこに実装されている？」の単発探索 | 内蔵の Explore / Task サブエージェント |
 | 自分の作業の中断・再開メモ | `notes`（pipeline） |
 | これから作るものの設計書 | `design-docs`（pipeline） |
@@ -340,14 +340,13 @@ Step 6 で聞く。**却下された代替案とその理由が見つかった�
 - 「ベストプラクティスとしては〜」という一般論を書くこと（このリポジトリの事実だけを書く）
 - 参画先のリポジトリに、断りなくファイルを作ること
 - コードの修正・リファクタリングの提案（読み解きに徹する。改善提案は別の依頼で受ける）
-- Claude 向けの設定（CLAUDE.md・permissions.deny）を書くこと → `codebase-onboard`
+- Claude 向けの設定（CLAUDE.md・permissions.deny）を書くこと → 公式ドキュメント「Monorepos and large repos」
 
 ## 連携
 
 | 相手 | 関係 |
 |---|---|
 | `codebase-map` | 「どこに何があるか」の1行目次。地図が既にあるなら Step 2 の入力に使える |
-| `codebase-onboard` | このレポートで分かった構成を、Claude 向けの設定に落とす（人間向け → Claude 向け） |
 | `subtree-surveyor` | 面の調査役。1サブツリーの広さを返す |
 | `flow-tracer` | 線の調査役。1経路の深さを返す。3〜5章の図の材料 |
 | `review-panel`（agent-review-panel） | 出来たレポートを敵対的にレビューさせたいとき |

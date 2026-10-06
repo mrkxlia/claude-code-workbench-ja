@@ -1,7 +1,7 @@
 {
   "name": "cli-bridge",
-  "version": "1.1.1",
-  "description": "外部の AI コーディング CLI（OpenAI Codex・Kiro）にレビュー・相談を委譲するスキル4種とサブエージェント3種。ユーザー自身は外部 CLI を操作せず、Claude Code が非対話・read-only で駆動する。Claude のルールを取り込んだ AGENTS.md を生成して Codex にも同じルールを効かせる（/codex-agents）。レビューと実装の委譲そのものは公式プラグイン openai/codex-plugin-cc が広くカバーするため本プラグインでは扱わない。",
+  "version": "2.0.0",
+  "description": "外部の AI コーディング CLI（OpenAI Codex・Kiro）にレビュー・相談を委譲するスキル3種とサブエージェント3種。ユーザー自身は外部 CLI を操作せず、Claude Code が非対話・read-only で駆動する。プラン提示前に Codex レビューを挟む opt-in フックを同梱する。レビューと実装の委譲そのものは公式プラグイン openai/codex-plugin-cc が広くカバーするため本プラグインでは扱わない。",
   "author": {
     "name": "mrkxlia",
     "url": "https://github.com/mrkxlia"

@@ -9,7 +9,7 @@
 - 除外: 「How Claude Code works in large codebases」（公式ブログ）は
   [2026-09-05 に codebase-setup として取り込み済み](2026-09-05-large-codebase-harness.md)
 - **想定用途（仮置き）**: このリポジトリのプラグインに、まだ入っていない要素があれば取り込む。
-  新規プラグインは作らない（先例: [PM 業務の Skill 化記事](2026-09-06-pm-skill-article-adoption.md)）
+  新規プラグインは作らない（先例: PM 業務の Skill 化記事 — 2026-10-06 の整理で記録は削除、`git show 9094ace:docs/decisions/2026-09-06-pm-skill-article-adoption.md`）
 
 [`/adoption-review`](../../plugins/adoption-review/skills/adoption-review/SKILL.md) の手順で評価した。
 対象が4件を超えたため、Step 0 の規約どおり先にユーザーへ絞り込みを確認し、16件すべてを1件ずつ評価する

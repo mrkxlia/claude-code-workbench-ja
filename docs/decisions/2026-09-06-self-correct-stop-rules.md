@@ -2,7 +2,7 @@
 
 ## 背景
 
-同日の[記事レビュー記録](2026-09-06-self-correct-article-adoption.md)で、先行 OSS
+同日の記事レビュー記録（`2026-09-06-self-correct-article-adoption.md`。2026-10-06 の整理で削除、`git show 9094ace:docs/decisions/2026-09-06-self-correct-article-adoption.md` で参照可）で、先行 OSS
 [sdsrss/loop_eng](https://github.com/sdsrss/loop_eng)（MIT・2026-09-06 取得）が停止ルールを
 6件持つのに対し、`self-correct` の Phase 3 には**2件が無い**ことが分かり、積み残しとして
 記録した。その2件を今回採る。

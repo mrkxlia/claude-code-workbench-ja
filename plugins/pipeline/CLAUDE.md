@@ -112,7 +112,6 @@ npx prisma migrate dev       # マイグレーション作成・適用
 |-------------------|-------------|
 | `/feature-pipeline <機能の説明>` | 機能を end-to-end で開発する（7エージェント連鎖 + 3チェックポイント） |
 | `/clarify <詰めたい要件>` | 要件・仕様を一問ずつ徹底質問で詰める（パイプライン内では Phase 2/3 の writer 起動前に自動で回る） |
-| `/build-with-tests <タスク>` | パイプラインを通すほどではない小さな実装・修正をテスト並行で行う |
 | `/notes` | 実装ノートを手動で開始・更新する（パイプライン内ではビルダーが自動記録） |
 | `/pipeline-improve [期間や slug]` | 運用実績から失敗シグナルを検出し、エージェント定義・スキル・CLAUDE.md の改善案を提案・適用する |
 
@@ -120,7 +119,7 @@ npx prisma migrate dev       # マイグレーション作成・適用
 
 このパイプラインの流れは AWS Labs [AI-DLC](https://github.com/awslabs/aidlc-workflows)（AIが提案・
 人間が承認するゲート付き開発ライフサイクル）の簡易版にあたる（対応表の全体は
-`model-setup/MODEL-GUIDE.md` §9）。既存のフェーズ・エージェント構成そのままの読み替えで、
+`model-setup/MODEL-GUIDE.md` §5）。既存のフェーズ・エージェント構成そのままの読み替えで、
 追加の操作は不要:
 
 - **Inception（要件・設計）** = Phase 1〜3。`researcher`=調査役・`requirements-writer`=要件役・

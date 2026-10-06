@@ -43,7 +43,7 @@ print('\n'.join((p.extract_text() or '') for p in PdfReader('guide.pdf').pages))
 公式は「Claude が要求と突き合わせるのに必要なキーワードごと削られうる」と書いている。
 さらに**この一覧は圧縮後に再注入されない**（残るのは実際に起動したスキルの本文だけ）。
 
-このリポジトリは9プラグイン・31スキルを配布するため、全部入れる利用者はこの予算に効く。
+このリポジトリは9プラグイン・23スキルを配布するため、全部入れる利用者はこの予算に効く。
 含意は2つ:
 
 - **description は短いほうが強い。** 上限 1024 字は「そこまで書いてよい」ではなく「そこが壁」。
@@ -64,7 +64,7 @@ print('\n'.join((p.extract_text() or '') for p in PdfReader('guide.pdf').pages))
 このリポジトリの執筆規約:
 
 - **重要な指示・停止条件・禁止事項は SKILL.md の先頭寄りに置く。** 末尾に置いた規律は、
-  長時間セッションの後半で切り落とされうる。`long-run` の「中核ルール」、`self-correct` の
+  長時間セッションの後半で切り落とされうる。`self-correct` の
   停止ルール、`adoption-review` の「中核ルール（これを守れないなら出力しない）」が
   いずれも本文の早い位置にあるのはこのため
 - **「やらないこと」節を末尾に置く場合、そこにしか無い制約を作らない。** 末尾の禁止事項は
@@ -99,7 +99,7 @@ your-skill-name/
 | `description` | ガイド必須 | **必須** | 下記の型に従う |
 | `argument-hint` | Claude Code 固有 | 使う | `/コマンド` の引数表示。**必ずクオートする**（後述） |
 | `disable-model-invocation` | Claude Code 固有 | 使う | 明示起動専用にする（`pipeline-setup`・`pipeline-improve`） |
-| `hooks` | Claude Code 固有 | 使う | スキル起動中だけ有効なフック（`long-run`） |
+| `hooks` | Claude Code 固有 | 使ってよい | スキル起動中だけ有効なフック（現在使っているスキルは無い） |
 | `compatibility` | ガイド任意 | 使ってよい | 外部バイナリ等の環境要件（1〜500字） |
 | `license` | ガイド任意 | **使わない** | plugin.json とルート LICENSE が既に MIT を宣言済み。3つ目の写しになる |
 | `metadata` | ガイド任意 | **使わない** | `metadata.version` は規約5（version は plugin.json のみ）と衝突する |
@@ -114,12 +114,12 @@ your-skill-name/
 
 ```yaml
 # 悪い例
-argument-hint: "<タスク内容>"
-description: ... /long-run <タスク内容> での手動起動で発動する。
+argument-hint: "<対象>"
+description: ... /self-correct <対象> での手動起動で発動する。
 
 # 良い例
-argument-hint: "[タスク内容]"
-description: ... /long-run [タスク内容] での手動起動で発動する。
+argument-hint: "[対象]"
+description: ... /self-correct [対象] での手動起動で発動する。
 ```
 
 入れ子になる場合は外側の角括弧を外す:
@@ -136,7 +136,7 @@ description: ... /long-run [タスク内容] での手動起動で発動する�
 |---|---|
 | `argument-hint: [タスク内容]` | **list**（型が静かに変わる） |
 | `argument-hint: [deep] [codex]` | **ParserError**（ファイルごと壊れる） |
-| `argument-hint: "[タスク内容]"` | str（正しい） |
+| `argument-hint: "[対象]"` | str（正しい） |
 
 ### description の型
 
@@ -228,7 +228,7 @@ description: ... /long-run [タスク内容] での手動起動で発動する�
 
 1. **発動テスト** — should / should NOT のクエリ表を作り、1シナリオ＝1セッションで確認する
 2. **機能テスト** — 発動した後、書いたとおりに動くか
-3. 記録は [`evals/`](evals/README.md) に置く（`claude plugin eval` は early access のため現状 Markdown）
+3. 記録は [`evals/`](evals/README.md) に置く（発火ケースは `triggers.md` → `claude plugin eval`、応答の中身は Markdown のシナリオで手動採点）
 
 ## CI が守っている項目
 
