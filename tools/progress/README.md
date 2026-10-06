@@ -12,9 +12,7 @@ Claude Code のステータスライン（1行）と `.dashboard/index.html`（1
 
 | 読むファイル | 書くスキル | 表示するもの |
 |---|---|---|
-| `docs/pipeline/*/status.md` | pipeline の `feature-pipeline` | 現在のフェーズ、承認待ち（🛑）、差し戻し回数 |
-| `docs/task-pipeline/*/status.md` | pipeline の `task-pipeline` | 同上 |
-| `.claude/self-correct/state.json` | self-correct の `self-correct` | ラウンド数、判定、未解決の指摘 ID。`ESCALATED` は判断待ちとして出す |
+| `docs/task-pipeline/*/status.md` | pipeline の `task-pipeline` | 現在のフェーズ、承認待ち（🛑）、差し戻し回数 |
 
 無いファイルは黙って飛ばします。どれも無ければ、statusline は空行、HTML は「進行中の作業なし」になります。
 
@@ -23,7 +21,7 @@ Claude Code のステータスライン（1行）と `.dashboard/index.html`（1
 
 - その行の成果物（例: `brief.md 保存` の `brief.md`）が既にあるときだけ「承認待ち」と表示します
 - 成果物がまだ無いときは「次の関門」として予告します
-- 最終レビュー（Phase 7）のように成果物ファイルが無い関門は、承認待ちかどうか判別できません。この場合も「次の関門」と表示します
+- 最終レビュー（Phase 5）のように成果物ファイルが無い関門は、承認待ちかどうか判別できません。この場合も「次の関門」と表示します
 
 ## 使い方
 
@@ -43,7 +41,7 @@ Claude Code のステータスライン（1行）と `.dashboard/index.html`（1
 表示例:
 
 ```
-pipeline:login Phase3 🛑ブリーフ承認待ち | self-correct:drafts/article.md 2/3 FAIL(2)
+task-pipeline:auth-diagram Phase3 🛑ブリーフ承認待ち
 ```
 
 statusline が呼ばれるたびに、前回から30秒以上たっていれば `.dashboard/index.html` も作り直します。

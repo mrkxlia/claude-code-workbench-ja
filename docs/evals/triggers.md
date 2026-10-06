@@ -29,7 +29,7 @@
 | grilling | should | この設計案、あいまいなところを徹底的に突っ込んで質問して |
 | grilling | not | ユーザー招待機能を要件から実装・テスト・レビューまで end-to-end で作って |
 | grilling | not | 日付フォーマット関数を追加して、テストも一緒に書いて |
-| feature-pipeline | should | ユーザー招待機能を、要件定義から実装・テスト・レビューまで end-to-end で作って |
-| feature-pipeline | should | サブスク決済機能を、ストーリー承認とブリーフ承認を挟みながら開発して |
-| feature-pipeline | not | README の誤字を1つ直して |
-| feature-pipeline | not | システム構成図を drawio で描いて |
+| task-pipeline | should | 認証フローのシステム構成図を drawio で、要件承認を挟みながら作って |
+| task-pipeline | should | 新サービスの運用手順書を、調査から最終レビューまで工程を踏んで作って |
+| task-pipeline | not | README の誤字を1つ直して |
+| task-pipeline | not | ユーザー招待機能を要件から実装・テスト・レビューまで end-to-end で作って |

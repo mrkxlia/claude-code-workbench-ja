@@ -65,7 +65,7 @@ BLOCKED: 担当範囲の外への書き込みです: $rel
 
 このエージェントが書き込めるのは次の範囲だけです: $AllowedPrefixes
 （`!` 始まりは除外指定です）
-（実装ノート docs/pipeline/<slug>/implementation-notes.md は常に書けます）
+（実装ノート docs/task-pipeline/<slug>/implementation-notes.md は常に書けます）
 
 対処方法:
   1. 担当外のファイルが必要なら、実装せずに実装ノートへ「必要な変更」として記録し、

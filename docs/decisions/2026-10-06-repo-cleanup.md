@@ -205,3 +205,24 @@ MIT、コミット `6fd9479`・2026-10-06 取得）に差し替えた。
 見送ったもの: self-correct の「Stop の block 回数の上限」は、既存の「同じ状態への block は1回だけ」と
 `max_attempts` で既に満たしていた。pipeline の並列ビルダーの worktree 隔離は、導入先にコピー済みのフック資材を
 作り直すことになり既存の利用者が壊れるため見送り。
+
+## 第10段: feature-pipeline を superpowers に、self-correct を loop_eng に任せる
+
+第3段・第9段で「差分が機能する」と残した2件を、ユーザーの判断でさらに外部へ寄せた。
+第9段で代替の機能を取り込んで並べはしたが、**並んだだけで上回ってはいない**（取り込み元が代替そのもの）ため、
+同じものを2か所で保守する理由が無い。
+
+| 削除したもの | 任せる先 | 失うもの |
+|---|---|---|
+| pipeline のコードモード（`feature-pipeline` スキル・`backend-builder`・`frontend-builder`・`test-verifier`・`guard-builder-writes` フック・コード用 `CLAUDE.md` サンプル・`pipeline-setup` の `code-mode.md`） | [obra/superpowers](https://github.com/obra/superpowers)（brainstorming → writing-plans → subagent-driven-development → TDD → code review） | 3つの人間承認チェックポイントを固定順で踏む型、SPEC.md の確定要件を毎回注入する配線（`inject-spec-summary` は成果物側に残る） |
+| `self-correct` プラグイン全体（スキル3種・エージェント3種・フック2種） | [sdsrss/loop_eng](https://github.com/sdsrss/loop_eng)、完了条件までの自律は本体の `/goal` | コード以外（記事・調査）を Ground Truth つきで回す型、Judge 自身を正解つきで検定する `judge-eval` |
+
+- pipeline は成果物専用（`task-pipeline`）になった（pipeline 5.0.0、メジャー更新）。共有エージェント4種のモード判定を外し、
+  要件 ID を `D-NN` に固定。`guard-builder-paths` は deliverable-builder の越境だけを見る
+- self-correct は marketplace の `renames` に `null` で載せ、導入済みの利用者には削除済みと分かるようにした
+- `tools/progress` は task-pipeline の `status.md` だけを読む。#87 で誤ってコミットした `__pycache__` を消し、`.gitignore` を足した
+- self-correct の決定記録2件（2026-09-05 の実装、2026-09-06 の停止ルール）は、現行コードの理由でなくなったため削除した
+  （`git show 8b55f42:docs/decisions/<file>` で引ける）
+- 失うもののうち `judge-eval` は2026-09-13 の棚卸しで「本命」とした差分だった。使われた記録が無く、検定対象（loop-judge）ごと
+  無くなるため残す意味が無い。必要になったら loop_eng の checker に対して同じ手順（正解つきサンプルで見逃し・過検出を数える）を
+  手で回せばよい

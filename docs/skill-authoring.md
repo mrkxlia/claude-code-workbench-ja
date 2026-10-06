@@ -64,8 +64,8 @@ print('\n'.join((p.extract_text() or '') for p in PdfReader('guide.pdf').pages))
 このリポジトリの執筆規約:
 
 - **重要な指示・停止条件・禁止事項は SKILL.md の先頭寄りに置く。** 末尾に置いた規律は、
-  長時間セッションの後半で切り落とされうる。`self-correct` の
-  停止ルール、`adoption-review` の「中核ルール（これを守れないなら出力しない）」が
+  長時間セッションの後半で切り落とされうる。`verify-fresh` の
+  中核ルール、`adoption-review` の「中核ルール（これを守れないなら出力しない）」が
   いずれも本文の早い位置にあるのはこのため
 - **「やらないこと」節を末尾に置く場合、そこにしか無い制約を作らない。** 末尾の禁止事項は
   リマインダとして書き、本体の手順側にも同じ制約を1行で織り込む
@@ -115,11 +115,11 @@ your-skill-name/
 ```yaml
 # 悪い例
 argument-hint: "<対象>"
-description: ... /self-correct <対象> での手動起動で発動する。
+description: ... /verify-fresh <対象> での手動起動で発動する。
 
 # 良い例
 argument-hint: "[対象]"
-description: ... /self-correct [対象] での手動起動で発動する。
+description: ... /verify-fresh [対象] での手動起動で発動する。
 ```
 
 入れ子になる場合は外側の角括弧を外す:
@@ -216,13 +216,11 @@ description: ... /self-correct [対象] での手動起動で発動する。
 
 | 例 | 判断 |
 |---|---|
-| `pipeline-setup` の `code-mode.md` / `deliverable-mode.md` | **切る**。1回の実行で片方しか読まない |
+| `pipeline-setup` の `windows.md`（bash が無いときだけ）・`spec-summary.md`（フック配線時・不具合時） | **切る**。条件付き |
 | `review-panel` の `personas.md`（Round 0 承認後）・`report-template.md`（deep のみ） | **切る**。条件付き |
-| `feature-pipeline` の各 Phase | **切らない**。Phase 0→7 で全節を順に読むので、切ると読み込み回数が増えるだけ |
+| `task-pipeline` の各 Phase | **切らない**。Phase 0→5 で全節を順に読むので、切ると読み込み回数が増えるだけ |
+| `pipeline-setup` の `deliverable-mode.md` | 毎回読むので本来は切らない側。本体に戻すと 500 行の目安を超えかけるため、例外として分冊のまま置いている |
 
-加えて、`feature-pipeline` と `task-pipeline` はほぼ同文の節を持つため、各自に `references/` を
-持たせると重複が2本のツリーに複写される（[`lessons.md`](lessons.md) の教訓2「重複を自動化する前に
-重複そのものを消す」）。統合するなら独立した検討が要る。
 
 ## テスト
 
@@ -303,14 +301,12 @@ description: ... /self-correct [対象] での手動起動で発動する。
 | 全20スキルの `SKILL.md` 命名 | 完全一致 |
 | 全20スキルの description 構造 | 「何を＋いつ＋トリガー句」を既に満たす。日本語の「」トリガー句は良い実践 |
 | スキル直下の `README.md` | 元から1件も無い |
-| `pipeline-setup` の `references/` 分冊 | モード別に片方しか読まない構成で、分冊基準に合致 |
-| `feature-pipeline`・`task-pipeline`・`notes` | 分冊しない判断を維持（全節を順に読むため。上記「別冊に切る基準」） |
+| `pipeline-setup` の `references/` 分冊 | 条件付きで読む windows.md・spec-summary.md と、500 行の目安のために切った deliverable-mode.md（2026-10-06 にコードモードを削除して片方読みでなくなった） |
+| `task-pipeline`・`notes` | 分冊しない判断を維持（全節を順に読むため。上記「別冊に切る基準」） |
 | 残り12スキルの Common Issues | 会話で完結し外部依存が無いため付けない（水増し回避） |
 | `review-panel` の外部依存 | codex/kiro パネリストは opt-in で欠席縮退する設計。`compatibility` は付けない |
 
 ### 積み残し
 
-- **`feature-pipeline` と `task-pipeline` の重複節** — ほぼ同文の節を複数持つ。共有別冊への統合は
-  分冊基準（全節を順に読む）と衝突するため今回は見送った。独立した検討が要る
 - **`compatibility` の付与** — 今回は付けていない。外部 CLI が要る7スキルの「前提」節は本文（第2段）に
   あり、発動前には読まれない。frontmatter に上げるかは、過剰発動とのトレードオフを実測してから決める

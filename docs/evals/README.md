@@ -1,6 +1,6 @@
 # evals — 主要スキルの「期待挙動」シナリオ
 
-7スキルについて、**「この入力に対してこう振る舞う」**を評価シナリオとして固定したもの。
+5スキルについて、**「この入力に対してこう振る舞う」**を評価シナリオとして固定したもの。
 走らせるのは本体の `claude plugin eval`（出典: [Plugin evals](https://code.claude.com/docs/en/plugin-evals)、
 2026-10-06 取得）。スキル有りとスキル無し（baseline）を同時に走らせて差（Δ）を出し、各ケースを3回ずつ採点する。
 
@@ -47,8 +47,6 @@ claude plugin eval "$T/$P" --trust-plugin --no-publish --max-cost-usd 5 \
 | [`verify-fresh.md`](verify-fresh.md) | `verify-fresh` | 反証フレーミング・網羅指示・**Opus 5 で反射的に呼ばない** |
 | [`review-panel.md`](review-panel.md) | `review-panel` | ブラインド並列・単独レビューへの切り分け・deep の裁定 |
 | [`adoption-review.md`](adoption-review.md) | `adoption-review` | 一次情報の収集・自分の成果物のレビューを横取りしない・推測で埋めない・検証ゲートの分岐・スコアの根拠 |
-| [`self-correct.md`](self-correct.md) | `self-correct` | Ground Truth の無い基準で回さない・Judge に修正させない・停止条件で止まる |
-| [`feature-pipeline.md`](feature-pipeline.md) | `feature-pipeline` | 自分で実装しない・チェックポイントで止まる・差し戻し上限 |
 | [`feedback-rule.md`](feedback-rule.md) | `feedback-rule` | count を自動で上げない・いきなり禁止にしない・既存を探す |
 | [`deep-understand.md`](deep-understand.md) | `deep-understand` | 講義から始めない・クイズで実証する・曖昧な回答で通さない |
 

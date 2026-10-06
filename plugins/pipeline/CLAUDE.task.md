@@ -118,5 +118,5 @@
 - **調査の網羅性** — researcher は明らかに無関係な素材を除き、関連しうる資料を幅優先で広く読む
   （素材の取りこぼしを避ける）
 
-> **コード変更が必要なときは feature-pipeline（コードモード）を使う。** task-pipeline はコード以外の
-> 成果物（図・ドキュメント・レポート）専用。コードの実装・修正は `/feature-pipeline` へ。
+> **コード変更が必要なときは task-pipeline を使わない。** task-pipeline はコード以外の
+> 成果物（図・ドキュメント・レポート）専用。コードの実装・修正は superpowers（`obra/superpowers`）へ。

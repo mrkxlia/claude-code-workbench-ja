@@ -20,18 +20,6 @@
             "type": "command",
             "command": "bash",
             "args": [
-              "$CLAUDE_PROJECT_DIR/.claude/hooks/guard-builder-writes.sh"
-            ]
-          }
-        ]
-      },
-      {
-        "matcher": "Edit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash",
-            "args": [
               "$CLAUDE_PROJECT_DIR/.claude/hooks/guard-deliverable-writes.sh"
             ]
           }
@@ -78,7 +66,7 @@
     ],
     "SubagentStart": [
       {
-        "matcher": "^(pipeline:)?(researcher|requirements-writer|brief-writer|final-reviewer|backend-builder|frontend-builder|deliverable-builder|test-verifier)$",
+        "matcher": "^(pipeline:)?(researcher|requirements-writer|brief-writer|final-reviewer|deliverable-builder|design-doc-checker)$",
         "hooks": [
           {
             "type": "command",

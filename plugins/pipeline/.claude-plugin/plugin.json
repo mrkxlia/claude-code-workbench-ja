@@ -1,7 +1,7 @@
 {
   "name": "pipeline",
-  "version": "4.1.0",
-  "description": "コード開発（feature-pipeline・7エージェント）とコード以外の成果物（task-pipeline・5エージェント）を1つに統合したパイプラインテンプレート。/pipeline:pipeline-setup がモード選択つきで対象リポジトリを解析し、エージェント・CLAUDE.md・フックを自動導入する。旧 software-pipeline 3.x / task-pipeline 2.x の後継。レガシーコードからの仕様逆引きは cc-rsg 等の外部ツールへ委譲する（2.0.0 で spec-extract スキルを削除）。2.1.0 で SPEC.md の確定要件を SessionStart / SubagentStart で注入する inject-spec-summary と、ビルダーの担当外パスへの書き込みを拒否する guard-builder-paths を追加（フック5種）。2.3.0 で設計書向けに design-docs スキル（要件定義・基本設計・詳細設計・DB設計・図表の章立てテンプレート）と design-doc-checker エージェント（フェーズ間の矛盾・用語ゆれ・実コードとの乖離の検査）を追加（スキル8種・エージェント9種）。3.0.0 で build-with-tests を削除（superpowers の TDD・mattpocock の tdd が上位のため。スキル7種）。4.0.0 で独自の clarify を、mattpocock/skills の grilling（MIT）を無改変で同梱する形に置き換え。4.1.0 で、大きな設計判断が残るときブリーフを2〜3案並列に作って比べる手順、2回目の差し戻しから上位モデルで起動し直す手順、notes の「書かないもの」（秘密情報・他の成果物の重複）、pipeline-improve の効果確認を追加。",
+  "version": "5.0.0",
+  "description": "コード以外の成果物（drawio 図・ドキュメント・レポート・設計書）を、5エージェントの連鎖（調査 → 成果物要件 → 作業ブリーフ → 作成 → レビュー）と3つの人間承認チェックポイントで作るパイプラインテンプレート（task-pipeline）。設計書の章立てを5フェーズで固定する design-docs と、フェーズ間整合を検査する design-doc-checker、徹底質問の grilling（mattpocock/skills から無改変で同梱・MIT）、作業判断を記録する notes、運用実績から定義を改善する pipeline-improve、対象リポジトリへ一式を導入する pipeline-setup を含む（スキル6種・エージェント6種）。5.0.0 でコードモード（feature-pipeline・backend/frontend-builder・test-verifier・guard-builder-writes）を削除し、コードの機能開発は obra/superpowers に委ねた。",
   "author": {
     "name": "mrkxlia",
     "url": "https://github.com/mrkxlia"

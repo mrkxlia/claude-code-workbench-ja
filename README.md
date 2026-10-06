@@ -14,13 +14,13 @@ flowchart TD
 
     New --> N1["1. 個人の運用ルールを整える<br/>model-setup を導入"]
     N1 --> N2{"何を作る？"}
-    N2 -->|"コードで機能開発"| N3["pipeline の pipeline-setup を<br/>コードモードで実行"]
-    N2 -->|"図・ドキュメント等"| N4["pipeline の pipeline-setup を<br/>成果物モードで実行"]
-    N3 --> N6["cli-bridge・agent-review-panel・<br/>self-correct・feedback-rules・<br/>adoption-review・learning-coach は<br/>いつでも追加導入可"]
+    N2 -->|"コードで機能開発"| N3["obra/superpowers を導入<br/>（このリポジトリの外）"]
+    N2 -->|"図・ドキュメント等"| N4["pipeline の pipeline-setup を実行"]
+    N3 --> N6["cli-bridge・agent-review-panel・<br/>feedback-rules・adoption-review・<br/>learning-coach は<br/>いつでも追加導入可"]
     N4 --> N6
 
     Existing --> E1["1. 現状を仕様化する（推奨）<br/>cc-rsg 等の外部ツールで SPEC.md を生成"]
-    E1 --> E2["2. 必要ならパイプラインを導入<br/>pipeline-setup（モード選択つき）"]
+    E1 --> E2["2. 必要なら導入<br/>コード: superpowers／成果物: pipeline-setup"]
     E2 --> E2b{"リポジトリが大きい？<br/>（モノレポ・数十万行以上）"}
     E2b -->|"Yes"| E2c["3. 足場を整える<br/>公式 Monorepos and large repos を適用"]
     E2b -->|"No"| E3
@@ -33,15 +33,16 @@ flowchart TD
 
 1. **個人の運用ルールを先に整える**（Claude Code のユーザー設定に一度入れれば全プロジェクトで効く）— `model-setup` を導入（4ルール＋プロファイル別追補＋`verify-fresh`）。
 2. **プロジェクトの土台を選ぶ**（対象リポジトリに導入。何を作るかで変わる）
-   - `pipeline` の `pipeline-setup` を実行（コード/成果物のモード選択つき。エージェント・CLAUDE.md・フックを対象リポジトリに自動導入）
-3. 別 AI への相談・レビュー委譲（`cli-bridge`）、多視点レビュー（`agent-review-panel`）、自己修正ループ（`self-correct`）、指摘の永続化と段階的強制（`feedback-rules`）、外部技術の採用可否レビュー（`adoption-review`）、変更内容を自分が理解するための学習コーチ（`learning-coach`）は、上記と独立して**いつ追加してもよい**。
+   - コードで機能開発する → [obra/superpowers](https://github.com/obra/superpowers) を導入（このリポジトリには同等品を置かない）
+   - 図・ドキュメント・レポート・設計書を作る → `pipeline` の `pipeline-setup` を実行（エージェント・CLAUDE.md・フックを対象リポジトリに自動導入）
+3. 別 AI への相談・レビュー委譲（`cli-bridge`）、多視点レビュー（`agent-review-panel`）、指摘の永続化と段階的強制（`feedback-rules`）、外部技術の採用可否レビュー（`adoption-review`）、変更内容を自分が理解するための学習コーチ（`learning-coach`）は、上記と独立して**いつ追加してもよい**。
 
 ### 既存リポジトリ（すでにコード・成果物がある）
 
 いきなりパイプラインを回すと、既存の暗黙の規約と衝突しかねません。まず現状を仕様として固定してから入れるのがおすすめです。
 
 1. **現状を仕様化する（推奨）** — [daishir0/cc-rsg](https://github.com/daishir0/cc-rsg) 等の外部ツールで、既存コード・成果物から確度ラベル付きの `SPEC.md` を逆引き生成する（本リポジトリはこの機能を持たず外部ツールへ委譲する）。
-2. **その後にパイプラインを導入する場合** — `pipeline-setup` を実行する。対象リポジトリのスタック・git の有無・OS を自動検出し、既存の CLAUDE.md や `.claude/settings.json` は上書きせずマージを提案する設計なので、すでに手を入れたリポジトリでも安全に走らせられる。
+2. **その後にパイプラインを導入する場合** — コード開発なら superpowers、成果物作成なら `pipeline-setup` を実行する。対象リポジトリのスタック・git の有無・OS を自動検出し、既存の CLAUDE.md や `.claude/settings.json` は上書きせずマージを提案する設計なので、すでに手を入れたリポジトリでも安全に走らせられる。
 3. **リポジトリが大きい場合（数十万行以上・モノレポ・トップレベルが数十以上）は、先に足場を整える** — 公式ドキュメント [Monorepos and large repos](https://code.claude.com/docs/en/large-codebases) に沿って、CLAUDE.md の階層化・生成物を読ませない設定・LSP プラグインなどを入れる（小さいリポジトリには不要）。
 4. `model-setup` は個人設定なので、新規・既存を問わずいつ導入してもよい。
 
@@ -61,16 +62,15 @@ flowchart TD
 | 種別 | 動き方 | 呼び出し方 | 入れると何が嬉しいか | 代表例 |
 |---|---|---|---|---|
 | 🔁 フック（完全自動） | プラグイン導入直後から、SessionStart/SessionEnd/PreToolUse 等のイベントで**頼まなくても毎回発火**する | 不要（無効化しない限り常時ON） | 「言い忘れ」「やり忘れ」を構造的に防げる。導入するだけで効果が始まる | 機密コミット防止、担当外/出力先外書き込みガード、仕様更新漏れの通知（下表） |
-| 💬 スキル（自然文トリガー） | 自然文の依頼を Claude が判断し、**自動的に適切なスキルを選ぶ**（`/スキル名` での明示起動も可） | 「〜して」と頼む、または `/スキル名` | 手順や合言葉を覚えていなくても、思った通りに頼めば正しい型が起動する | `verify-fresh`・`feature-pipeline`・`task-pipeline`・`grilling`・`notes`・`codex-ask`・`deep-understand` など大半のスキル |
+| 💬 スキル（自然文トリガー） | 自然文の依頼を Claude が判断し、**自動的に適切なスキルを選ぶ**（`/スキル名` での明示起動も可） | 「〜して」と頼む、または `/スキル名` | 手順や合言葉を覚えていなくても、思った通りに頼めば正しい型が起動する | `verify-fresh`・`task-pipeline`・`grilling`・`notes`・`codex-ask`・`deep-understand` など大半のスキル |
 | 🎯 明示専用スキル | 自然文では発火せず、**`/スキル名` で名指ししたときだけ**動く（`disable-model-invocation: true`） | `/スキル名` のみ | 導入・較正など一度きり／影響の大きい操作を誤発動させない | `pipeline-setup`・`pipeline-improve` |
 
 ### 🔁 自動フック一覧（導入するだけで効果が始まるもの）
 
 | プラグイン | フック | 発火タイミング | 効果 |
 |---|---|---|---|
-| pipeline | block-secrets-commit / guard-builder-writes / guard-deliverable-writes / guard-builder-paths / inject-spec-summary / spec-sync-reminder | コミット前／Edit・Write 前／セッション開始・サブエージェント開始・Stop | 機密のコミット防止、担当外・出力先外への書き込み防止（`guard-builder-paths` はビルダーの越境を exit 2 で拒否）、SPEC.md の確定要件の注入、仕様更新漏れの通知（guard はモードに応じて setup が配線） |
+| pipeline | block-secrets-commit / guard-deliverable-writes / guard-builder-paths / inject-spec-summary / spec-sync-reminder | コミット前／Edit・Write 前／セッション開始・サブエージェント開始・Stop | 機密のコミット防止、担当外・出力先外への書き込み防止（`guard-builder-paths` はビルダーの越境を exit 2 で拒否）、SPEC.md の確定要件の注入、仕様更新漏れの通知 |
 | feedback-rules | feedback-hook（inject / guard / stop-check の3モード） | プロンプト送信時／Bash・Edit・Write 前／Stop | 繰り返し指摘された確定ルール（count 3 以上）を毎ターン注入し、違反しそうなツール実行を count に応じて ask / deny で止め、直すまでターンを終わらせない。**ルールが1件も無い間は素通り**する |
-| self-correct | loop-stop-check / guard-ground-truth | Stop／Edit・Write 前 | 自己修正ループが未完了のまま停止するのを止め、上限到達時は人間への引き継ぎを促す。判定の根拠（元資料・仕様・fixture）への書き込みを exit 2 で拒否する。**どちらも状態ファイルが ACTIVE のときだけ発火**し、ループを回していないときは素通りする |
 
 > 上の表は「導入するだけで常時発火する」フックの一覧です。cli-bridge の `plan-review-codex` は手動配線の opt-in なので
 > ここには載せていません。model-setup・agent-review-panel・adoption-review・learning-coach はスキルのみで完結し、フックを持ちません。
@@ -79,7 +79,7 @@ flowchart TD
 
 ### 方法1: プラグインで導入する（最も簡単）
 
-Claude Code でそのまま実行します（clone 不要）。現在9のプラグインを配信しています:
+Claude Code でそのまま実行します（clone 不要）。現在7つのプラグインを配信しています:
 
 ```
 /plugin marketplace add mrkxlia/claude-code-workbench-ja
@@ -88,15 +88,14 @@ Claude Code でそのまま実行します（clone 不要）。現在9のプラ�
 /plugin install agent-review-panel@workbench-ja
 /plugin install adoption-review@workbench-ja
 /plugin install model-setup@workbench-ja
-/plugin install self-correct@workbench-ja
 /plugin install feedback-rules@workbench-ja
 /plugin install learning-coach@workbench-ja
 ```
 
-- **pipeline** — 新しいセッションで `/pipeline:pipeline-setup` を実行すると、モード選択
-  （コード開発 `/feature-pipeline` ／コード以外の成果物 `/task-pipeline`）つきで対象リポジトリに
-  パイプライン一式（エージェント・CLAUDE.md・フック）が導入されます。旧 software-pipeline /
-  task-pipeline の統合後継です。詳しくは [pipeline/README.md](plugins/pipeline/) を参照。
+- **pipeline** — 新しいセッションで `/pipeline:pipeline-setup` を実行すると、コード以外の成果物
+  （図・ドキュメント・レポート・設計書）を作る `/task-pipeline` 一式（エージェント・CLAUDE.md・フック）が
+  対象リポジトリに導入されます。**コードの機能開発は [obra/superpowers](https://github.com/obra/superpowers)
+  を使ってください**（旧コードモード `/feature-pipeline` は 2026-10-06 に削除）。詳しくは [pipeline/README.md](plugins/pipeline/) を参照。
 - **cli-bridge** — 導入すると `/kiro-review`・`/kiro-ask`・`/codex-ask` で、
   外部の AI コーディング CLI（Kiro・OpenAI Codex）に相談・レビューを委譲できます（ユーザーは
   外部 CLI を直接操作せず、Claude Code が非対話・read-only で駆動）。**Codex へのレビュー・実装の
@@ -121,15 +120,6 @@ Claude Code でそのまま実行します（clone 不要）。現在9のプラ�
   公式ガイドに無い4ルールの CLAUDE.md テンプレート・プロファイル別追補（Opus+Sonnet / Sonnet 単独）・
   プロファイル設計メモ（MODEL-GUIDE.md）も同梱（テンプレートと追補はファイルコピーが必要）。
   詳しくは [model-setup/README.md](plugins/model-setup/) を参照。
-- **self-correct** — 導入すると `/self-correct`（成果物を loop-builder に作らせ、loop-judge に
-  独立検査させ、**FAIL した箇所だけ**を直して再検査するループを、合格条件・判定の根拠
-  （Ground Truth）・最大修正回数・人間へ戻す条件つきで回す）・`/judge-eval`（**Judge 自身**を
-  正解つきサンプルで採点し本番投入の可否を決める）・`/self-correct-setup`（対象リポジトリを
-  実測して導入）が使えます。Judge はツール権限として Edit / Write を持たないため、指摘した
-  箇所を自分で直して合格させることが構造的にできません。フック2種（未完了のまま停止するのを
-  止める Stop ゲート・判定の根拠への書き込み拒否）はプラグイン導入で自動配線され、**ループを
-  回していないときは素通り**します。本体の `/goal` は再実装せず、ループ外側の完了判定として
-  併用します。詳しくは [self-correct/README.md](plugins/self-correct/) を参照。
 - **feedback-rules** — 導入すると `/feedback-rule`（人間の指摘を `~/.claude/feedback/` の1ファイルにして
   count を1つ上げ、機械的に検知できる形に翻訳）・`/feedback-audit`（違反ログを集計して形骸化ルール・
   誤検知・昇格候補を棚卸し）・`/feedback-setup`（導入）が使えます。**同じ指摘の回数（count）が
@@ -169,14 +159,6 @@ cat /tmp/workbench/plugins/model-setup/CLAUDE.md /tmp/workbench/plugins/model-se
 cp -r /tmp/workbench/plugins/model-setup/skills/verify-fresh ~/.claude/skills/
 mkdir -p ~/.claude/agents && cp -r /tmp/workbench/plugins/model-setup/agents/* ~/.claude/agents/
 
-# self-correct — 自己修正ループのスキル3種＋エージェント3種＋フック2種をプロジェクトへ
-mkdir -p .claude/skills .claude/agents .claude/hooks
-cp -r /tmp/workbench/plugins/self-correct/skills/* .claude/skills/
-cp -r /tmp/workbench/plugins/self-correct/agents/* .claude/agents/
-cp /tmp/workbench/plugins/self-correct/hooks/*.sh .claude/hooks/ && chmod +x .claude/hooks/*.sh
-#   フック配線は setup/settings.json を .claude/settings.json へマージ（既存の hooks は上書きしない）
-#   導入後は対象リポジトリで /self-correct-setup を実行する
-
 # feedback-rules — 指摘の永続化と段階的強制のスキル3種＋エージェント1種＋フックをプロジェクトへ
 mkdir -p .claude/skills .claude/agents .claude/hooks
 cp -r /tmp/workbench/plugins/feedback-rules/skills/* .claude/skills/
@@ -200,7 +182,7 @@ Claude に聞くのが一番早い方法です（導入済みスキルの説明�
 
 | やりたいこと | 使うもの | ひとこと |
 |--------------|----------|----------|
-| 機能をコードで end-to-end 実装したい | **pipeline**（`/feature-pipeline`） | 7エージェント連鎖＋3つの人間承認チェックポイント |
+| 機能をコードで end-to-end 実装したい | [obra/superpowers](https://github.com/obra/superpowers) | 本リポジトリは持たない（旧 `feature-pipeline` は 2026-10-06 に削除） |
 | 図・ドキュメント等コード以外の成果物を作りたい | **pipeline**（`/task-pipeline`） | 5エージェント連鎖。drawio 等のユーザー導入スキルも呼べる |
 | 要件定義書・基本設計書・詳細設計書・DB設計書を毎回同じ型で書きたい | **pipeline**（`/design-docs`） | フェーズ別の章立てテンプレート＋フェーズ間整合を検査する design-doc-checker |
 | 別 AI（OpenAI Codex）にレビュー/実装を委譲したい | 公式プラグイン [openai/codex-plugin-cc](https://github.com/openai/codex-plugin-cc) | 本リポジトリでは扱わない（2026-09-19 に委譲） |
@@ -215,10 +197,9 @@ Claude に聞くのが一番早い方法です（導入済みスキルの説明�
 | PR 作成から CI 確認・マージ・後片付けまで一気に | 頼むだけでよい（「CI を確認してからマージして」）。PR 作成は公式 `commit-commands`、CI の修正は本体の `/autofix-pr` | 本リポジトリは持たない（旧 `pr-merge` は 2026-10-06 に削除） |
 | 巨大なリポジトリで Claude が的外れなファイルを読む／CLAUDE.md が長すぎる | 公式ドキュメント [Monorepos and large repos](https://code.claude.com/docs/en/large-codebases)・本体の `/doctor` | 本リポジトリは持たない（旧 `codebase-onboard` は 2026-10-06 に削除） |
 | モデルを更新したので古い指示を整理したい | 本体の `/doctor prompt-audit`（横断の陳腐化・矛盾）と `/doctor`（常時ロードの削減） | どちらも提案だけで、承認前に変更しない |
-| 作る→検査→直す→再検査を人間が毎回指示せずに回したい | **self-correct**（`/self-correct`） | Builder と Judge を別コンテキスト・別ツール権限に分離。停止条件と Ground Truth まで設計する |
+| 作る→検査→直す→再検査を人間が毎回指示せずに回したい | [sdsrss/loop_eng](https://github.com/sdsrss/loop_eng)（検査役を分けた反復）・本体の `/goal`（完了条件まで自律） | 本リポジトリは持たない（旧 `self-correct` は 2026-10-06 に削除） |
 | 同じ指摘を何度もしている／CLAUDE.md に書いても守られない | **feedback-rules**（`/feedback-rule`） | 指摘をファイル化し、指摘回数に応じて warn → ask → deny と強制力が上がる。count を上げるのは人間だけ |
 | ルールが増えすぎた／どのルールが効いているか分からない | feedback-rules（`/feedback-audit`） | 発火ログを集計して形骸化・誤検知・昇格候補を仕分け。削除より無効化を優先し記録を残す |
-| レビュー役（Judge）自体が信用できるか確かめたい | self-correct（`/judge-eval`） | 正解つきサンプルで見逃し・過検出・重大度誤り・根拠欠落を採点。本番投入前の必須項目 |
 | Claude に書かせた変更を、自分でも説明できるようになりたい | **learning-coach**（`/deep-understand`） | 教師役が3層チェックリストで段階指導。先に自分の理解を述べさせ、クイズで実証するまで次へ進まない |
 
 > パイプラインのサブスキル（`notes`）は単体でも使えます。導入は各プラグイン README の
@@ -230,10 +211,10 @@ Claude に聞くのが一番早い方法です（導入済みスキルの説明�
 
 | ツール | 方向 | 入力 → 出力 | いつ使う／違い |
 |--------|------|-------------|----------------|
-| `feature-pipeline` / `brief-writer`（pipeline） | **順方向** | アイデア/ストーリー → 技術ブリーフ → コード | これから作る機能を仕様化して実装まで通す |
-| `task-pipeline`（成果物モード） | 順方向（成果物） | 依頼 → 成果物要件 → 作業ブリーフ → 成果物 | 図/ドキュメント版。コード前提語を成果物前提に読み替えた点がコードモードとの違い |
+| superpowers（外部・[obra/superpowers](https://github.com/obra/superpowers)） | **順方向**（コード） | アイデア → 設計 → 計画 → TDD で実装 | コードの機能開発。本リポジトリは持たない |
+| `task-pipeline` / `brief-writer`（pipeline） | 順方向（成果物） | 依頼 → 成果物要件 → 作業ブリーフ → 成果物 | 図・ドキュメント・レポート・設計書を仕様化して作り切る |
 | `grilling`（pipeline に同梱・上流は mattpocock/skills） | 詰める | 曖昧な要望 → 確定した要件 | 仕様を書く前に穴・前提を質問で潰す。brief-writer の前段 |
-| `notes`（pipeline） | 記録 | 実装中の判断・逸脱 → `implementation-notes.md` | あるべき姿（SPEC.md）ではなく**実装の経緯**を残す |
+| `notes`（pipeline） | 記録 | 作成中の判断・逸脱 → `implementation-notes.md` | あるべき姿（SPEC.md）ではなく**実装の経緯**を残す |
 | 仕様逆引き（外部ツール） | **逆方向** | 既存コード・成果物 → `SPEC.md`（確度ラベル付） | 本リポジトリは持たない。cc-rsg 等を使い、生成後は researcher が一次資料として読む |
 
 **他の仕様駆動開発（SDD）との関係。** GitHub [spec-kit](https://github.com/github/spec-kit)
@@ -243,23 +224,23 @@ Claude に聞くのが一番早い方法です（導入済みスキルの説明�
 
 | 一般的な SDD | 本リポジトリの相当物 |
 |--------------|----------------------|
-| requirements.md | feature-pipeline の `story.md`（受け入れ基準つきストーリー） |
-| design.md | `brief.md` ＋ `api-contract.md`（技術ブリーフ／API 契約） |
+| requirements.md | task-pipeline の `requirements.md`（受け入れ基準つき成果物要件） |
+| design.md | `brief.md`（作業ブリーフ） |
 | tasks.md | パイプラインの Phase 連鎖＋ `status.md`（進行管理） |
-| PRD / living spec | `SPEC.md`（spec of record・Phase 7 で増分更新） |
+| PRD / living spec | `SPEC.md`（spec of record・完了時に増分更新） |
 | spec-tracker（更新漏れ警告） | `spec-sync-reminder` フック（SessionStart/Stop） |
-| spec-validator（実装と仕様の突合） | `final-reviewer` エージェント＋ `test-verifier` |
+| spec-validator（成果物と仕様の突合） | `final-reviewer` エージェント |
 
-本リポジトリと spec-kit / Kiro / cc-sdd との主な違いは、(1) **`task-pipeline` によるコード以外の
-成果物**（図・ドキュメント・レポート）への同型パイプライン適用、(2) 各工程を**独立したサブエージェント**
+本リポジトリと spec-kit / Kiro / cc-sdd との主な違いは、(1) **コード以外の成果物**
+（図・ドキュメント・レポート・設計書）に対象を絞ったこと（コードは superpowers や上記ツールに任せる）、(2) 各工程を**独立したサブエージェント**
 （クリーンなコンテキスト・ツール制限）に分離する実行方式、(3) `notes` の実装ノートと `SPEC.md` を
 連動させる**生きた仕様の運用**（`spec-sync-reminder` フックが更新漏れを通知）、の3点です。
 レガシーコードからの仕様逆引き生成は対象外とし、cc-rsg 等の外部ツールへ委譲します（spec-kit の
 `/speckit.converge` は既存 spec との乖離検出であり、仕様書が無い状態からの逆引き生成とは異なる点に
 注意）。運用原則として **「1 Todo = 1 Commit = 1 Spec Update」**
-（実装の区切りごとに仕様も更新して同期させる）を採り、これは既存の「Phase 7 での SPEC 増分更新」と
-`spec-sync-reminder` フックがそのまま実装になっています。**いつ SDD を使うか**の目安は、本番機能（1日以上）・
-チーム作業・厳格なアーキテクチャ・レガシー改善では採用（`feature-pipeline`）、1時間未満の修正・POC・hotfix・
+（作業の区切りごとに仕様も更新して同期させる）を採り、これは task-pipeline 完了時の SPEC 増分更新と
+`spec-sync-reminder` フックがそのまま実装になっています。コードで SDD を使うかの目安は、本番機能（1日以上）・
+チーム作業・厳格なアーキテクチャ・レガシー改善では採用（spec-kit・superpowers の計画工程など）、1時間未満の修正・POC・hotfix・
 UI 試作では避けて軽量な TDD スキル（superpowers の `test-driven-development` 等）を使う、です（参考: 下記「ライセンス・出典」の SDD 記事）。
 
 ## 収録セクション
@@ -268,7 +249,7 @@ UI 試作では避けて軽量な TDD スキル（superpowers の `test-driven-d
 （コピーして使うテンプレートが増えたら `templates/` を追加する規約になっています。
 詳細なディレクトリ構成は [`CLAUDE.md`](CLAUDE.md) 参照）。
 
-### plugins/ — プラグイン導入可能な8セクション
+### plugins/ — プラグイン導入可能な7セクション
 
 #### [`plugins/model-setup/`](plugins/model-setup/)
 モデル運用テンプレート（旧名 sonnet-setup。Opus+Sonnet の私用PC / Sonnet 単独の会社PC の2プロファイル）。
@@ -279,8 +260,8 @@ fresh-verifier エージェント、プロファイル設計メモ（`MODEL-GUID
 スキル4種を削除）。**プラグイン1コマンドで導入可能**（テンプレートと追補はファイルコピーが必要）。
 
 #### [`plugins/pipeline/`](plugins/pipeline/)
-コード開発とコード以外の成果物作成を1つに統合したパイプラインテンプレート（旧 software-pipeline / task-pipeline の後継）。
-**コードモード**は `/feature-pipeline` が 調査 → ストーリー → 技術ブリーフ → バックエンド → フロントエンド → 受け入れテスト → 最終検証 の7工程を、**成果物モード**は `/task-pipeline` が 調査 → 成果物要件 → 作業ブリーフ → 作成 → レビュー の5工程を連鎖実行し、いずれも3つの人間承認チェックポイントで停止します（成果物モードのビルダーは drawio などユーザー導入スキルを呼び出せます）。対象リポジトリを解析してモード選択つきで一式を自動導入する **pipeline-setup**、運用実績から定義を改善する **pipeline-improve**（自己改善ループ）を含むスキル7種（設計書の章立てを5フェーズで固定する **design-docs** を含む）と、モード自動判定の共有エージェント4種（researcher / requirements-writer / brief-writer / final-reviewer）+専用ビルダー等5種の計9エージェント、フック4種（機密コミットブロック・担当外/出力先外書き込みガード・仕様更新漏れ通知）・CLAUDE.md サンプル2種（コード用 / 成果物用）を収録しています。ビルダーが実装中の判断を `docs/pipeline/<slug>/implementation-notes.md` に記録し、レガシーコードには [cc-rsg](https://github.com/daishir0/cc-rsg) 等の外部ツールで仕様を固めてから導入できます。**プラグイン2コマンドで導入可能**（上の「導入方法」参照）。
+コード以外の成果物（図・ドキュメント・レポート・設計書）を作るパイプラインテンプレート（旧 software-pipeline / task-pipeline の後継）。
+`/task-pipeline` が 調査 → 成果物要件 → 作業ブリーフ → 作成 → レビュー の5工程を連鎖実行し、3つの人間承認チェックポイントで停止します（ビルダーは drawio などユーザー導入スキルを呼び出せます）。対象リポジトリを解析して一式を自動導入する **pipeline-setup**、運用実績から定義を改善する **pipeline-improve**、設計書の章立てを5フェーズで固定する **design-docs** を含むスキル6種と、エージェント6種（researcher / requirements-writer / brief-writer / final-reviewer / deliverable-builder / design-doc-checker）、フック5種（機密コミットブロック・出力先外書き込みガード・SPEC 要約の注入・仕様更新漏れ通知）・CLAUDE.md サンプルを収録しています。ビルダーが作成中の判断を `docs/task-pipeline/<slug>/implementation-notes.md` に記録し、既存資料には [cc-rsg](https://github.com/daishir0/cc-rsg) 等の外部ツールで仕様を固めてから導入できます。**コードの機能開発は [obra/superpowers](https://github.com/obra/superpowers) に任せます**（旧コードモード `/feature-pipeline` は 2026-10-06 に削除）。**プラグイン2コマンドで導入可能**（上の「導入方法」参照）。
 
 #### [`plugins/cli-bridge/`](plugins/cli-bridge/)
 外部の AI コーディング CLI（**OpenAI Codex**・**Kiro**）に相談・レビューを委譲するスキル3種と
@@ -334,28 +315,6 @@ Security）／**外部評価**（Hacker News・Reddit・実運用事例）の裏
 先行事例の調査は
 [`docs/decisions/2026-09-06-adoption-review.md`](docs/decisions/2026-09-06-adoption-review.md)）。
 
-#### [`plugins/self-correct/`](plugins/self-correct/)
-成果物を**作る役**と**検査する役**に分け、FAIL した箇所だけを直して再検査する**自己修正ループ**
-（Evaluator-Optimizer 型）のスキル3種とサブエージェント3種、フック2種。
-最初に間違えた Claude が同じ文脈・同じ基準で「見直しました、問題ありません」と言っても、
-同じ盲点をもう一度見逃します。そこで **`loop-builder`（作る・Edit/Write あり）** と
-**`loop-judge`（検査する・Edit/Write なし）** を別コンテキスト・別ツール権限に分離し、
-判定には成果物の外にある根拠（**Ground Truth** — 元資料・テスト結果・公式ページ）を持たせます。
-**`/self-correct`** が Define（目的・評価基準・Ground Truth・変更禁止範囲・最大回数を確定して承認）
-→ Build → Judge → Decide（Critical/Major があれば RETRY、同じ指摘が2回連続または上限到達で
-ESCALATE）→ Retry（**指摘された箇所だけ**修正）→ Stop を回し、**`/judge-eval`** が
-**Judge 自身**を正解つきサンプル（合格例・不合格例）で採点して見逃し・過検出・重大度誤り・
-根拠欠落を集計します（Judge が間違えばループ全体が静かに壊れるため、本番投入前の必須項目）。
-**`/self-correct-setup`** は対象リポジトリを実測して Ground Truth の候補・評価基準の雛形・
-CLAUDE.md の行動ルールを承認ゲート付きで導入します。フックは
-`loop-stop-check`（ループ未完了のまま停止するのを止める Stop ゲート）と
-`guard-ground-truth`（判定の根拠への書き込みを exit 2 で拒否）の2種で、いずれも
-**状態ファイルが ACTIVE のときだけ発火**します。本体の `/goal` は**再実装せず**、ループ外側の
-完了判定として併用します（`/goal` の評価器はツールを持たず実ファイル・テスト結果を見られないため、
-根拠に基づく検査は `loop-judge` が担当。設計の経緯は
-[`docs/decisions/2026-09-05-self-correction-loop.md`](docs/decisions/2026-09-05-self-correction-loop.md)）。
-**プラグイン1コマンドで導入可能**（上の「導入方法」参照）。
-
 #### [`plugins/feedback-rules/`](plugins/feedback-rules/)
 人間からの**指摘そのものをファイルとして永続化**し、同じ指摘を受けた回数（`count`）に応じて
 フックの強制力を段階的に上げる基盤。スキル3種・サブエージェント1種・フック3種。
@@ -391,7 +350,7 @@ frontmatter の `count` から severity を自動決定します（**1〜2回目
 
 #### [`tools/progress/`](tools/progress/)
 
-pipeline・self-correct が残す状態ファイルを読み、「いまどこまで進み、何があなたの判断を待っているか」を
+pipeline（task-pipeline）が残す状態ファイルを読み、「いまどこまで進み、何があなたの判断を待っているか」を
 Claude Code のステータスライン1行と `.dashboard/index.html` 1枚に出します。LLM を使わない Python スクリプトなので費用は0。
 判断待ちは表示するだけで、作業を勝手に進めません。
 
@@ -424,7 +383,7 @@ Power Automate のクラウドフローから Azure AI Foundry（Azure OpenAI）
 |-----------|--------|----------------|
 | [`plugins/model-setup/`](plugins/model-setup/) | X 記事「Sonnet 5をFable 5にする方法」（[@armadillo_ai 氏](https://x.com/armadillo_ai)） | 記事の7原則を参照・要約・翻案した独自整形（コピーではない）— 帰属を README とファイル内に記載 |
 | [`docs/skills-guide/`](docs/skills-guide/) | [anthropics/skills](https://github.com/anthropics/skills)・[obra/superpowers](https://github.com/obra/superpowers)・[mattpocock/skills](https://github.com/mattpocock/skills) | リンクと独自解説のみ収録。各スキル本体は各リポジトリのライセンス（anthropics/skills は Apache 2.0 + 一部 source-available）に従う |
-| [`plugins/pipeline/`](plugins/pipeline/) | [How to Build a Software Factory with Claude Code（@sairahul1 氏）](https://x.com/sairahul1/status/2058832033628241931) | 記事のコンセプト（コードモード）とそのコード以外の成果物への汎用化（成果物モード）に基づく独自実装（コピーではない）— 帰属を README に記載 |
+| [`plugins/pipeline/`](plugins/pipeline/) | [How to Build a Software Factory with Claude Code（@sairahul1 氏）](https://x.com/sairahul1/status/2058832033628241931) | 記事のコンセプトをコード以外の成果物へ汎用化した独自実装（記事が主題とするコード開発の部分は 2026-10-06 に削除）（コピーではない）— 帰属を README に記載 |
 | [`plugins/cli-bridge/`](plugins/cli-bridge/) | [eddiearc/codex-delegator](https://github.com/eddiearc/codex-delegator)・[hamelsmu/claude-review-loop](https://github.com/hamelsmu/claude-review-loop)・[OpenAI Codex CLI ドキュメント](https://developers.openai.com/codex/) | 構成・プロンプト型のコンセプトを参考にした独自実装（コードのコピーではない） |
 | [`plugins/agent-review-panel/`](plugins/agent-review-panel/) | [wan-huiyan/agent-review-panel](https://github.com/wan-huiyan/agent-review-panel)・[makinux/adversarial-panel](https://github.com/makinux/adversarial-panel) | 多フェーズ・パネル構成（並列独立レビュー→討論→検証→裁定）／4ラウンド敵対プロトコル（ブラインド回答→相互批判→譲歩→統合）のコンセプトを参考にした独自実装（コードのコピーではない）— 帰属を README に記載 |
 | [`plugins/learning-coach/`](plugins/learning-coach/) | 2026-08-11 に共有された Anthropic メンバーの「仕事の学習用プロンプト」（日本語訳） | プロンプトの規範（診断が先・3層・クイズで実証・全項目が済むまで終えない）を本リポジトリのスキル規約に載せ替えた独自実装（コピーではない）— 帰属を README・決定記録に記載 |

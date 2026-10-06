@@ -64,7 +64,7 @@ frontmatter（name / description）から、成果物作成に使えそうなス
 
 コピーするのは次の**6ファイル**:
 `researcher` / `requirements-writer` / `brief-writer` / `deliverable-builder` / `final-reviewer` /
-`design-doc-checker`（`backend-builder` / `frontend-builder` / `test-verifier` はコピーしない — コードモード用）。
+`design-doc-checker`。
 
 `design-doc-checker` は設計書（要件定義・基本設計・詳細設計・DB設計・図表）を作る予定が無ければ
 省いてよい。省いた場合は CLAUDE.md のエージェント表からも該当行を削る。
@@ -110,8 +110,6 @@ chmod +x .claude/hooks/block-secrets-commit.sh .claude/hooks/guard-deliverable-w
 CLAUDE.md の「成果物の種類と出力先」・deliverable-builder の「担当範囲」・このフックの
 許可リストは、**同じ承認済みデータ**から生成すること（三者の不一致を構造的に防ぐ）。
 
-settings.json のマージでは、テンプレートの `guard-builder-writes` エントリ（コードモード用）を
-**追記対象から除く**。
 
 ## Step 7: 検証チェックリスト（成果物モード固有分）
 
