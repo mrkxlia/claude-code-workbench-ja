@@ -141,3 +141,25 @@ MIT、コミット `6fd9479`・2026-10-06 取得）に差し替えた。
 - 上流の description は英語で「grill」という語に反応する。日本語の自然文（「穴がないように質問して詰めて」）で
   単体発火するかは `triggers.md` のケースで測る。pipeline 内の呼び出しは明示なので発火に依存しない
 - pipeline 4.0.0（`/clarify` が消えるため破壊的変更）
+
+## 第6段: adoption-review の証拠集めを本体の `/deep-research` に任せる
+
+`adoption-researcher`（1スコープ1体・最大3体の並列 Web 調査）は、本体同梱の `/deep-research` workflow
+（並列調査・ソース同士の照合・主張ごとの投票・裏の取れない主張の除外）の再発明だったので廃止した
+（adoption-review 0.3.0）。残したのは判定部分 — 採用しない理由を先に探す・`adoption-challenger`・7択の結論と
+6択の採用判断・確認できなかったことを減点に使わない — で、これは `/deep-research`（引用つきレポートを返すだけで
+採否を判定しない）に無い。
+
+ユーザーの要件「adoption-review スキルを使ってと言ったときに動くこと」への対応:
+
+- `/deep-research` は「利用者が呼んだときだけ動く」。ただし**利用者が呼んだスキルの手順が Workflow を呼ぶよう
+  指示している場合は、それが workflow の許可にあたる**。そこで、`/adoption-review` を打つか「adoption-review を
+  使って」と名指ししたときは、確認を挟まず `Workflow`（`name: "deep-research"`）を起動するよう SKILL.md に書いた。
+  description にも「adoption-review を使って」を発火句として足した
+- 自然文で自動発火しただけのとき（利用者がスキルを名指ししていない）は、複数エージェントの費用がかかるので
+  起動前に1行で確認する
+- workflows が無効・WebSearch が無い・起動を断られたときは、メインが直接 Web を調べて続け、「照合なし」と明記する
+- 名指し起動の挙動は `docs/evals/adoption-review.md` の S-8 で測れる
+
+確認できなかったこと: 組み込みの `deep-research` を `Workflow` ツールで呼ぶときの `args` の形（問いの文字列で
+足りるはずだが、公式ドキュメントに明記が無い）。実機では未実行。

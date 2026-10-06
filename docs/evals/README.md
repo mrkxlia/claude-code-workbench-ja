@@ -30,6 +30,7 @@ claude plugin eval "$T/$P" --trust-plugin --no-publish --max-cost-usd 5 \
 ```
 
 - 発火だけを安く測るなら `--tag trigger --ablation none --runs 1`、シナリオだけなら `--tag scenario`
+- adoption-review のシナリオは Web と workflow を使うので `--allow-tools WebFetch` を足す（WebFetch は既定で許可されない）。`/deep-research` が走るぶん費用も大きいので、`--case 'adoption-review-s-8'` のように絞って流す
 - **Opus と Sonnet の差を見る**ときは `--model` を変えて2回走らせ、`report.html` を並べる
 - シナリオのプロンプトが存在しないファイル（例: `docs/pipeline/login/brief.md`）に触れるものは、空の作業ディレクトリでは
   「ファイルが無い」ことへの反応も採点に入る。気になる節は `case.yaml` の `context.scaffold_script` で用意する

@@ -112,7 +112,7 @@ Claude Code でそのまま実行します（clone 不要）。現在9のプラ�
   論文・SaaS・ツール名を渡すと、Web の一次情報を集めてから「実務で採用する価値があるか」を敵対的に
   判定）が使えます。**良い点より先に「採用しない理由」を探し**、代替手段（既存 OSS・本体機能・
   何もしない）と導入/運用/学習/撤退コストまで見たうえで、結論・採用判断・検証手順・スコアを返します。
-  証拠収集は `adoption-researcher` に**1スコープ1体（最大3体）**で並列委譲し、結論の向きで
+  証拠収集は本体同梱の `/deep-research` workflow（並列調査・照合・主張ごとの投票）に任せ、結論の向きで
   検証を分岐します（肯定寄りなら `adoption-challenger` に「採用しない論拠」だけを作らせ、
   否定寄りなら「確認できなかったことを減点に使っていないか」を自己点検）。確認できなかった
   ことは推測で埋めません。詳しくは [adoption-review/README.md](plugins/adoption-review/) を参照。
@@ -317,10 +317,10 @@ kiro-cli には Codex の `--sandbox workspace-write` に相当する OS レベ�
 
 #### [`plugins/adoption-review/`](plugins/adoption-review/)
 外部の技術（OSS・AI ツール・SaaS・開発手法・論文・スライド・X ポスト・記事）を **Web の一次情報から
-敵対的にレビュー**し、「実務で採用する価値があるか」だけを判定するスキル1種とサブエージェント2種。
+敵対的にレビュー**し、「実務で採用する価値があるか」だけを判定するスキル1種とサブエージェント1種。
 **adoption-review**（`/adoption-review [対象]`）が、対象の種別を判定して想定用途を固定し、
-`adoption-researcher`（read-only・Web 検索）を一次情報／運用情報（Releases・License・Pricing・
-Security）／**外部評価**（Hacker News・Reddit・実運用事例）の3スコープへ**1スコープ1体で並列委譲**、
+本体の `/deep-research` workflow に一次情報／運用情報（Releases・License・Pricing・
+Security）／**外部評価**（Hacker News・Reddit・実運用事例）の裏取りを任せ（`/adoption-review` か名指しで頼めば確認なしで起動）、
 集めた事実を「明示的な主張／暗黙の主張／確認できた効果／証拠が弱い効果」に分けたうえで批判します。
 評価の順序が逆（良い点より先に**採用しない理由**を探す）で、**話題性・スター数・フォロワー数・
 紹介者・肩書きは採用理由にしません**。代替手段（既存 OSS・ツール本体の機能・小さい自作スクリプト・

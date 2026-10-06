@@ -75,7 +75,7 @@ for md in sorted(here.glob("*.md")):
                   "モデル名で条件が分かれている項目は、このセッションのモデルに当てはまるものだけで判定する。\n\n"
                   f"{criteria}\n")
         write_case(f"{skill}-{sid.lower()}", im.group(1).strip(), {"criteria": rubric},
-                   10, ["Read", "Glob", "Grep", "Skill", "Agent"], [skill, "scenario"])
+                   10, ["Read", "Glob", "Grep", "Skill", "Agent", "Workflow", "WebSearch", "WebFetch"], [skill, "scenario"])
 
 print(f"{written} cases -> {out}")
 if skipped:

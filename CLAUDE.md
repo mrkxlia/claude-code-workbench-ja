@@ -54,7 +54,7 @@ claude-code-workbench-ja/
 │   │   ├── README.md
 │   │   ├── .claude-plugin/plugin.json
 │   │   ├── skills/                  #     1種（adoption-review＋references/source-checklists.md〔対象種別ごとの確認項目・条件付き分冊〕）
-│   │   └── agents/                  #     2種（adoption-researcher〔証拠収集・並列・read-only〕/ adoption-challenger〔採用しない論拠だけを作る敵対役。肯定寄りのときだけ起動〕）
+│   │   └── agents/                  #     1種（adoption-challenger〔採用しない論拠だけを作る敵対役。肯定寄りのときだけ起動〕。証拠収集は本体の /deep-research workflow に任せる）
 │   ├── model-setup/                 #   モデル運用テンプレート（旧名 sonnet-setup。Opus+Sonnet / Sonnet 単独の2プロファイル、公式ガイドに無い4ルール＋追補＋スキル2種＋エージェント1種）
 │   │   ├── README.md
 │   │   ├── CLAUDE.md                #     コピペ用テンプレート本体（4つの行動ルール。公式スニペットは原文で貼る）
