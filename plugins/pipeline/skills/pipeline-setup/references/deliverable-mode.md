@@ -80,7 +80,7 @@ CLAUDE.md の「成果物の種類と出力先」とビルダーの担当範囲�
 
 ### スキル（3つ）
 
-`task-pipeline/`・`clarify/`・`notes/`。
+`task-pipeline/`・`grilling/`・`notes/`。
 
 ### フック（5本）
 
@@ -117,7 +117,7 @@ settings.json のマージでは、テンプレートの `guard-builder-writes` 
 
 ```
 - [ ] .claude/agents/ にエージェント定義6ファイルがある（design-doc-checker を省いた場合は5）
-- [ ] .claude/skills/ に task-pipeline / clarify / notes がある
+- [ ] .claude/skills/ に task-pipeline / grilling / notes がある
 - [ ] block-secrets-commit.sh / guard-deliverable-writes.sh / guard-builder-paths.sh / inject-spec-summary.sh / spec-sync-reminder.sh に実行権限がある
 - [ ] settings.json の PreToolUse に Bash（block-secrets）と Edit|Write（guard-deliverable）のエントリがある
 - [ ] settings.json の SessionStart / SubagentStart に inject-spec-summary のエントリがある

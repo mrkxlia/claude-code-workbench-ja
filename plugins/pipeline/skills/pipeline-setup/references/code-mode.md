@@ -96,7 +96,7 @@ CLAUDE.md のアーキテクチャルールとビルダーの担当範囲は、*
 
 ### スキル（4つ）
 
-`feature-pipeline/`・`notes/`・`pipeline-improve/`・`clarify/`。
+`feature-pipeline/`・`notes/`・`pipeline-improve/`・`grilling/`。
 
 ### フック（5本）
 
@@ -133,7 +133,7 @@ settings.json のマージでは、テンプレートの `guard-deliverable-writ
 
 ```
 - [ ] .claude/agents/ にエージェント定義（7ファイル、FE無し構成なら6）がある
-- [ ] .claude/skills/ に feature-pipeline / notes / pipeline-improve / clarify がある
+- [ ] .claude/skills/ に feature-pipeline / notes / pipeline-improve / grilling がある
 - [ ] block-secrets-commit.sh / guard-builder-writes.sh / guard-builder-paths.sh / inject-spec-summary.sh / spec-sync-reminder.sh に実行権限がある
 - [ ] guard-builder-writes.sh のドライラン: マーカー無しで共有ファイルへの Write を流すと exit 0
       （`echo '{"tool_name":"Write","tool_input":{"file_path":"prisma/schema.prisma"}}' | bash .claude/hooks/guard-builder-writes.sh; echo $?` → 0）

@@ -90,7 +90,7 @@ AWS Labs [AI-DLC (aidlc-workflows)](https://github.com/awslabs/aidlc-workflows) 
 | AIDLC の概念 | 担い手 |
 |---|---|
 | Intent（意図の表明） | Plan モードでの普通の依頼（`PROMPTS.md` #0 のテンプレートを貼るとさらに確実） |
-| Inception: 要件確認 | Plan モードでのまとめた質問／深い要件は `clarify`〔pipeline 導入時〕 |
+| Inception: 要件確認 | Plan モードでのまとめた質問／深い要件は `grilling`〔pipeline 導入時〕 |
 | Inception: 設計・計画 | Plan モードの実行計画（使うスキル分担・検証チェックポイントを明記） |
 | 承認ゲート（Human in the Loop） | Plan 承認（唯一のゲート）／パイプラインの3チェックポイント |
 | Construction: 実装 | 軽微なら直接実行。機能開発 → `feature-pipeline`、非コード成果物 → `task-pipeline` |

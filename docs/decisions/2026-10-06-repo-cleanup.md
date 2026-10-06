@@ -123,3 +123,21 @@ Codex の fallback filenames が CLAUDE.md の `@import` を展開するか。�
   learning-coach へ移す案ではなく削除を選んだ（ユーザー判断）。必要になったら `git show 9094ace:plugins/codebase-setup/` から戻せる
 - marketplace に `renames: { "codebase-setup": null }` を入れ、導入済みの利用者には廃止が通知されるようにした
 - 決定記録 `2026-09-05-large-codebase-harness.md` は、理由を説明する対象のコードが無くなったため、残す基準に従い削除した
+
+## 第5段: pipeline の `clarify` を mattpocock/skills の `grilling` に置き換え
+
+ユーザーの判断で、独自の `clarify` を上流の `grilling`（[mattpocock/skills](https://github.com/mattpocock/skills)、
+MIT、コミット `6fd9479`・2026-10-06 取得）に差し替えた。
+
+- `clarify` 自身が「grill-me と ryonakae/dig を参考にした」と明記しており、中核（推奨回答つきの徹底質問・調べれば
+  分かることは聞かない）は上流と同じだった。上流のほうが利用者も保守も厚い
+- 上流は「設計ツリーのフロンティアをラウンドごとにまとめて聞き、事実は自分で（サブエージェントで）調べる」方式で、
+  一問ずつの clarify より往復が少ない。失ったのは clarify 独自の「答えられないときの3分岐」1点
+- `plugins/pipeline/skills/grilling/` に **SKILL.md を無改変で**置き、MIT の著作権表示として上流の LICENSE を同じ
+  ディレクトリに置いた。上流の `agents/openai.yaml`（Codex アプリ用の表示名）は Claude Code では使わないので持ち込まない。
+  更新は上流から再コピーする（手で直さない）
+- `grill-me` は `disable-model-invocation: true` で中身が「grilling を呼べ」の1行なので持ち込まない。pipeline の
+  Phase 2・3 は Skill ツールで `grilling` を直接呼ぶ
+- 上流の description は英語で「grill」という語に反応する。日本語の自然文（「穴がないように質問して詰めて」）で
+  単体発火するかは `triggers.md` のケースで測る。pipeline 内の呼び出しは明示なので発火に依存しない
+- pipeline 4.0.0（`/clarify` が消えるため破壊的変更）

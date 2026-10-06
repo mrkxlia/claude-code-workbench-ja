@@ -100,9 +100,9 @@ Anthropic公式リポジトリのスキル。安定性が最も高く、今す�
 
 | 状況 | 本リポジトリ | 上流 | どう選ぶか |
 |---|---|---|---|
-| 計画・要件を質問で詰める | `clarify`（一問ずつ・日本語・pipeline 統合） | `/grill-me`・`/grill-with-docs`（ラウンド方式。後者は GLOSSARY.md と ADR を同時に作る） | **どちらか一方**。両方入れると「grill して」で発火を取り合う |
+| 計画・要件を質問で詰める | `grilling`（上流を pipeline に無改変で同梱） | `/grill-me`・`/grill-with-docs`（ラウンド方式。後者は GLOSSARY.md と ADR を同時に作る） | 中身は同じ。pipeline を入れるなら上流の `grilling` は不要（両方入れると同名スキルが2つ並ぶ）。ADR・用語集も作りたいなら上流の `/grill-with-docs` |
 | テストを先に書いて実装 | 無し（`build-with-tests` は 2026-10-06 に削除） | `tdd` | 上流を使う |
-| 答えを持つ人に質問票を送る | 無し（`clarify` は「確認先・現在の仮定」つきで持ち越すだけ） | `/to-questionnaire` | 上流を使う |
+| 答えを持つ人に質問票を送る | 無し | `/to-questionnaire` | 上流を使う |
 | 紙の上で決めきれない設計を試作で確かめる | 無し | `prototype` | 上流を使う |
 | 再現しにくいバグを診断する | 無し | `diagnosing-bugs` | 上流を使う |
 | 用語集と ADR を育てる | 無し | `domain-modeling` | 上流を使う |
