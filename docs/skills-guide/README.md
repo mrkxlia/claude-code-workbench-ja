@@ -163,6 +163,12 @@ Anthropic公式リポジトリのスキル。安定性が最も高く、今す�
 | **Triage** | バグ報告の分類・優先順位付けを自動化 | `mattpocock/skills` → `engineering/triage` |
 | **Git Work Trees** | 複数ブランチの並列作業環境を自動構築 | `obra/superpowers` → `using-git-worktrees` |
 | **writing-skills** | スキルの構造・description の書き方を学べる。mattpocock の `write-a-skill` は消滅したため superpowers 版に差し替え | `obra/superpowers` → `writing-skills` |
+| **japanese-tech-writing** | 日本語の技術文書・記事の執筆と推敲の規範（段落単位の論証・推量を根拠なく断定に変えない・LLM 口調の空句と翻訳調の比喩の禁止・冗長の排除）。日本語のドキュメントを Claude に書かせる・直させる人向け | [k16shikano の gist](https://gist.github.com/k16shikano/fd287c3133457c4fd8f5601d34aa817d)（Unlicense・plugin 非配布。`~/.claude/skills/japanese-tech-writing/SKILL.md` に手動で置く） |
+
+> **japanese-tech-writing の注意**（2026-10-06 確認）: 作者1人の gist で版管理が無いので、取り込んだ日付を控え、
+> 更新は差分を読んでから反映する。本文は約3万字あり、発火するたびにその分の文脈を使う。このため
+> このリポジトリには同梱せず、ここに載せるだけにしている（判断の記録:
+> [2026-10-06 の採用可否レビュー](../decisions/2026-10-06-tsundoku-agent-14-items-adoption.md)）。
 
 ---
 
