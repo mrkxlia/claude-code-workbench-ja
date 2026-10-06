@@ -67,7 +67,7 @@ Judge は書き込みツールを持っていないため、指摘した箇所�
 
 | フック | イベント | 効果 |
 |--------|---------|------|
-| **loop-stop-check** | Stop | 状態ファイルを読み、ループが未完了なら停止を止めて次の一手を促す。**上限到達・進捗なし2ラウンド連続では引き継ぎ（ESCALATE）を、リグレッション検出時は指摘外の変更の差し戻しを促す** |
+| **loop-stop-check** | Stop | 状態ファイルを読み、ループが未完了なら停止を止めて次の一手を促す。**上限到達・進捗なし2ラウンド連続では引き継ぎ（ESCALATE）を、リグレッション検出時は指摘外の変更の差し戻しを促す**。`status` が PASS でも、`checks.json` があれば**検証コマンドを自分で実行**し、失敗したら完了させない |
 | **guard-ground-truth** | PreToolUse（Edit/Write/NotebookEdit） | 判定の根拠（元資料・仕様・fixture）への書き込みを `exit 2` で拒否する |
 
 どちらも `.claude/self-correct/state.json` が無いか `status` が `ACTIVE` でなければ**素通り**
@@ -132,6 +132,13 @@ pipeline の中で使うこともできます（成果物を作るフェーズ�
   （[Stop Hook でsimplifyを強制したら、Claude がズルを覚えた話](https://zenn.dev/kok1eeeee/articles/claude-code-stop-hook-quality-gate-gaming)、2026-09-06 取得）。
   迂回が起きていないかは、`verdict` と `status` の整合を人が見る／`/judge-eval` で Judge
   そのものを検定する、の2つで確かめてください。
+  **機械判定できる基準（テスト・lint・ビルド）だけは、この穴を塞げます。** Phase 0 で検証コマンドを
+  `.claude/self-correct/checks.json` に書いておくと、`status` を PASS にした時点で Stop フックが
+  そのコマンドを**自分で実行**し、1つでも失敗すれば完了させません（0.4.0〜。先行 OSS
+  [loop_eng](https://github.com/sdsrss/loop_eng) の「フックが検証を実行する」設計に倣った）。
+  ただし Bash からの直接書き換えまでは止められない（ガードフックが見るのは Edit / Write だけ）ので、
+  `checks.json` は commit して差分に出るようにしておいてください。意味判定の基準（文書の質など）は
+  これまでどおり Judge 頼みです。
 - **Stop フックは「別のターンを起動する」仕組みではありません。** 公式ドキュメントは
   「ネストされた Stop フックは無視されるため、Stop 内で別のターンをトリガーすることは
   できません」「フックが同じ条件に対して永続的に `decision: "block"` を返す場合、Claude は

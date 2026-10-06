@@ -31,6 +31,7 @@ Claude を**教師役**に固定し、ある変更・コード・設計判断を
 | 成果物が完了条件を満たすか検証したい | `verify-fresh`（[`model-setup`](../model-setup/)） |
 | Claude がリポジトリを読みやすくする足場 | 公式ドキュメント「Monorepos and large repos」 |
 | 理解した内容を記録に残したい | `notes`（[`pipeline`](../pipeline/)）。理解の実証が済んでから |
+| 自分の手でコードを書いて身につけたい | 本体の Learning 出力スタイル（`/output-style learning`）。要所に `TODO(human)` を残して書かせる |
 
 ## なぜこの構成か
 

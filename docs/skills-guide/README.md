@@ -25,7 +25,7 @@
 git・マーケットプレイスが使えない前提。zip 等でリポジトリを持ち込み、ファイルコピーのみで完結させる:
 
 ```bash
-# model-setup: verify-fresh（pr-merge は git 専用のため対象外）+ fresh-verifier + CLAUDE.md（共通＋会社追補）+ settings
+# model-setup: verify-fresh + fresh-verifier + CLAUDE.md（共通＋会社追補）+ settings
 cp -r plugins/model-setup/skills/verify-fresh ~/.claude/skills/
 mkdir -p ~/.claude/agents && cp plugins/model-setup/agents/fresh-verifier.md ~/.claude/agents/
 cat plugins/model-setup/CLAUDE.md plugins/model-setup/CLAUDE.company.md >> ~/.claude/CLAUDE.md

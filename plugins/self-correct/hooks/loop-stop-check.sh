@@ -26,6 +26,14 @@
 #   ACTIVE かつ regressed_count >= 1               → block（リグレッション。指摘外の変更の差し戻しを促す）
 #   ACTIVE かつ attempt < max_attempts             → block（ループの続きを促す）
 #
+# 【機械検証（checks.json）】status が PASS でも、.claude/self-correct/checks.json があれば
+# その検証コマンドをこのフック自身が実行し、1つでも失敗したら block する。Claude が書いた
+# 「PASS」を信じず、テスト・lint などの機械判定できる基準だけはフックが裏を取る（証拠を偽れない）。
+#   {"checks":[{"id":"T1","cmd":"npm test --silent"},{"id":"L1","cmd":"npx eslint src"}]}
+# checks.json は Phase 0 で人間の承認を得て作り、ループ中は guard-ground-truth.sh が書き換えを拒否する。
+# 同じ updated に対する検証・失敗時の block はそれぞれ1回だけ。1コマンド120秒まで。
+# jq が無い環境では cmd に二重引用符を含めない（フォールバックの抽出が引用符のエスケープを解さない）。
+#
 # regressed_count / no_progress_streak は**無いのが正常**（旧版の状態ファイル・ループ初回）なので、
 # 未設定・非数値は 0 に倒す。attempt / max_attempts が壊れている場合の「素通り」とは扱いが違う。
 #
@@ -88,10 +96,56 @@ json_num() {  # $1=キー名。数値を返す（取れなければ空）
 }
 
 STATUS=$(json_str status)
+UPDATED=$(json_str updated)
+CHECKS_FILE="$ROOT/.claude/self-correct/checks.json"
+CHECKS_OK="$ROOT/.claude/self-correct/.checks-ok"
+
+emit_block() {  # $1=理由。JSON 文字列に埋め込むため \ " と改行を処理する
+  ESCAPED_REASON=$(printf '%s' "$1" | tr '\n\r\t' '   ' | sed 's/\\/\\\\/g; s/"/\\"/g')
+  printf '{"decision":"block","reason":"%s"}\n' "$ESCAPED_REASON"
+  exit 0
+}
+
+# --- PASS の裏取り: checks.json の検証コマンドをフック自身が実行する -----------
+if [ "$STATUS" = "PASS" ] && [ -f "$CHECKS_FILE" ]; then
+  if [ -f "$CHECKS_OK" ] && [ "$(cat "$CHECKS_OK" 2>/dev/null)" = "$UPDATED" ]; then
+    exit 0
+  fi
+  # 同じ状態（updated）に対する失敗の block も1回だけ（直さずに止まろうとし続けて閉じ込めない）
+  if [ -f "$NUDGE_FILE" ] && [ "$(cat "$NUDGE_FILE" 2>/dev/null)" = "checks:$UPDATED" ]; then
+    exit 0
+  fi
+  CHECKS=$(cat "$CHECKS_FILE" 2>/dev/null) || exit 0
+  if command -v jq >/dev/null 2>&1; then
+    LIST=$(printf '%s' "$CHECKS" | jq -r '.checks[]? | "\(.id)\t\(.cmd)"' 2>/dev/null)
+  else
+    LIST=$(printf '%s' "$CHECKS" | tr -d '\n' | grep -Eo '\{[^{}]*\}' \
+      | sed -n 's/.*"id"[[:space:]]*:[[:space:]]*"\([^"]*\)".*"cmd"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1\t\2/p')
+  fi
+  [ -n "$LIST" ] || exit 0
+  TO=""
+  command -v timeout >/dev/null 2>&1 && TO="timeout 120"
+  while IFS="$(printf '\t')" read -r CID CCMD; do
+    [ -n "$CCMD" ] || continue
+    OUT=$(cd "$ROOT" && $TO bash -c "$CCMD" 2>&1)
+    RC=$?
+    if [ "$RC" -ne 0 ]; then
+      mkdir -p "$(dirname "$NUDGE_FILE")" 2>/dev/null || true
+      printf '%s' "checks:$UPDATED" > "$NUDGE_FILE" 2>/dev/null || true
+      TAIL=$(printf '%s' "$OUT" | tail -n 5)
+      emit_block "status は PASS ですが、機械検証 ${CID}（${CCMD}）が失敗しました（exit ${RC}）。出力の末尾: ${TAIL} — 完了扱いにせず、.claude/self-correct/state.json の status を ACTIVE に戻し、この失敗を FAIL 指摘として loop-builder に渡して修正し、loop-judge で再検査してください。checks.json は書き換えないでください。"
+    fi
+  done <<EOF_LIST
+$LIST
+EOF_LIST
+  mkdir -p "$(dirname "$CHECKS_OK")" 2>/dev/null || true
+  printf '%s' "$UPDATED" > "$CHECKS_OK" 2>/dev/null || true
+  exit 0
+fi
+
 # ACTIVE 以外（PASS / ESCALATED / 未設定）は停止してよい
 [ "$STATUS" = "ACTIVE" ] || exit 0
 
-UPDATED=$(json_str updated)
 TASK=$(json_str task)
 VERDICT=$(json_str verdict)
 ATTEMPT=$(json_num attempt)
@@ -125,7 +179,4 @@ else
   REASON="自己修正ループが未完了のまま停止しようとしています（タスク: ${TASK}／直近の判定: ${VERDICT}／修正ラウンド ${ATTEMPT}/${MAX}）。次のどれかを実行してから停止してください: (1) loop-judge の最新の FAIL 指摘だけを loop-builder に渡して修正する、(2) 修正済みなら loop-judge で再検査する、(3) Critical=0 かつ Major=0 になったら .claude/self-correct/state.json の status を PASS にする。修正は指摘された箇所だけに限定し、PASS 済みの箇所は変更しないでください。"
 fi
 
-# JSON 文字列に埋め込むため \ と " をエスケープする
-ESCAPED_REASON=$(printf '%s' "$REASON" | sed 's/\\/\\\\/g; s/"/\\"/g')
-printf '{"decision":"block","reason":"%s"}\n' "$ESCAPED_REASON"
-exit 0
+emit_block "$REASON"
