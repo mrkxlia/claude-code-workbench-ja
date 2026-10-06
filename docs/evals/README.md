@@ -1,6 +1,6 @@
 # evals — 主要スキルの「期待挙動」シナリオ
 
-8スキルについて、**「この入力に対して上位モデルはこう振る舞う」**を評価シナリオとして固定したもの。
+7スキルについて、**「この入力に対して上位モデルはこう振る舞う」**を評価シナリオとして固定したもの。
 Sonnet 5 と Opus 5 のパリティを実測するための物差し。
 
 ## 形式について
@@ -79,7 +79,6 @@ claude plugin eval "$T/model-setup" --trust-plugin --ablation none --runs 1 --no
 | [`adoption-review.md`](adoption-review.md) | `adoption-review` | 一次情報の収集・自分の成果物のレビューを横取りしない・推測で埋めない・検証ゲートの分岐・スコアの根拠 |
 | [`self-correct.md`](self-correct.md) | `self-correct` | Ground Truth の無い基準で回さない・Judge に修正させない・停止条件で止まる |
 | [`feature-pipeline.md`](feature-pipeline.md) | `feature-pipeline` | 自分で実装しない・チェックポイントで止まる・差し戻し上限 |
-| [`project-catchup.md`](project-catchup.md) | `project-catchup` | 一般論に逃げない・出典の無い理由を書かない・鮮度を書く |
 | [`feedback-rule.md`](feedback-rule.md) | `feedback-rule` | count を自動で上げない・いきなり禁止にしない・既存を探す |
 | [`deep-understand.md`](deep-understand.md) | `deep-understand` | 講義から始めない・クイズで実証する・曖昧な回答で通さない |
 

@@ -111,3 +111,15 @@ A 判定（先行事例が同等以上）の9件を残していた。今回は�
 
 `/batch` の「publishes its change」が PR 作成を指すか、`# Compact instructions` が自動圧縮に効くか、
 Codex の fallback filenames が CLAUDE.md の `@import` を展開するか。いずれも削除の根拠にはしていない。
+
+## 第4段: codebase-setup プラグインを廃止
+
+第3段で `codebase-onboard` を削除したあとに残った2スキルを見直し、ユーザーの判断でプラグインごと削除した。
+
+- **`codebase-map`**: 作るのは「ディレクトリごとの1行説明の目次」で、公式 best practices が「コードから分かるので
+  書かない」とする類（ディレクトリ一覧・アーキ概説）そのもの。Claude は Explore エージェントで必要なときに辿れ、
+  目次はコードの変化で古くなる（鮮度確認の仕組みまで足していた）。同等品が無いのは、要らないからと判断した
+- **`project-catchup`**（＋`subtree-surveyor`・`flow-tracer`）: 人間向け引き継ぎレポートで同等品は無かったが、
+  learning-coach へ移す案ではなく削除を選んだ（ユーザー判断）。必要になったら `git show 9094ace:plugins/codebase-setup/` から戻せる
+- marketplace に `renames: { "codebase-setup": null }` を入れ、導入済みの利用者には廃止が通知されるようにした
+- 決定記録 `2026-09-05-large-codebase-harness.md` は、理由を説明する対象のコードが無くなったため、残す基準に従い削除した

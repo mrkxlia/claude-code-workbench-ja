@@ -7,7 +7,7 @@
   載っている。そのため索引の要約ではなく、**各項目のリンク先（原典）**を評価対象にした
   （X ポストは fxtwitter API で本文を取得）
 - 除外: 「How Claude Code works in large codebases」（公式ブログ）は
-  [2026-09-05 に codebase-setup として取り込み済み](2026-09-05-large-codebase-harness.md)
+  2026-09-05 に codebase-setup として取り込み済み（codebase-setup は 2026-10-06 に廃止）
 - **想定用途（仮置き）**: このリポジトリのプラグインに、まだ入っていない要素があれば取り込む。
   新規プラグインは作らない（先例: PM 業務の Skill 化記事 — 2026-10-06 の整理で記録は削除、`git show 9094ace:docs/decisions/2026-09-06-pm-skill-article-adoption.md`）
 
