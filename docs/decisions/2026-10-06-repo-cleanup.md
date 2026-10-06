@@ -1,0 +1,51 @@
+# 2026-10-06 リポジトリの整理（使われていないもの・役目を終えたものの削除）
+
+- 状態: **適用済み（第1段: docs）**。第2段（プラグイン単位の公式機能との重複）は下の「プラグイン」節に追記する
+- 依頼: 「レポジトリ内を積極的に整理して、いらないもの・使われないものを削除する。adoption-review スキルも使う」
+- 基準: `/adoption-review` の判定枠組みを自リポジトリに当てた — **代替手段（git 履歴・本体機能・何もしない）**、
+  **保守コスト**（毎セッション読み込まれる CLAUDE.md の量、リンク・索引の追随）、**中核ルール11**
+  （「確認できなかった」は削除の根拠にしない。削除の根拠は「参照ゼロ」「完了済み」「読み手が無い」という
+  確認できた事実に限る）
+- 復元: 削除したものはすべて `git show 9094ace:<path>` で読める
+
+## 削除したもの
+
+| 対象 | 確認できた事実 | 代替 |
+|---|---|---|
+| `docs/backlog-2026-09.md` | B-1〜B-7 の全7件が「完了記録」に記載済み（2026-09-05）。残っていたのは MODEL-GUIDE の「B-1 で未着手」という**古い記述**の参照元としてだけ | 実装（`reinject-brief`・`inject-spec-summary` ほか）と git 履歴。MODEL-GUIDE の記述は実装済みに直した |
+| `docs/pipeline-spec-alignment-proposal.html`（36KB） | 2026-06 時点の提案。柱の `spec-extract` は 2026-08 に外部ツールへの委譲に変わり、README 自身が「歴史的決定記録として残置」と書いていた | git 履歴・`lessons.md` 教訓1 |
+| `docs/evals/evals.json`・`gen-evals.py` | `evals.json` を読み込む CI・スクリプト・スキルが**どこにも無い**（`git grep` で参照は README と CLAUDE.md の説明文だけ）。skill-creator はスキル直下の `evals/` を読むので、`docs/evals/` に置いた生成物は配信もされない | Markdown のシナリオ（人が読む正）はそのまま残す。発火ケースは `triggers.md` → `claude plugin eval` |
+| 決定記録8件（下表） | 外部記事・X ポストの採否レビューで、取り込みは0〜3点。**プラグイン・ツール・CI・README・lessons のどこからも参照されていない**（他の決定記録からの参照だけ） | 取り込んだ差分は各プラグインの本文に入っている。結論は下表に1行で残す |
+
+| 削除した決定記録 | 結論（1行） |
+|---|---|
+| `2026-09-06-self-correct-article-adoption.md` | 中核は実装済み。差分3点だけ取り込み。積み残し2件は `2026-09-06-self-correct-stop-rules.md` で実装済み |
+| `2026-09-06-prompt-techniques-7-adoption.md` | 5手法とも取り込みなし（4件は上位互換が実装済み、1件は model-setup ルール1と矛盾） |
+| `2026-09-06-pm-skill-article-adoption.md` | project-catchup に「生成物の鮮度」と【要確認】の絞り込みの2点だけ取り込み |
+| `2026-09-06-for-file-claude-md-adoption.md` | 手法は不採用。project-catchup に「設計判断の理由」章だけ追加 |
+| `2026-09-06-dev-principles-adoption.md` | 取り込みなし（公式 Best practices の ❌ Exclude に該当） |
+| `2026-09-06-compact-plus-adoption.md` | プラグインは不採用。公式事実4件を PROMPTS・MODEL-GUIDE に取り込み |
+| `2026-09-06-global-claude-md-6-items-adoption.md` | 6項目は不採用。context-audit の棚卸し対象に `MEMORY.md` を追加 |
+| `2026-09-06-claude-code-dev-flow-adoption.md` | self-correct の README/SKILL に「限界」の明記1点だけ取り込み |
+
+## 残したもの（削除しなかった理由）
+
+- **決定記録のうち、現行コードの理由として参照されているもの**（MODEL-GUIDE・各 README・エージェントの
+  frontmatter・CI・lessons から引かれている）
+- **積読索引の2件**（`2026-10-03-tsundoku-…`・`2026-10-06-tsundoku-…`）— 参照は少ないが、2026-10-06 の
+  レビューが「前回未評価のもの」を選ぶのに実際に使っている（照合用の台帳として機能している）
+- **`plan-review-before-present.md`・`self-correct-stop-rules.md`** — 現存するフック・停止ルールの設計理由そのもの
+- **プラグイン内部の資材** — 全エージェント・フック・references が SKILL.md / README から参照されていた。
+  `.ps1` は参照数0に見えたが、`pipeline-setup/references/windows.md` が `{sh,ps1}` の総称で配線しており使われている
+- **evals の Markdown シナリオ11件** — 結果記録表は空のまま（一度も記録されていない）だが、「走らせていない」は
+  シナリオの欠陥ではない（中核ルール11）。削除はしない
+
+## 方針の変更
+
+`docs/decisions/` は「追記のみ」だったが、**残す基準**を足した（`docs/README.md` 冒頭）。現行コードの理由に
+なっていない記録は、結論を1行で残したうえで削除してよい。CLAUDE.md の決定記録一覧（30行）は毎セッション
+読み込まれるため1行に畳み、一覧は `docs/README.md` だけに置く（CLAUDE.md 22.9KB → 約16.5KB）。
+
+## プラグイン
+
+（Web の一次情報による公式機能との重複調査の結果を追記する）

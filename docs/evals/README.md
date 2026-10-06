@@ -6,18 +6,8 @@ Sonnet 5 と Opus 5 のパリティを実測するための物差し。
 ## 形式について
 
 **人が読む正は `docs/evals/<skill>.md`**（入力／期待する行動〔する・しない〕／判定基準）。
-そこから `gen-evals.py` が機械可読な [`evals.json`](evals.json) を生成する。
-**`evals.json` は生成物なので手で編集しない** — Markdown 側を直して再生成する。
-
-```bash
-python3 docs/evals/gen-evals.py
-```
-
-`evals.json` の1ケースは `{id, skills, prompt, expected_output, files}` で、これは公式
-`skill-creator` プラグイン（[`anthropics/skills`](https://github.com/anthropics/skills)）が
-`evals/evals.json` に使っている形に合わせてある。単独では走らせられない「継続観察」型の
-シナリオ（直前のシナリオの途中を観察するもの）は `observations` に分け、`continues_from` で
-親ケースを指す。
+以前はここから `gen-evals.py` が `evals.json`（skill-creator 形式）を生成していたが、読み込む仕組みが
+どこにも無かったため 2026-10-06 に削除した（[整理の記録](../decisions/2026-10-06-repo-cleanup.md)）。
 
 > **以前ここには「`claude plugin eval` が early access なので Markdown を使う」と書いてあった。**
 > 2026-09-07 に確認したところ、`claude plugin eval` は公式ドキュメント（plugins-reference・
@@ -96,8 +86,7 @@ claude plugin eval "$T/model-setup" --trust-plugin --ablation none --runs 1 --no
 | [`deep-understand.md`](deep-understand.md) | `deep-understand` | 講義から始めない・クイズで実証する・曖昧な回答で通さない |
 | [`codebase-onboard.md`](codebase-onboard.md) | `codebase-onboard` | 実測が先・「入れない」と言える・承認の単位を守る |
 
-現在のケース数は `python3 docs/evals/gen-evals.py` が出力する
-（公式チェックリストの目安は**1スキルにつき最低3件**）。
+公式チェックリストの目安は**1スキルにつき最低3件**。
 
 ## 結果記録
 

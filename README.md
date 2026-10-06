@@ -445,16 +445,9 @@ Claude Code のステータスライン1行と `.dashboard/index.html` 1枚に�
 72個紹介された記事から「今すぐ使えるもの」に絞り込み、優先度別・業務タイプ別に整理しています。
 
 #### [`docs/decisions/`](docs/decisions/)
-日付つきの決定記録・監査記録。2026-09-03 に Fable 5.1（model-setup の再現対象モデル本人）が
-model-setup を監査した記録と、「完全には埋まらない」とされてきた序盤制約の保持・SPEC.md 必須ロードを
-Claude Code のフック仕様で構造化する決定記録を収録。実装待ちの項目は
-[`docs/backlog-2026-09.md`](docs/backlog-2026-09.md) にブリーフとして置いてある。
-
-#### [`docs/pipeline-spec-alignment-proposal.html`](docs/pipeline-spec-alignment-proposal.html)
-旧 software-pipeline・task-pipeline（現 pipeline に統合）と、当時存在した仕様抽出スキル（spec-extract）の
-実装合致性を強制化するための設計提案資料（案A/案B比較・推奨・改修リスト、2026-06 時点）。ブラウザで開いて
-読む単一 HTML ファイルです。**2026-08 の OSS 差別化レビューで、案A の柱だった `spec-extract` は
-[cc-rsg](https://github.com/daishir0/cc-rsg) 等の外部ツールへの委譲に変更されました**（歴史的決定記録として残置）。
+日付つきの決定記録・監査記録。現行コードの「なぜこうなっているか」を引ける記録だけを残している
+（2026-10-06 の整理で、取り込みがほぼ無かった外部記事の採否レビュー8件・完了済みバックログ・旧提案資料は削除。
+git 履歴から参照できる）。一覧は [`docs/README.md`](docs/README.md)。
 
 ## 別リポジトリに分割したもの
 

@@ -235,9 +235,8 @@ Sonnet/Haiku と Opus/Fable の差は「賢さ」ではなく「構造」で埋�
   受け入れ条件を書くこと自体が仕事の核心になる設計判断、「何がシンプルか」のような
   ルール適用の判断そのもの。これらは上位モデルへの切り替えで対応する
   （序盤の制約保持は、コンパクション後にブリーフを再注入するフックで構造的に解ける — 設計は
-  `docs/decisions/2026-09-03-long-run-constraints-and-spec-load.md` で確定済み、**実装は
-  `docs/backlog-2026-09.md` B-1 で未着手**。それまでは `/long-run` の「ブリーフ固定＋区切りごとの
-  再読」と手動 `/compact` 時の保持指示（`PROMPTS.md` #10）で運用上カバーする）。
+  `docs/decisions/2026-09-03-long-run-constraints-and-spec-load.md`、**実装は `/long-run` の frontmatter が
+  起動時だけ登録する `hooks/reinject-brief`**（2026-09-05）。手動 `/compact` 時の保持指示は `PROMPTS.md` #10）。
 
 ## 8. Fable 5.1 パリティマップ
 

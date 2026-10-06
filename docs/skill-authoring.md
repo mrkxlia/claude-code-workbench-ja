@@ -228,7 +228,7 @@ description: ... /long-run [タスク内容] での手動起動で発動する�
 
 1. **発動テスト** — should / should NOT のクエリ表を作り、1シナリオ＝1セッションで確認する
 2. **機能テスト** — 発動した後、書いたとおりに動くか
-3. 記録は [`evals/`](evals/README.md) に置く（`claude plugin eval` は early access のため現状 Markdown）
+3. 記録は [`evals/`](evals/README.md) に置く（発火ケースは `triggers.md` → `claude plugin eval`、応答の中身は Markdown のシナリオで手動採点）
 
 ## CI が守っている項目
 
