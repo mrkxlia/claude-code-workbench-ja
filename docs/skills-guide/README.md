@@ -25,13 +25,9 @@
 git・マーケットプレイスが使えない前提。zip 等でリポジトリを持ち込み、ファイルコピーのみで完結させる:
 
 ```bash
-# model-setup: スキル5種（pr-merge は git 専用のため対象外）+ エージェント3種 + CLAUDE.md（共通＋会社追補）+ settings
-cp -r plugins/model-setup/skills/task-brief ~/.claude/skills/
-cp -r plugins/model-setup/skills/backlog-loop ~/.claude/skills/
-cp -r plugins/model-setup/skills/fan-out ~/.claude/skills/
-cp -r plugins/model-setup/skills/long-run ~/.claude/skills/
+# model-setup: verify-fresh（pr-merge は git 専用のため対象外）+ fresh-verifier + CLAUDE.md（共通＋会社追補）+ settings
 cp -r plugins/model-setup/skills/verify-fresh ~/.claude/skills/
-mkdir -p ~/.claude/agents && cp -r plugins/model-setup/agents/* ~/.claude/agents/
+mkdir -p ~/.claude/agents && cp plugins/model-setup/agents/fresh-verifier.md ~/.claude/agents/
 cat plugins/model-setup/CLAUDE.md plugins/model-setup/CLAUDE.company.md >> ~/.claude/CLAUDE.md
 # ~/.claude/settings.json に plugins/model-setup/settings.company.json をマージ
 # 都度貼りプロンプト集（自動配信されない資材）も手元に置いておくと便利
@@ -40,9 +36,8 @@ cp plugins/model-setup/PROMPTS.md ~/.claude/model-setup-PROMPTS.md
 # cli-bridge: 会社でのみ Codex CLI が使えるため、単一モデル環境のセカンドオピニオン役として導入
 # （レビュー・実装の委譲そのものは公式プラグイン openai/codex-plugin-cc が担当。マーケット
 #   プレイスが使えない環境では codex-ask で相談だけ受けるか、公式を別途 zip で持ち込む）
-cp -r plugins/cli-bridge/skills/codex-ask plugins/cli-bridge/skills/codex-agents ~/.claude/skills/
+cp -r plugins/cli-bridge/skills/codex-ask ~/.claude/skills/
 cp plugins/cli-bridge/agents/codex-advisor.md ~/.claude/agents/
-# bash が使えない環境ではフック（gen-agents-md.sh）は省いてよい（スキル・エージェントのみで動作する）
 ```
 
 - `pipeline` を会社 PC で使う場合は、手動コピーではなく
@@ -106,12 +101,12 @@ Anthropic公式リポジトリのスキル。安定性が最も高く、今す�
 | 状況 | 本リポジトリ | 上流 | どう選ぶか |
 |---|---|---|---|
 | 計画・要件を質問で詰める | `clarify`（一問ずつ・日本語・pipeline 統合） | `/grill-me`・`/grill-with-docs`（ラウンド方式。後者は GLOSSARY.md と ADR を同時に作る） | **どちらか一方**。両方入れると「grill して」で発火を取り合う |
-| テストを先に書いて実装 | `build-with-tests`（pipeline を通さない軽量実装） | `tdd` | **どちらか一方** |
+| テストを先に書いて実装 | 無し（`build-with-tests` は 2026-10-06 に削除） | `tdd` | 上流を使う |
 | 答えを持つ人に質問票を送る | 無し（`clarify` は「確認先・現在の仮定」つきで持ち越すだけ） | `/to-questionnaire` | 上流を使う |
 | 紙の上で決めきれない設計を試作で確かめる | 無し | `prototype` | 上流を使う |
 | 再現しにくいバグを診断する | 無し | `diagnosing-bugs` | 上流を使う |
 | 用語集と ADR を育てる | 無し（`project-catchup` は読み解き用の用語表まで） | `domain-modeling` | 上流を使う |
-| 1セッションに収まらない大きな計画 | `backlog-loop`（決まったタスクを回す） | `/wayfinder`（決まっていない判断を issue で地図化する） | 判断が未確定なら上流、タスクが決まっていれば本リポジトリ |
+| 1セッションに収まらない大きな計画 | 無し（`backlog-loop` は 2026-10-06 に削除。タスク管理は Backlog.md） | `/wayfinder`（決まっていない判断を issue で地図化する） | 上流か Backlog.md を使う |
 
 - 上流の `/teach`・`/to-questionnaire`・`/handoff`・`/ask-matt` などは**ユーザーが打つスキル**（`disable-model-invocation: true`）で、
   Claude が自分から呼ぶことはない。本リポジトリのスキルからは案内しかできない

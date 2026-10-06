@@ -94,12 +94,9 @@ CLAUDE.md のアーキテクチャルールとビルダーの担当範囲は、*
 
 ## Step 6: スキル・フックの配置（コードモード）
 
-### スキル（5つ）
+### スキル（4つ）
 
-`feature-pipeline/`・`build-with-tests/`・`notes/`・`pipeline-improve/`・`clarify/`。
-コピー後、`build-with-tests/SKILL.md` 内の
-`npm run typecheck   # ← プロジェクトのコマンドに差し替える` の行を
-承認済みの typecheck コマンドに置換する（typecheck が無い言語では test コマンドに置換）。
+`feature-pipeline/`・`notes/`・`pipeline-improve/`・`clarify/`。
 
 ### フック（5本）
 
@@ -136,8 +133,7 @@ settings.json のマージでは、テンプレートの `guard-deliverable-writ
 
 ```
 - [ ] .claude/agents/ にエージェント定義（7ファイル、FE無し構成なら6）がある
-- [ ] .claude/skills/ に feature-pipeline / build-with-tests / notes / pipeline-improve / clarify がある
-- [ ] build-with-tests の typecheck コマンドが置換済みである
+- [ ] .claude/skills/ に feature-pipeline / notes / pipeline-improve / clarify がある
 - [ ] block-secrets-commit.sh / guard-builder-writes.sh / guard-builder-paths.sh / inject-spec-summary.sh / spec-sync-reminder.sh に実行権限がある
 - [ ] guard-builder-writes.sh のドライラン: マーカー無しで共有ファイルへの Write を流すと exit 0
       （`echo '{"tool_name":"Write","tool_input":{"file_path":"prisma/schema.prisma"}}' | bash .claude/hooks/guard-builder-writes.sh; echo $?` → 0）

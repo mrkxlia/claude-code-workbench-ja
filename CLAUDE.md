@@ -35,16 +35,16 @@ claude-code-workbench-ja/
 │   │   ├── CLAUDE.md                #     コピーして使う CLAUDE.md サンプル（コードモード）
 │   │   ├── CLAUDE.task.md           #     コピーして使う CLAUDE.md サンプル（成果物モード）
 │   │   ├── .claude-plugin/plugin.json
-│   │   ├── skills/                  #     8種（feature-pipeline / task-pipeline / pipeline-setup〔モード選択・references 分冊。spec-summary.md に SPEC 抽出規則〕/ build-with-tests / pipeline-improve / clarify / notes / design-docs〔設計書5フェーズの章立て。references 分冊: templates / consistency〕）
+│   │   ├── skills/                  #     7種（feature-pipeline / task-pipeline / pipeline-setup〔モード選択・references 分冊。spec-summary.md に SPEC 抽出規則〕/ pipeline-improve / clarify / notes / design-docs〔設計書5フェーズの章立て。references 分冊: templates / consistency〕）
 │   │   ├── agents/                  #     9種（共有4: researcher / requirements-writer / brief-writer / final-reviewer＋コード専用3: backend/frontend-builder / test-verifier＋成果物専用2: deliverable-builder / design-doc-checker）
 │   │   ├── hooks/                   #     6種（block-secrets-commit・guard-builder-writes・guard-deliverable-writes・guard-builder-paths・inject-spec-summary・spec-sync-reminder。導入先へコピーする資材＝非自動配線）
 │   │   └── setup/settings.json      #     コピー導入用テンプレート（setup がモードに応じて guard を絞る）
 │   ├── cli-bridge/                  #   外部 AI コーディング CLI（Codex・Kiro）への相談・レビュー委譲（read-only 専用。旧 codex-bridge ＋ 旧 kiro-bridge）
 │   │   ├── README.md
 │   │   ├── .claude-plugin/plugin.json
-│   │   ├── skills/                  #     4種（codex-ask / codex-agents / kiro-review / kiro-ask。レビュー・実装の委譲は公式 openai/codex-plugin-cc へ委譲したため持たない）
+│   │   ├── skills/                  #     3種（codex-ask / kiro-review / kiro-ask。レビュー・実装の委譲は公式 openai/codex-plugin-cc、AGENTS.md は @AGENTS.md import に任せる）
 │   │   ├── agents/                  #     3種（codex-advisor / kiro-reviewer / kiro-advisor。いずれも read-only）
-│   │   └── hooks/                   #     hooks.json（gen-agents-md＝プラグイン導入で自動ON）/ plan-review-codex.sh（プラン提示前レビュー・opt-in・手動配線）
+│   │   └── hooks/                   #     plan-review-codex.sh（プラン提示前レビュー・opt-in・手動配線。常時発火のフックは持たない）
 │   ├── agent-review-panel/          #   複数ペルソナの敵対的パネルレビュー（codex / kiro 混成 opt-in。反グループシンク機構7つ）
 │   │   ├── README.md
 │   │   ├── .claude-plugin/plugin.json
@@ -55,24 +55,23 @@ claude-code-workbench-ja/
 │   │   ├── .claude-plugin/plugin.json
 │   │   ├── skills/                  #     1種（adoption-review＋references/source-checklists.md〔対象種別ごとの確認項目・条件付き分冊〕）
 │   │   └── agents/                  #     2種（adoption-researcher〔証拠収集・並列・read-only〕/ adoption-challenger〔採用しない論拠だけを作る敵対役。肯定寄りのときだけ起動〕）
-│   ├── codebase-setup/              #   大規模リポジトリを Claude Code から読みやすくする足場（実測→設計→適用。定期棚卸しは本体の /doctor prompt-audit へ委譲）＋参画した案件の人間向けキャッチアップ
+│   ├── codebase-setup/              #   大規模リポジトリの地図（codebase-map）＋参画した案件の人間向けキャッチアップ（足場は公式 Monorepos and large repos、棚卸しは /doctor prompt-audit へ委譲）
 │   │   ├── README.md
 │   │   ├── .claude-plugin/plugin.json
-│   │   ├── skills/                  #     3種（codebase-onboard〔明示専用・references 分冊: settings-recipes / lsp-plugins〕/ codebase-map / project-catchup〔悪い例・良い例で具体度を縛り図を必須化。references 分冊: stack-probes / interview〕）
-│   │   └── agents/                  #     3種（subtree-surveyor〔面の調査〕/ instruction-auditor / flow-tracer〔線の調査〕。いずれも read-only。フックは持たない）
-│   ├── model-setup/                 #   モデル運用テンプレート（旧名 sonnet-setup。Opus 5 + Sonnet 5 / Sonnet 単独の2プロファイル、9ルール＋追補＋スキル6種＋エージェント3種）
+│   │   ├── skills/                  #     2種（codebase-map / project-catchup〔悪い例・良い例で具体度を縛り図を必須化。references 分冊: stack-probes / interview〕）
+│   │   └── agents/                  #     2種（subtree-surveyor〔面の調査〕/ flow-tracer〔線の調査〕。いずれも read-only。フックは持たない）
+│   ├── model-setup/                 #   モデル運用テンプレート（旧名 sonnet-setup。Opus+Sonnet / Sonnet 単独の2プロファイル、公式ガイドに無い4ルール＋追補＋スキル2種＋エージェント1種）
 │   │   ├── README.md
-│   │   ├── CLAUDE.md                #     コピペ用テンプレート本体（9つの行動ルール・共通基盤）
-│   │   ├── CLAUDE.private.md        #     プロファイル追補（Opus+Sonnet・私用PC）ルール10〜14
-│   │   ├── CLAUDE.company.md        #     プロファイル追補（Sonnet単独・会社PC）ルール10〜15
-│   │   ├── MODEL-GUIDE.md           #     モデル仕様・effort選定・プロファイル・Fable 5.1 パリティマップ・AIDLC 簡易版・Fable 本人にやらせる仕事
-│   │   ├── PROMPTS.md               #     都度貼りプロンプト集（Plan モード用初回テンプレート・公式スニペット翻案）
+│   │   ├── CLAUDE.md                #     コピペ用テンプレート本体（4つの行動ルール。公式スニペットは原文で貼る）
+│   │   ├── CLAUDE.private.md        #     プロファイル追補（Opus+Sonnet・私用PC）ルール5〜6
+│   │   ├── CLAUDE.company.md        #     プロファイル追補（Sonnet単独・会社PC）ルール5〜6
+│   │   ├── MODEL-GUIDE.md           #     プロファイル・エスカレーション・Fable 5.1 パリティマップ・AIDLC 簡易版（公式情報はリンクのみ）
+│   │   ├── PROMPTS.md               #     都度貼りプロンプト（Plan モード用初回テンプレート・テストの棚卸し・AI レビューが収束しないとき）
 │   │   ├── settings.private.json    #     私用PC向け設定サンプル（opusplan。effort は書かない — MODEL-GUIDE §2）
 │   │   ├── settings.company.json    #     会社PC向け設定サンプル（sonnet。effort は書かない — MODEL-GUIDE §2）
 │   │   ├── .claude-plugin/plugin.json
-│   │   ├── skills/                  #     6種（task-brief / backlog-loop / pr-merge / fan-out / long-run / verify-fresh）
-│   │   ├── agents/                  #     3種（task-worker / fresh-verifier / bulk-scanner）
-│   │   └── hooks/                  #     reinject-brief（long-run の frontmatter が起動時だけ登録する opt-in。常時発火しない）
+│   │   ├── skills/                  #     2種（verify-fresh / pr-merge）
+│   │   └── agents/                  #     1種（fresh-verifier）
 │   ├── self-correct/                #   自己修正ループ（作る役と検査する役を分離し、FAIL 箇所だけ直して再検査する）
 │   │   ├── README.md
 │   │   ├── CLAUDE.md                #     コピーして使う CLAUDE.md サンプル（行動ルール・停止ルール）
@@ -94,7 +93,7 @@ claude-code-workbench-ja/
 │       └── skills/                  #     1種（deep-understand。エージェント・フックは持たない）
 ├── tools/                           # 独立ツール（プラグインとして配布しない単体スクリプト）
 │   ├── README.md
-│   └── progress/                    #   各スキルの状態ファイル（pipeline status.md・self-correct state.json・backlog・long-run ブリーフ）を読み、進み具合を statusline と .dashboard/index.html に出す（LLM なし・Python 標準ライブラリのみ）
+│   └── progress/                    #   各スキルの状態ファイル（pipeline status.md・self-correct state.json）を読み、進み具合を statusline と .dashboard/index.html に出す（LLM なし・Python 標準ライブラリのみ）
 │       ├── README.md
 │       └── progress.py
 └── docs/                            # リポジトリ内ドキュメント置き場
@@ -102,11 +101,11 @@ claude-code-workbench-ja/
     ├── decisions/                   #   日付つきの決定記録（現行コードの理由になっているものだけ残す。一覧と残す基準は docs/README.md）
     ├── lessons.md                   #   過去 PR から蒸留した「繰り返さない判断」（根拠の PR 番号つき）
     ├── skill-authoring.md           #   スキルの書き方（公式ガイド準拠。frontmatter 規約・分冊基準・監査結果）
-    ├── evals/                       #   主要スキル11件の期待挙動シナリオ（Sonnet 5 / Opus 5 のパリティ実測用）
+    ├── evals/                       #   主要スキル8件の期待挙動シナリオ（Sonnet / Opus のパリティ実測用）
     │   ├── README.md                #     走らせ方・baseline 比較・20クエリの trigger eval・結果記録表
     │   ├── triggers.md              #     同一プラグイン内の衝突組の発火ケース（正本）
     │   ├── gen-trigger-cases.py     #     triggers.md から claude plugin eval のケースを一時ディレクトリへ生成
-    │   └── {task-brief,verify-fresh,long-run,review-panel,adoption-review,self-correct,feature-pipeline,project-catchup,feedback-rule,deep-understand,codebase-onboard}.md
+    │   └── {verify-fresh,review-panel,adoption-review,self-correct,feature-pipeline,project-catchup,feedback-rule,deep-understand}.md
     └── skills-guide/                #   おすすめSkillsガイド（優先度・業務タイプ別）
         └── README.md
 ```

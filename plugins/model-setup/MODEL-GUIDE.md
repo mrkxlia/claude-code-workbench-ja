@@ -1,343 +1,118 @@
-# MODEL-GUIDE — モデル・effort 選定ガイド
+# MODEL-GUIDE — プロファイルとワークフローの設計メモ
 
-> 2026年9月時点の情報（2026-09-03 に公式ドキュメントで再確認）。Opus 5（2026-07-24）と
-> Fable 5.1（2026-09-01）のリリース、Sonnet 5 の $2/$10 恒久化を反映済み。
-> モデルの新世代が出たら要更新。前版（2026-07）は「Fable 5 は期間限定」を前提にしていたが、
-> Fable 5.1 は一般提供（期限なし）になったため、前提を「価格・プランの都合で常用しない」に改めた。
-> 2026-10-02 に Sonnet 5.5（2026-09-25）の仕様と effort の段階表を §1・§2・§3・§5 に反映した
-> （決定記録: `docs/decisions/2026-10-02-sonnet-5-5-model-effort-review.md`）。
+> 2026-10-06 に縮小した。モデル仕様表・価格・effort の意味・各モデルの prompting guide の要約は、
+> 公式ドキュメントの言い直しで、すぐ古くなるため削除した（§1 のリンクから原文を読む）。
+> ここに残すのは、このテンプレート独自の判断 — 2プロファイルの分け方・エスカレーション・
+> Fable 5.1 の挙動を何で再現するか・AIDLC 簡易版の写像 — だけ。
+> 経緯: `docs/decisions/2026-10-06-repo-cleanup.md`
 
-このドキュメントは、Fable 5.1（Mythos 級の最上位モデル。一般提供だが Sonnet 5 の5倍の単価で、
-会社 PC のプランでは使えない）を**常用しない**前提で、
-**私用 PC（Opus 5 + Sonnet 5・git あり・Codex 不使用）** と
-**会社 PC（Sonnet 5 のみ・git なし・Codex CLI あり）** の2環境で
-効率よく Claude Code を使うための判断材料をまとめたものです。
-本セクション（model-setup）の目標は、Fable 5.1 の挙動をプロファイル別のプロンプト
-（CLAUDE.md＋追補）・スキル・サブエージェントで再現することであり、
-どの挙動を何が担うかは末尾の「§8 Fable 5.1 パリティマップ」にまとめてあります。
-Fable 5.1 が使える機会（試用・上位プラン等）があれば、§10 の「Fable 本人にやらせる仕事」を優先する。
+## 1. 公式情報（原文を読む）
 
-## 1. モデル仕様表
+| 知りたいこと | 一次情報 |
+|---|---|
+| モデルの仕様・価格・リタイア日 | [Models overview](https://platform.claude.com/docs/en/about-claude/models/overview)・[Pricing](https://platform.claude.com/docs/en/about-claude/pricing) |
+| Claude Code でのモデル指定・エイリアスの行き先・`opusplan` | [Model configuration](https://code.claude.com/docs/en/model-config) |
+| effort の段階と既定値 | [Effort](https://platform.claude.com/docs/en/build-with-claude/effort) |
+| モデル別のプロンプトの書き方（スニペットつき） | [Opus 5](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-opus-5)・[Sonnet 5.5](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-sonnet-5-5)・[Fable 5.1](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5-1)・[Best practices](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices) |
+| サブエージェントの `model:`／`effort:` | [Sub-agents](https://code.claude.com/docs/en/sub-agents) |
+| 圧縮後に何が残るか | [What survives compaction](https://code.claude.com/docs/en/context-window#what-survives-compaction) |
 
-| | Fable 5.1 | Opus 5 | Sonnet 5 | Sonnet 5.5 | Haiku 4.5 |
-|---|---|---|---|---|---|
-| 位置づけ | 高難度の推論・長時間のエージェント作業 | 複雑なエージェント型コーディング・企業向け | 速度と知性の最良バランス | 範囲が明確な日常のコーディング・大量の作業・繰り返しのエージェント作業（調査・レビュー・下書き）。最難の長時間作業は Opus | 最速・準フロンティア級知性 |
-| 価格（入力/出力 per MTok） | $10 / $50 | $5 / $25 | $2 / $10（導入価格がそのまま恒久化。$3/$15 への値上げは中止） | $2 / $10（Sonnet 5 と同額） | $1 / $5 |
-| キャッシュ読み取り | $0.25（入力の 2.5%） | $0.50 | $0.20 | $0.20 | $0.10 |
-| コンテキスト窓 | 1M tokens | 1M tokens | 1M tokens | 1M tokens | 200k tokens |
-| 最大出力 | 128k tokens | 128k tokens | 128k tokens | 128k tokens | 64k tokens |
-| thinking | adaptive 常時 ON（無効化不可） | adaptive 既定 ON（無効化は effort high 以下のみ） | adaptive 既定 ON | adaptive 常時 ON（Claude Code では無効化不可。API の最低設定は `between_tools` で、`disabled` は 400） | 拡張思考（extended thinking） |
-| effort 既定値 | high | high | high | Claude Code は **medium**／API は high | — |
-| 知識カットオフ | 2026-06 | 2026-05 | 2026-01 | 2026-06 | 2025-02 |
-| 公式推奨の開始点 | まず Opus 5 を試し、xhigh でも評価が届かないときに使う。**medium ≈ Fable 5 相当**、low でも Opus/Sonnet より高スコアで単価競合 | 既定 high から評価で調整。**low/medium を積極的に**使い、難しいコーディング・エージェント作業だけ xhigh | 最難タスクは **xhigh**、通常は既定の high | 範囲が明確なエージェント的コーディングは **medium**、難しい・長い作業は **high**。`xhigh`・`max` は測定で品質向上を確かめたときだけ | — |
-| リタイア | 2027-09-01 以降 | 2027-07-24 以降 | 2027-06-30 以降 | —（未確認） | 2026-10-15 以降 |
+## 2. プロファイル
 
-Opus 4.8 はレガシー扱い（価格・窓は Opus 5 と同じ $5/$25・1M）。`opusplan` 等の Opus 指定は
-Claude Code の既定 Opus に追従するため、本ガイドの「Opus」は Opus 5 を指す。Fable 5.1 は
-Fable 5 と同一価格で、キャッシュ読み取りだけ 1/4（$1 → $0.25）。安全分類器を持ち、
-攻撃的サイバーセキュリティ・生物学系の依頼は `refusal` で Opus に fallback する。
-
-2026-10 時点の Claude Code（Anthropic API）では、`sonnet` エイリアスは v2.1.284 以降で Sonnet 5.5、`opus`／`default` は Opus 5.5 を指す。Amazon Bedrock・Google Cloud 経由では `sonnet` が Sonnet 4.5 を指すなど、エイリアスの行き先は接続先とバージョンで変わる（[model-config](https://code.claude.com/docs/en/model-config)）。更新前に起動したセッションは古い版のまま動くので、版をまたぐときは起動し直す。
-
-出典: [Claude models overview](https://platform.claude.com/docs/en/about-claude/models/overview)、
-[Pricing](https://platform.claude.com/docs/en/about-claude/pricing)、
-[Claude Fable 5.1](https://platform.claude.com/docs/en/models/fable-5-1/overview)、
-[Claude Opus 5](https://platform.claude.com/docs/en/models/opus-5/overview)、
-[effort](https://platform.claude.com/docs/en/build-with-claude/effort)、
-[Prompting Claude Sonnet 5](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-sonnet-5)、
-[Building with Claude Sonnet 5.5](https://claude.dev/blog/building-with-claude-sonnet-5-5/)、
-[Prompting Claude Sonnet 5.5](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-sonnet-5-5)。
-
-## 2. effort 早見表
-
-| 設定方法 | 効果 | 持続性 |
-|---|---|---|
-| `settings.json` の `modelSettings.<モデル>.effortLevel` | モデルごとの保存値。`/effort low`〜`xhigh` を実行すると、使用中のモデルの欄にここへ書かれる（v2.1.251 以降） | 恒久 |
-| `settings.json` のトップレベル `"effortLevel"` | 保存値の無いモデルの既定。**ユーザー設定（`~/.claude/settings.json`）では Opus 5.5 とそれ以降のモデル（Sonnet 5.5 を含む）には効かない**（Opus 5・Sonnet 5・Fable 5.1 にだけ効く）。プロジェクト・ローカル設定ではすべてのモデルに効く | 恒久 |
-| スキル・サブエージェントの frontmatter `effort:` | そのスキル・サブエージェントが動いている間だけ上書きする。未指定時の継承の詳細は公式に明記が無いので、Sonnet 固定のエージェントには明示する | 実行中 |
-| `/effort` コマンド | セッション中にスライダーで変更。`max` はセッション限定 | セッション限定 |
-| プロンプトに `ultrathink` | そのターンだけ深い推論を要求 | ターン限定 |
-
-**Sonnet 5.5 の段階表（公式）**: 範囲が明確なエージェント的コーディングは `medium`（Claude Code の既定）、
-難しい・長い作業は `high`。`xhigh`・`max` は思考も返答も大幅に長くなるので、自分の評価で品質向上を
-測れたときだけ使う。effort は世代ごとに較正し直されている（Sonnet 5.5 の `high` は Sonnet 5 の `high` と
-同じ思考量ではない）ので、Sonnet 5 で使っていた設定を持ち越さない。思考を減らしたいときは effort を下げる —
-プロンプトで「考えすぎるな」と書いても確実には減らない。`low`／`medium` では長い作業の途中で確認のために
-止まりやすく、`low` では検証を省きやすい。
-
-（旧注意）Sonnet 5 の既定は `high` だったので、`effortLevel: high` を入れても挙動は変わらなかった。
-
-effort レベルは 5 段階（`low` / `medium` / `high` / `xhigh` / `max`）。`medium` は
-Sonnet 4.6 の `high` 相当、Sonnet 5 の `high` は Sonnet 4.6 の `max` 相当という公式の
-目安がある（ベンチマークする際はレベル名でなく実測の思考の長さで比較する）。
-
-Sonnet 5 は effort レベルを**特に低い側で字義どおり守る** — `low`/`medium` では期待以上の
-ことをせず、求められた範囲に作業を限定する。複雑な問題で推論が浅いときの第一手は
-プロンプトの工夫ではなく effort の引き上げ（`high`/`xhigh`）。レイテンシ都合で低 effort を
-維持する定型ルートには、的を絞った促し（`PROMPTS.md` #1）を貼る。
-
-**Opus 5 は逆に低 effort が「使える」。** 公式ガイドは「`low`/`medium` はトークンと待ち時間の
-数分の一で高品質。コストと応答時間の主レバーとして積極的に使い、難しいコーディング・
-エージェント作業だけ `xhigh` に上げる」とする（Opus 4.8 から effort 既定を引き継いだ場合は
-自分の評価で再スイープすること）。Opus 5 では effort は「考える量」を制御するのであって
-「話す量」ではないため、応答が長いときは effort ではなくプロンプトで短くする。
-effort 名は世代間で同じ思考量を意味しない（Fable 5.1 の `medium` ≈ Fable 5 の従来水準）。
-
-## 3. プロファイル
-
-### 私用 PC（Opus 5 + Sonnet 5・git あり・Codex 不使用）
+### 私用 PC（Opus + Sonnet・git あり・Codex 不使用）
 
 ```json
 { "model": "opusplan" }
 ```
 
-`opusplan` は計画フェーズを Opus、実行フェーズを Sonnet で行うモデル設定。Opus が
-計画を立て、Sonnet がその計画を実行する分担がそのまま活きる（`opusplan` は Claude Code の既定 Opus に
-追従し、2026-10 時点では Opus 5.5／Sonnet 5.5）。以前はここに `effortLevel: xhigh` を置いていたが、
-ユーザー設定のトップレベル `effortLevel` は Opus 5.5・Sonnet 5.5 に効かず、効いたとしても §2 の段階表
-（`xhigh` は測定できたときだけ）に反するので外した。実行側の Sonnet 5.5 は既定の `medium` で動かし、
-難しい・長い作業だけ `/effort high` にする（モデル別に `modelSettings` へ保存される）。
-CLAUDE.md（ルール1〜9）の後ろに追補 `CLAUDE.private.md`（ルール10〜14）を追記して使う。
+計画を Opus、実行を Sonnet に分ける。effort は settings に書かない（ユーザー設定のトップレベル
+`effortLevel` は Opus 5.5・Sonnet 5.5 に効かない — 上の Model configuration）。実行側は既定のまま始め、
+難しい・長い作業だけ `/effort high` にする。CLAUDE.md（ルール1〜4）の後ろに `CLAUDE.private.md`
+（ルール5〜6）を追記する。
 
-**Opus 5 が実行側に回るとき（`/model opus` で切り替えた場合など）の注意。** 公式
-[Prompting Claude Opus 5](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-opus-5)
-は次の2点を明記している。追補ルール14 はこれを織り込み済み（Sonnet 実行時と Opus 5 実行時で
-検証・委譲の既定を変える）。
+**Opus 5 が実行側に回るとき**（`/model opus` 等）は、公式 Opus 5 ガイドに従い検証と委譲の指示を
+減らす。追補ルール6 はこれを織り込み済み（`/verify-fresh` は引き渡し前の1回だけ、ルール3 は省略可）。
 
-- **検証指示を足さない。** Opus 5 は頼まなくても自己検証・自己修正を行う。「必ず最後に検証工程を
-  入れる」「サブエージェントで検証させる」「二重チェックせよ」型の指示は過剰検証を招き、品質を
-  上げずにトークンだけ増やす。`/verify-fresh` の自動挟み込みは Sonnet 実行時の規律であり、
-  Opus 5 実行時は引き渡し前の1回に限る。
-- **委譲に上限を置く。** Opus 5 はサブエージェントに委譲しやすい。数回のツール呼び出しで済む
-  仕事や自分の成果の再確認には委譲しない。決定論的な上限は Claude Code の環境変数
-  `CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS` / `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH`（Claude Code 2.1.217 以降。
-  出典は上記 Opus 5 ガイド「Controlling subagent spawning」）。
-- ルール6（初見レビュー）も Opus 5 実行時は省略してよい。ルール10（証拠監査）・11（ターン終了前
-  チェック）は Fable ガイド由来の規律で、過剰検証には当たらないので残す。
-- 応答と書き出す文書が長くなりがちなので、必要なら長さをプロンプトで指定する（`PROMPTS.md` #8）。
-
-### 会社 PC（Sonnet 5 のみ・git なし・Codex CLI あり）
+### 会社 PC（Sonnet のみ・git なし・Codex CLI あり）
 
 ```json
 { "model": "sonnet" }
 ```
 
-effort は設定に書かない。Sonnet 5.5（Claude Code v2.1.284 以降・Anthropic API）では既定の `medium` で
-始め、難しい・長い作業は `/effort high`、それでも手戻りが2回続いたら `xhigh` に上げる（§7）。
-以前は「手戻りのコストはトークンより高い」として `effortLevel: xhigh` を既定にしていたが、ユーザー設定の
-トップレベル `effortLevel` は Sonnet 5.5 に効かず、段階表にも反するので外した。会社 PC が v2.1.284 未満で
-Sonnet 5 を使っている場合は、外すと既定の `high` で動く（Sonnet 5 の公式推奨も「通常は既定の high、
-最難タスクは xhigh」）。Bedrock・Google Cloud 経由では `sonnet` が Sonnet 4.5 を指すので、接続先の
-モデルで判断する（§1）。
-CLAUDE.md（ルール1〜9）の後ろに追補 `CLAUDE.company.md`（ルール10〜15）を追記して使う。
+CLAUDE.md（ルール1〜4）の後ろに `CLAUDE.company.md`（ルール5〜6）を追記する。上位モデルに
+逃がせないので、構造（pipeline・verify-fresh・review-panel）と effort の引き上げ（§3）で補う。
 
 git が無い環境での代替策:
-- **版管理の代替**: backlog.md への完了記録（日付・変更内容）＋作業単位でのフォルダ／zip
-  コピー退避。
-- **レビューの代替**: 単一モデル（Sonnet のみ）環境では自己レビューにバイアスがかかりやすい。
-  会社では Codex CLI が使えるので、公式 Codex プラグインのレビューで第二の目を確保する
-  （git が無くても対象ファイル指定でレビューできる）。
+- **版管理**: 作業単位でのフォルダ／zip コピー退避
+- **レビュー**: 単一モデルの自己レビューは偏りやすい。Codex CLI があるので公式 Codex プラグインの
+  レビューで第二の目を確保する（git が無くても対象ファイル指定でレビューできる）
 
-## 4. Opus で計画 → Sonnet で実行（「7/7まで…」前置きの恒久的な代替）
+計画だけ確定させて別セッションで実行させたいときは、本体の Plan モードの計画ファイルを使う
+（追加のスキルは作らない）。
 
-`opusplan` を設定していれば、計画立案は自動的に Opus が担う。より明示的に「計画だけ確定させて
-別セッションで実行させたい」場合は、Claude Code 本体の **Plan モード**（`/plan` またはモード切替）
-で読み取り専用の実行計画ファイルを `~/.claude/plans/` に作成し、新しいセッション（Sonnet）で
-`/plan open` から読ませて実行する。
-**この用途の追加スキルは作らない** — 本体 Plan モードが既にこの役割を担っている
-（旧 `create-plan` スキルは本体機能に統合されたため、2026-08 の OSS 差別化レビューで削除した）。
-なお `fan-out` スキルは「計画の引き継ぎ」ではなくセッション内の並列分担であり、
-この役割（Plan モード）とは重ならない。
-
-以前は「あなたは期間限定の高性能モデルです。Sonnet が実行できる粒度で計画を」という前置きを
-毎回書いていたが、`opusplan` 設定 + 本体 Plan モードの組み合わせがこれを恒久的に代替する。
-
-## 5. Sonnet 5 運用の要点（公式 prompting guide より）
-
-Sonnet 5.5 の公式ガイドは「Sonnet 5 向けのプロンプトは変更なしでよく動く」としているので、以下は 5.5 でも
-有効。ただし effort の開始点は 5.5 で変わった（§2）。
-
-- **指示を字義どおりに実行する。** 「これを全部のセクションに適用して」のように、
-  適用範囲は明示しないと一部にしか広げない。
-- **小出しの複数ターン指示は効率を落とす。** 最初のターンでタスク・意図・制約を
-  完全に指定するほど、自律性と効率が上がる（→ `task-brief` を使う）。
-- **high・xhigh effort ではツール使用がより積極的になる。** Sonnet 5 では、探索的なコーディング・
-  エージェント作業は xhigh から始めるのが公式推奨だった。**Sonnet 5.5 では `medium` から始め、
-  難しい・長い作業だけ `high` にする**（§2）。
-- **コードレビュー用途では「自己選別せず網羅で報告」を明示的に指示する。** 「重要なものだけ
-  報告して」と言うと、Sonnet 5 は調査の深さ自体は落とさずに指摘の報告を絞り込みがちで、
-  見かけ上の再現率（recall）が下がることがある。フィルタリングは別工程に任せ、
-  発見工程では網羅性を優先させる（`model-setup/CLAUDE.md` ルール9）。
-- **応答の長さはタスクの複雑さに応じて可変。** 特定の冗長性に寄せたいときはプロンプトで
-  明示する（`PROMPTS.md` #8）。また長いエージェント作業中の進捗報告は素の品質が上がって
-  いるため、「ツール呼び出しn回ごとに報告」のような機械的スキャフォールディングは足さない
-  （区切り基準で報告する — long-run の報告規律と同じ）。
-- **デザイン・フロントエンドは固定のハウススタイルに収束しやすい。** `temperature` が
-  使えないため、多様性は「構築前に方向性を複数提案させて選ぶ」（`PROMPTS.md` #6、追補
-  ルール14/15 の複数案比較）と具体仕様の明示で作る。本格運用は公式 `frontend-design`
-  スキル・superpowers `brainstorming`（`docs/skills-guide/` 参照）。
-
-## 6. 構造で補う（LLM アプリ・プロンプト開発編）
-
-Sonnet/Haiku と Opus/Fable の差は「賢さ」ではなく「構造」で埋める、という knowledge-baton
-プロジェクトで確立した運用知見を一般化したもの。プロンプトを書くアプリケーション開発
-（RAG・分類・抽出・エージェントパイプライン等）で特に効く。
-
-### 上位モデルとの差を埋める7つの作法
-
-1. **1プロンプト1タスク。** 「読んで、分類して、差分を作って、要約もして」を1回で頼まない。
-   パイプラインの各段に分割する。
-2. **出力スキーマを固定する。** すべての LLM 呼び出しに厳密な出力形式（JSON スキーマ等）を
-   指定し、コード側でバリデーション→不合格なら理由を添えて1回だけ自動リトライする。
-3. **few-shot 例を必ず与える。** 特に「悪い例」を含める。精度が落ちたらまず例を増やす
-   （抽象的な指示文の増強は効果が薄い）。
-4. **コンテキストを絞る。** 関連する範囲だけを渡す。長文投入で解決しようとしない
-   （渡しすぎが不調の主因になりやすい）。
-5. **「わからない」を許可する。** 確信が持てない場合のエスカレーション出口
-   （例: `needs_human`）を用意し、塞がない。曖昧なまま出力させるより安全。
-6. **受け入れテストは実際に使うモデルの実機で行う。** 開発機（Opus/Fable）だけで
-   確認して「合格」にしない。
-7. **コーディング作業は小さく刻む。** 「1機能・1ファイル・テスト付き」の粒度。
-   plan mode で計画→承認→実装の順を守る。大きなリファクタは spec を先に文書化する。
-
-### 品質が出ないときの対処順序
-
-1. few-shot 例を増やす・悪い例を追加する
-2. タスクをさらに分割する（例: 軽量モデルで下書き→上位モデルで仕上げの二段構え）
-3. 入力コンテキストを削る
-4. 出力スキーマを厳しくしてリトライ条件を明確化する
-5. それでもダメなら needs_human 率の上昇を許容し、人の承認負荷側で吸収する
-
-**禁じ手**: プロンプトに「もっと賢く考えて」系の指示を足す／1プロンプトに役割を追加して
-肥大化させる／スキーマ検証を外す。
-
-### モデルルーティングの原則
-
-- 判断や正確な構造化出力が要る仕事（依頼の解釈・差分生成・矛盾検知・コードレビュー支援）→
-  **Sonnet**
-- 分類・タグ付け・言い換え整形・一次スクリーニングのような、機械的で大量にループする処理 →
-  **Haiku**
-- 二段構え（Haiku で下書き→Sonnet で仕上げ）でコストと精度を両立させる
-- 原則: **迷ったら Sonnet。ただしループで大量に回す処理は必ず Haiku で設計し、
-  Sonnet は1件ずつの判断に使う。**
-- サブエージェントの frontmatter で `model:` / `effort:` をタスクごとに指定できる
-  （例: 機械的スキャン担当のエージェントだけ `model: haiku`）。
-- この原則の同梱実装が `agents/` の3エージェント: `task-worker`（sonnet・汎用実行）／
-  `fresh-verifier`（sonnet・検証専用）／`bulk-scanner`（haiku・機械的スキャン）。
-
-## 7. エスカレーション規則
+## 3. エスカレーション規則
 
 - **手戻りが2回続いたタスクは、1段上のモデル／effort に切り替える。**
-  （例: Sonnet `high` で2回失敗 → `xhigh` へ、または Opus 5 へ。Opus 5 `xhigh` でも評価が
-  届かない → Fable 5.1。これは公式の「Opus 5 の高 effort で足りないときに Fable 5.1」という
-  使い分け基準そのもの）
-- CLAUDE.md や settings では完全には埋まらない領域: 長時間作業での序盤の制約保持、
-  受け入れ条件を書くこと自体が仕事の核心になる設計判断、「何がシンプルか」のような
-  ルール適用の判断そのもの。これらは上位モデルへの切り替えで対応する
-  （序盤の制約保持は、コンパクション後にブリーフを再注入するフックで構造的に解ける — 設計は
-  `docs/decisions/2026-09-03-long-run-constraints-and-spec-load.md`、**実装は `/long-run` の frontmatter が
-  起動時だけ登録する `hooks/reinject-brief`**（2026-09-05）。手動 `/compact` 時の保持指示は `PROMPTS.md` #10）。
+  （例: Sonnet `high` で2回失敗 → `xhigh` へ、または Opus へ。Opus の高 effort でも届かない → Fable 5.1）
+- 設定では完全には埋まらない領域: 受け入れ条件を書くこと自体が仕事の核心になる設計判断、
+  「何がシンプルか」のようなルール適用の判断そのもの。これらは上位モデルへの切り替えで対応する。
+- 長時間作業で完了条件の判定を機械に任せたいときは本体の `/goal`。圧縮で会話中の制約が薄れるのを
+  避けたいなら、制約を Plan モードの計画ファイルか CLAUDE.md に書く（どちらも圧縮後に再注入される）。
 
-## 8. Fable 5.1 パリティマップ
+## 4. Fable 5.1 パリティマップ
 
-公式 [Prompting Claude Fable 5](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5)
-（2026-07）と [Prompting Claude Fable 5.1](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5-1)
-（2026-09）の両ガイドが挙げる Fable の挙動と、それを本セクションで何が担うかの対応表。
-5.1 ガイドは「Fable 5 向けプロンプトはそのまま効く」としたうえで挙動差を追記しているので、
-Fable 5 由来の行はそのまま残し、5.1 で追加・変化した行に「5.1」と印を付けた。
-この表は 2026-09-03 に Fable 5.1 自身が本セクションを監査して更新した
-（監査記録: `docs/decisions/2026-09-03-fable-5-1-audit.md`）。
+Fable 5.1 の挙動を、このテンプレートでは何が担うかの対応表。2026-10-06 に、本体機能・公式スニペットで
+足りる行は担い手を本体・公式に移した（スキルを作り直さない）。
 
-| Fable の挙動 | この構成での担い手 |
+| Fable の挙動 | 担い手 |
 |---|---|
-| 並列サブエージェント委譲（委譲中も作業継続。5.1: リード側を待たせない） | `/fan-out` ＋ `task-worker` ＋ 追補ルール14（会社版は15） |
-| fresh context 検証（自己批評より有効） | `/verify-fresh` ＋ `fresh-verifier`（Opus 5 実行時は引き渡し前の1回に限る — §3） |
-| 証拠に基づく進捗報告（捏造ステータスの排除） | 追補ルール10（既存ルール4・7の拡張） |
-| 早期停止しない自律完走（5.1: 「Finish the whole task」2ブロック） | `/long-run` ＋ 追補ルール11（第1ブロック「自律運転・ターン終了前チェック」）＋ ルール3・8・追補11（第2ブロック「依頼範囲が成果物 — 狭めず広げず、決めた手順は宣言でなく実行」） |
-| 過剰計画の抑制（揃ったら着手） | 追補ルール11 後段 |
-| 評価と実行の境界（頼まれるまで直さない） | 追補ルール12 |
-| 結論先行・見ていない読者向けサマリ（5.1: 短さは取捨選択で作る・気取った文体を避ける） | 追補ルール13 |
-| 5.1: ユーザー向け進捗更新（着手前に1行・区切りで短報・最後に自立したまとめ） | 追補ルール13 ＋ `/long-run` ルール3（機械的な間隔固定はしない） |
-| 5.1: 独立したツール呼び出しを1応答でまとめて出す | 追補ルール11（末尾に追記） |
-| 5.1: 変更とテストを依頼範囲に限定（ついでの修正・余分なテストファイルを足さない） | ルール3・8 ＋ `task-worker` ルール6（テストの範囲） |
-| 5.1: コンパクション要約で残すもの（制約・決定・未解決・正確な語句） | `/long-run` ルール5 ＋ `PROMPTS.md` #10（`/compact` に渡す保持指示） |
-| 依頼の理由を与える（何のため・誰のため） | `/task-brief` のゴール欄（背景1行）＋ `PROMPTS.md` #0 |
-| メモリ（教訓の記録・更新） | **Claude Code 本体の自動メモリ（auto memory）を使う — 本セクションでは新規に作らない** |
-| 長時間作業での序盤制約の保持 | `/long-run` の「ブリーフ固定＋区切り再読」＋ コンパクション後の再注入フック（設計済み・実装は backlog B-1 で未着手）＋ §7 エスカレーション |
-| テストへの過剰適合の回避（汎用解の実装） | `task-worker` ルール5 ＋ `fresh-verifier` 観点4（未委譲の直接実装には `PROMPTS.md` #3） |
-| 開いていないコードを推測で語らない（5.1: 低 effort では検索せず記憶で答えがち） | 追補ルール10（3点目・両プロファイル共通） |
+| 並列サブエージェント委譲（委譲中も作業継続） | **本体**（Opus 5 は自ら委譲する）・dynamic workflows・`/batch` |
+| fresh context 検証（自己批評より有効） | `/verify-fresh` ＋ `fresh-verifier`（Opus 5 実行時は引き渡し前の1回） |
+| 早期停止しない自律完走 | **本体の `/goal`** ＋ 公式 Fable 5.1 ガイドの「Finish the whole task」スニペット（原文で貼る） |
+| 証拠に基づく進捗報告・結論先行の報告 | 公式 Fable 5.1 ガイドのスニペット（原文で貼る）＋ ルール4（確信度と3点報告） |
+| 評価と実行の境界（頼まれるまで直さない） | 追補ルール5 |
+| 変更とテストを依頼範囲に限定 | 公式 Sonnet 5.5 ガイドのスニペット（原文で貼る） |
+| コンパクション要約で残すもの | 公式 Fable 5.1 ガイドのスニペット＋ Plan モードの計画ファイル（再注入される） |
+| メモリ（教訓の記録・更新） | **本体の auto memory** |
+| 着手前の仕様の確定 | ルール1（完了条件）＋ **本体の Plan モード** |
 
 **5.1 固有で再現不要の挙動**（Sonnet/Opus には元々その傾向が無い、または API 側の話）:
-部分編集でなくファイル全体を書き直しがち（Sonnet/Opus では顕著でないが要注視）／`xhigh`・`max` で長文成果物を思考内で下書きしてしまう／
-安全分類器の誤検知／会話履歴の append-only 制約（thinking ブロックの束縛）／取得元の文章を
-引用符なしで再現しがち。これらはパリティ対象にしない。
+部分編集でなくファイル全体を書き直しがち／`xhigh`・`max` で長文成果物を思考内で下書きしてしまう／
+安全分類器の誤検知／thinking ブロックの束縛／取得元の文章を引用符なしで再現しがち。
 
-**互換方向の注意**: 公式ガイドは「旧世代向けに書かれたスキルは Fable には処方的すぎる
-（削るほど良い）」とする一方、その裏返しとして **Sonnet 向けのスキルは処方的・
-明示的に書くのが正しい方向**になる。本セクションの3スキル（fan-out / long-run / verify-fresh）が
-長く具体的なのは意図的であり、「冗長だから」と簡略化しないこと。
-ただし **Opus 5 は例外**で、検証と委譲については処方を減らす側が正しい（§3 の注意・追補ルール14）。
-Sonnet 実行時と Opus 5 実行時で既定を切り替えるのはそのため。
-
-## 9. AIDLC 簡易版ワークフロー（Plan モード起点の自動ルーティング）
+## 5. AIDLC 簡易版ワークフロー（Plan モード起点の自動ルーティング）
 
 AWS Labs [AI-DLC (aidlc-workflows)](https://github.com/awslabs/aidlc-workflows) —
-「AI が提案し、人間が承認する」ゲート付き開発ライフサイクル — を参考に、
-その流れを**新しいルールツリーを作らずに**このリポジトリの既存資材へ写像した簡易版。
-実装の本体は追補ルール14（private）／15（company）「ワークフローの既定」で、
-エンドユーザの操作は「**Plan モードで普通に依頼 → 計画を承認**」の2つだけに減らし、
-スキルの選択・起動は CC 側が裏で行う。
+「AI が提案し、人間が承認する」ゲート付き開発ライフサイクル — を、**新しいルールツリーを作らずに**
+既存資材へ写像した簡易版。実装の本体は追補ルール6「ワークフローの既定」で、エンドユーザの操作は
+「**Plan モードで普通に依頼 → 計画を承認**」の2つだけ。
 
-### AIDLC の概念 → このリポジトリでの担い手
-
-| AIDLC の概念 | このリポジトリでの担い手 |
+| AIDLC の概念 | 担い手 |
 |---|---|
 | Intent（意図の表明） | Plan モードでの普通の依頼（`PROMPTS.md` #0 のテンプレートを貼るとさらに確実） |
-| Inception: 要件確認（構造化質問） | `task-brief`（選択肢＋推奨値の一括質問）／深い要件は `clarify`〔pipelines 導入時〕 |
+| Inception: 要件確認 | Plan モードでのまとめた質問／深い要件は `clarify`〔pipeline 導入時〕 |
 | Inception: 設計・計画 | Plan モードの実行計画（使うスキル分担・検証チェックポイントを明記） |
-| 承認ゲート（Human in the Loop） | Plan 承認（唯一のゲート）／Step ごとに刻むなら `backlog-loop`／パイプラインの3チェックポイント |
-| Construction: 実装 | 軽微なら直接実行。機能開発 → `feature-pipeline`、非コード成果物 → `task-pipeline`、汎用実装 → `task-worker` |
-| Units of Work（並列作業単位） | `/fan-out` の分解（書き込み範囲が交わらないサブタスク）／pipelines の並列実行グループ |
-| 検証（レビュー役の分離） | `/verify-fresh`（`fresh-verifier`）を要所で自動実行。コードは外部 CLI へのレビュー委譲、設計・文書は `review-panel`〔導入時〕 |
-| 複雑度適応（adaptive execution） | 軽微な変更（1〜2ファイル・完了条件が自明）はパイプラインを通さず直接実行 |
-| 成果物の集約（aidlc-docs/ 相当） | 作業メモ（long-run）・`notes`（実装ノート）〔導入時〕・本体自動メモリ（教訓） — 新規の仕組みは作らない |
+| 承認ゲート（Human in the Loop） | Plan 承認（唯一のゲート）／パイプラインの3チェックポイント |
+| Construction: 実装 | 軽微なら直接実行。機能開発 → `feature-pipeline`、非コード成果物 → `task-pipeline` |
+| Units of Work（並列作業単位） | 本体のサブエージェント委譲・dynamic workflows・`/batch`／pipeline の並列実行グループ |
+| 検証（レビュー役の分離） | `/verify-fresh`（`fresh-verifier`）。コードは外部 CLI へのレビュー委譲、設計・文書は `review-panel`〔導入時〕 |
+| 複雑度適応 | 軽微な変更（1〜2ファイル・完了条件が自明）はパイプラインを通さず直接実行 |
+| 成果物の集約 | `notes`（実装ノート）〔導入時〕・本体 auto memory — 新規の仕組みは作らない |
 
-### 簡易化で削ったもの
+削ったもの: ルールツリー（aidlc-rules/）→ 追補ルール1本／opt-in 拡張機構 → プラグインの導入有無／
+Operations フェーズ → 対象外。
 
-- **ルールツリー**（aidlc-rules/ の階層的ルール群）→ CLAUDE 追補のルール1本＋各スキルの既存手順で代替
-- **opt-in 拡張機構**（extensions/）→ プラグインの導入有無〔導入時〕がそのまま opt-in にあたる
-- **Operations フェーズ**（デプロイ・監視）→ 対象外（AIDLC 本家でも将来予定）
+設計の裏づけ: ゲート付き spec/plan 先行は業界の収束点（[spec-kit](https://github.com/github/spec-kit)・
+[BMAD-METHOD](https://github.com/bmad-code-org/BMAD-METHOD)・AI-DLC）。外部フィードバックなしの
+自己修正は不安定（[Huang et al., ICLR 2024](https://arxiv.org/abs/2310.01798)・
+[Kamoi et al., 2024](https://arxiv.org/abs/2406.01297)）→ fresh context の `/verify-fresh` を挟む根拠。
 
-### 設計の裏づけ（類似実装・研究）
-
-- **ゲート付き spec/plan 先行ワークフローは業界の収束点**: [GitHub spec-kit](https://github.com/github/spec-kit)
-  （Specify→Plan→Tasks→Implement）・[BMAD-METHOD](https://github.com/bmad-code-org/BMAD-METHOD)
-  （フェーズ別ロールエージェント）・AI-DLC が同型。本節はその最軽量版（ゲートは Plan 承認の1点）
-- **役割分離マルチエージェントの有効性**: [MetaGPT](https://arxiv.org/abs/2308.00352)（PM/Architect/
-  Engineer/QA の SOP 分業）・[ChatDev](https://arxiv.org/abs/2307.07924)（各段階で実装役と
-  レビュー役が対話検証）が、複雑タスクでの役割分離の優位を報告 → pipelines・task-worker /
-  fresh-verifier の分離の根拠
-- **外部検証の必要性**: [LLMs Cannot Self-Correct Reasoning Yet](https://arxiv.org/abs/2310.01798)
-  （Huang et al., ICLR 2024）・[自己修正の批判的サーベイ](https://arxiv.org/abs/2406.01297)
-  （Kamoi et al., 2024）が「外部フィードバックなしの自己修正は不安定（悪化もある）」と報告。
-  誤りを生んだ文脈を持たない fresh context の評価は有効 → `/verify-fresh` を要所で自動で挟む根拠
-- **既知の失敗モード**: 単純タスクへのプロセス過剰（→ 複雑度適応）・マルチエージェントの
-  トークンコスト（→ 軽微は直接実行・機械的スキャンは haiku の `bulk-scanner`）
-
-## 10. Fable 本人にやらせる仕事（上位モデルが一時的に使えるとき）
-
-本セクションは「Fable の挙動を下位モデルで再現する」ためのものだが、Fable 5.1 が使える機会
-（試用・上位プラン・一時的な予算）があるなら、**再現対象の本人にしかできない仕事**を優先して
-片付ける。2026-09-03 に実際に Fable 5.1 で行った作業と、その判断基準:
+## 6. Fable 本人にやらせる仕事（上位モデルが一時的に使えるとき）
 
 | 優先度 | 仕事 | なぜ Fable 本人でないと駄目か |
 |---|---|---|
-| 高 | 本セクション（ルール・追補・スキル・エージェント）の監査 — 「自分ならこう振る舞う」と突き合わせて過剰・不足を全件列挙する | 再現の正解は本人の挙動。Sonnet/Opus に自分自身の再現度は測れない |
-| 高 | 「完全には埋まらない」とされてきた設計課題への構造解（序盤制約の保持・仕様の必須ロードなど）と、その決定記録 | 受け入れ条件を書くこと自体が核心になる設計判断（§7 で上位モデル向けとした領域） |
-| 高 | 後日 Sonnet/Opus が実行する作業のブリーフ化（完了条件・スコープ・検証方法つき） | §4 の「上位モデルで計画→Sonnet で実行」の計画側。計画の質が実行の質を決める |
-| 中 | リポジトリ横断の網羅監査（陳腐化・矛盾・リンク切れ） | 長い作業で序盤の観点を保持し、自己選別せず全件出す力（バグ発見の再現率が高い） |
-| 中 | スキル・エージェントの評価基準（期待挙動）の作成 | 「Fable ならこう答える」が評価の物差しになる |
-| 低 | typo 修正・version bump・CI 追加などの機械的作業 | Sonnet で十分。Fable の時間を使わない |
-
-進め方は本体 Plan モードで「今日のうちにやるべきことをリストアップして」と頼み、
-承認後に上から順に実行させる（Fable は計画と実行の両方を自律で完走できる）。
+| 高 | このテンプレート（ルール・追補・スキル・エージェント）の監査 | 再現の正解は本人の挙動。Sonnet/Opus に自分自身の再現度は測れない |
+| 高 | 受け入れ条件を書くこと自体が核心になる設計判断と、その決定記録 | §3 で上位モデル向けとした領域 |
+| 高 | 後日 Sonnet/Opus が実行する作業の計画（完了条件・スコープ・検証方法つき） | 計画の質が実行の質を決める |
+| 中 | リポジトリ横断の網羅監査（陳腐化・矛盾・リンク切れ） | 自己選別せず全件出す力 |
+| 低 | typo 修正・version bump などの機械的作業 | Sonnet で十分 |

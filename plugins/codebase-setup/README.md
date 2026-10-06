@@ -11,22 +11,20 @@ Claude Code は RAG のようにコードベースを事前インデックス化
 
 ## 収録物
 
-### スキル3種
+### スキル2種
 
 | スキル | 起動 | 何をするか |
 |---|---|---|
-| **codebase-onboard** | `/codebase-onboard`（明示専用） | リポジトリを実測し、CLAUDE.md の階層化・生成物の遮断・LSP プラグイン・ディレクトリ別スキルなど**効くものだけ**を、2つの承認チェックポイントを挟んで導入する |
 | **codebase-map** | 自然文 / `/codebase-map` | トップレベルが多い・命名が独特なリポジトリの「1行説明つき目次」を `docs/codebase-map.md` に作る |
 | **project-catchup** | 自然文 / `/project-catchup` | 参画した案件を「読んだ人が実装者として振る舞える」水準まで書き下した引き継ぎレポートを作る。**インフラ構成・リクエストの通り道・データモデルは図を必須**とし、各章の「悪い例／良い例」で具体度の下限を縛る。**設計判断の理由は ADR・PR・commit・コメント・人に聞いた答えを出典に持つものだけ**を書き、無いものは「未確認」に落とす |
 
-`project-catchup` だけは**人間が読む成果物**を作る。残り2つは Claude が読む設定・地図を作る。
+`project-catchup` だけは**人間が読む成果物**を作る。残り1つ（`codebase-map`）は Claude が読む設定・地図を作る。
 
-### サブエージェント3種（読み取り専用）
+### サブエージェント2種（読み取り専用）
 
 | エージェント | モデル | 役割 |
 |---|---|---|
 | `subtree-surveyor` | sonnet | 1サブツリーだけを調べ、要約・コマンド・規約候補・生成物パスを決まった書式で返す。多数のパッケージを**並列**に測量してもメインの文脈が汚れない |
-| `instruction-auditor` | sonnet | 指示ファイル1組を A〜E の5分類に、行番号と確信度つきで仕分けて返す |
 | `flow-tracer` | sonnet | 経路を**1本だけ**（HTTP リクエスト・デプロイ・データの流れ）入口から出口まで辿り、順序つきの通過点表を根拠つきで返す。図は描かず、材料だけを返す |
 
 `subtree-surveyor` が「面」（1サブツリーの広さ）、`flow-tracer` が「線」（1経路の深さ）を担当する。
@@ -52,22 +50,24 @@ cp -r /tmp/workbench/plugins/codebase-setup/skills/* ~/.claude/skills/
 cp -r /tmp/workbench/plugins/codebase-setup/agents/* ~/.claude/agents/
 ```
 
-`codebase-onboard` は**導入したいリポジトリの中で**実行する（このリポジトリ自身では実行しない）。
+
 
 ## 典型的な流れ
 
 ```
 0. /project-catchup         …… 参画直後。まず人間が構成を理解する（図つきレポート）
-1. /codebase-onboard        …… 実測 → 診断の承認 → 階層化・遮断・LSP の導入 → 検証
-2. /codebase-map            …… トップレベルが多いなら地図を作る（onboard から呼ばれることもある）
+1. 公式ドキュメント「Monorepos and large repos」を読ませて適用
+                            …… CLAUDE.md の階層化・claudeMdExcludes・Read の deny・LSP・sparsePaths
+2. /codebase-map            …… トップレベルが多いなら地図を作る
 3. （3〜6か月後・モデル更新後）
    /doctor prompt-audit     …… 本体機能。積み上がった指示の陳腐化・矛盾を棚卸しする
 ```
 
 0 と 1 は独立していて、どちらから始めてもよい。0 で分かった構成をそのまま 1 の材料にできる。
 
-`codebase-onboard` の Step 8 で、所有者（この設定を誰が見るか）と次回の棚卸し時期を決める。
-**設定を誰も持たないと規約は各自の手元に散り、リポジトリの設定は静かに古びる。**
+Claude 向けの設定の足場（旧 `codebase-onboard`）は 2026-10-06 に削除した。手順の中身が公式ドキュメント
+[Monorepos and large repos](https://code.claude.com/docs/en/large-codebases) の言い直しだったため
+（[整理の記録](../../docs/decisions/2026-10-06-repo-cleanup.md)）。
 
 ## 生成物の鮮度（0.3.0）
 
@@ -94,9 +94,9 @@ Claude Code 本体が既にやることは**呼ぶだけ**にして再実装し�
 
 | やりたいこと | 担当 |
 |---|---|
-| ルート CLAUDE.md を1枚生成する | **本体の `/init`**（`codebase-onboard` Step 4 が呼ぶ） |
+| ルート CLAUDE.md を1枚生成する | **本体の `/init`** |
 | 1つの CLAUDE.md を機械的に短くする | **本体の `/doctor`** |
-| 定義ジャンプ・参照検索・編集直後の診断 | **公式の LSP プラグイン**（`typescript-lsp` 等。`codebase-onboard` Step 6 が案内） |
+| 定義ジャンプ・参照検索・編集直後の診断 | **公式の LSP プラグイン**（`typescript-lsp` 等） |
 | 生成物を読ませない | **本体の `permissions.deny`**（設定を書くのがこのプラグインの仕事） |
 | auto memory を閲覧・編集・削除する／丸ごと切る | **本体の `/memory`・`autoMemoryEnabled`・`CLAUDE_CODE_DISABLE_AUTO_MEMORY`**（`MEMORY.md` の分量の上限と是正も本体が持つ） |
 | 指示ファイル（CLAUDE.md 階層・rules・スキル・サブエージェント）を**横断で**陳腐化・矛盾の観点から棚卸しする | **本体の `/doctor prompt-audit`**（v2.1.283〜。提案のみ）。auto memory の `MEMORY.md` は対象外なので、`/memory` で開いて目視する |

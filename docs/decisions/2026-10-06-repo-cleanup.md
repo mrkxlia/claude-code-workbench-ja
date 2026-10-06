@@ -66,3 +66,48 @@ Step 6 の自己点検3問（「確認できなかった」だけになってい
 
 確認できなかったこと: 週次の What's new（第38〜40週）が 404、`claude-plugins-official` の一部プラグインのバージョン、
 `/batch` の「publishes its change」が PR 作成を指すか。いずれも判定には使っていない。
+
+## 第3段: 「差分があるか」ではなく「代替より良いか」で全件を判定し直す
+
+ユーザーから「独自性と、こちらの方が良いかをしっかり確認して。車輪の再発明は意味ない」と指摘を受けた。
+前回（2026-09-13）の重複チェックは README 同士の比較で、**実装本体は未読**のまま「差分が残る」を理由に
+A 判定（先行事例が同等以上）の9件を残していた。今回は証拠収集を3並列で走らせ、**こちらの SKILL.md と
+代替の実装本文（公式ドキュメント・公式プラグインと OSS のソース）を両方読んで**機能単位で比較した。
+
+基準: 代替（本体機能・公式プラグイン・既存 OSS・公式ガイドの原文）より**導入する人にとって明確に良い**ことを
+示せたものだけ残す。次は独自性に数えない — 日本語であること／モデル・ハーネスが既定でやることの言い直し／
+運用規律を1行足しただけのもの。
+
+### 削除したもの
+
+| 対象 | 代替 | 判断の根拠（確認できた事実） |
+|---|---|---|
+| pipeline `build-with-tests` | superpowers `test-driven-development`・mattpocock `tdd` | 失敗するテストを先に書く手順が無く、実装とテストを同じターンで書く。独自は「既存例を3つ読む」「型検査を必須」だけで、代替より弱い |
+| model-setup `fan-out`（＋`task-worker`） | 本体のサブエージェント自動委譲・dynamic workflows・`/batch` | 公式 Opus 5 ガイド「Opus 5 は従来より進んで委譲する」。workflows は同時16本・相互の敵対的レビュー・保存と再開を持つ。独自は「最大3並列」「再委譲2回まで」程度 |
+| model-setup `long-run`（＋`reinject-brief` フック） | 本体 `/goal`・公式 `ralph-loop`・圧縮時の既定の再注入 | こちらはプロンプト上の規律で、`/goal` は Stop フックで機械的に継続し停滞も検出する。圧縮後は起動済みスキル本文・直近に読んだ5ファイル・計画ファイルが既定で戻る。ルール1は公式 Fable 5.1 の「Finish the whole task」のほぼ直訳 |
+| model-setup `backlog-loop` | [Backlog.md](https://github.com/MrLesk/Backlog.md) | タスク DB・カンバン・MCP・依存グラフを持つ。独自は「1ステップごとに止まる」1行と pr-merge への受け渡し |
+| model-setup `task-brief` | 本体 Plan モード | Plan モードは読み取り専用を保証し計画ファイルを残す。独自は「質問をまとめて聞く」だけ |
+| model-setup `bulk-scanner` | 本体の Explore エージェント | 読み取り専用の高速スキャンとして重複 |
+| cli-bridge `codex-agents`（＋`gen-agents-md` フック） | CLAUDE.md から `@AGENTS.md` を読む・Codex の fallback filenames・[rulesync](https://github.com/dyoshikawa/rulesync) | 生成物の同期より正本を1つにするほうが壊れない（教訓2）。Claude Code は AGENTS.md もネイティブに読む |
+| codebase-setup `codebase-onboard`（＋`instruction-auditor`） | 公式 [Monorepos and large repos](https://code.claude.com/docs/en/large-codebases) | Step 4〜7（階層化・`claudeMdExcludes`・Read の deny・LSP・`sparsePaths`・ディレクトリ別スキル）は公式ページに例つきで全部ある。足しているのは一般的な進め方だけ |
+| model-setup のテンプレート群のうち公式ガイドの翻訳 | 公式 Opus 5 / Sonnet 5.5 / Fable 5.1 ガイドのスニペット原文 | 証拠収集の概算で本文の6〜7割が翻訳・言い直し。翻訳は原文の更新に追随できない。旧ルール2・3・4・8・9、追補10・11・13・会社14、PROMPTS #1〜#10、MODEL-GUIDE のモデル仕様表・effort 表・Sonnet 5 の要点・LLM アプリの一般論を削除し、リンクに置き換えた |
+
+### 残したもの（代替より明確に良い点を確認できたもの）
+
+| 対象 | 代替より良い点 |
+|---|---|
+| feature-pipeline・`clarify` | 書き込み範囲をフックで強制（`guard-builder-paths` は exit 2）・SPEC 要約の SessionStart/SubagentStart 注入・テストしか書けない検証役は、feature-dev・superpowers・spec-kit のどれにも無い。clarify は pipeline の Phase 2・3 に組み込まれた部品 |
+| task-pipeline・design-docs | コード以外の成果物を承認ゲートつきで工程化した同等品が見つからない |
+| notes | 作業中の判断を file:line つきで追記するログ。handoff 系は終了時のスナップショットで役割が違う |
+| pipeline-improve | 過去の会話ログから訂正を掘り、エージェント定義まで直すものは他に無い |
+| verify-fresh・pr-merge | 完了条件と成果物の突き合わせ（非コード含む）は `/verify`（アプリを動かす）・`/code-review`（バグ探し）に無い。CI 確認→マージ→後片付けは公式 `commit-commands` に無い |
+| self-correct | `sdsrss/loop_eng` は非コード成果物を「向かない」と明記。非コードの意味判定と Judge の校正（judge-eval）はこちらだけ |
+| review-panel | Codex/Kiro CLI を混ぜた異種モデルのパネルは他に無い（wan-huiyan 版は ROADMAP で不可能と明記） |
+| feedback-rules | 人間の指摘回数で warn → ask → deny と強制力を上げる仕組みは hookify・auto memory・pro-workflow に無い |
+| deep-understand・adoption-review・codebase-map・project-catchup | 同等品が見つからないか、代替が別の用途（Learning スタイルはクイズを持たない／`/deep-research` は採否を判定しない） |
+| codex-ask・kiro 系 | codex-ask は `plan-review-codex` フックの実行エンジン。Kiro の代替は1★で全ツール許可が既定 |
+
+### 確認できなかったこと
+
+`/batch` の「publishes its change」が PR 作成を指すか、`# Compact instructions` が自動圧縮に効くか、
+Codex の fallback filenames が CLAUDE.md の `@import` を展開するか。いずれも削除の根拠にはしていない。

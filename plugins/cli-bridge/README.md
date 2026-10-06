@@ -1,6 +1,6 @@
 # cli-bridge — 外部の AI コーディング CLI（Codex・Kiro）に相談・レビューを委譲する
 
-Claude Code から **OpenAI Codex** と **Kiro** に相談・レビューを依頼するためのスキル4種と
+Claude Code から **OpenAI Codex** と **Kiro** に相談・レビューを依頼するためのスキル3種と
 サブエージェント3種です。**ユーザー自身は外部 CLI を直接操作しません**。Claude Code が
 各 CLI を**非対話・read-only** で Bash 越しに駆動し、生出力をサブエージェント内に隔離して
 要約だけを返します。
@@ -8,12 +8,11 @@ Claude Code から **OpenAI Codex** と **Kiro** に相談・レビューを依�
 | スラッシュコマンド | 役割 | 権限 | 委譲先エージェント |
 |-------------------|------|------|-------------------|
 | `/codex-ask <相談内容>` | 設計相談・セカンドオピニオンを Codex に答えさせ要約（コードは書かない） | `--sandbox read-only` | `codex-advisor` |
-| `/codex-agents [--project-only]` | 既存の Claude ルール（CLAUDE.md 等）を取り込んだ `AGENTS.md` を生成 | —（ローカル生成） | —（スクリプト） |
 | `/kiro-review [スコープ]` | 差分/指定ファイルを Kiro にレビューさせ、重大度 P1–P4 で要約 | `--trust-tools=read` | `kiro-reviewer` |
 | `/kiro-ask <相談内容>` | 設計相談・セカンドオピニオンを Kiro に答えさせ要約（コードは書かない） | `--trust-tools=read` | `kiro-advisor` |
 
-さらに、**プラン提示前に Codex レビューを挟む opt-in フック**（`plan-review-codex.sh`）と、
-**セッション開始時に `AGENTS.md` を再生成する常時フック**（`hooks.json`）を同梱します（後述）。
+さらに、**プラン提示前に Codex レビューを挟む opt-in フック**（`plan-review-codex.sh`）を同梱します（後述）。
+常時発火するフックは持ちません。
 
 ## Codex へのレビュー・実装の委譲は公式プラグインを使ってください
 
@@ -34,8 +33,7 @@ Claude Code プラグインとして配布されており、レビューと実�
 
 - `/codex-ask` — read-only の**自由質問**（公式は review / rescue / transfer の3系統で、
   「コードを書かせずに相談だけする」入口を持たない）
-- `/codex-agents` — **AGENTS.md の生成・同期**（公式プラグインは既存の AGENTS.md を
-  Codex CLI が読むことに依存し、生成はしない）
+- **プラン提示前の Codex レビュー**（`plan-review-codex.sh`）— 公式のゲートは Stop 時のレビューだけ
 - `/kiro-review`・`/kiro-ask` — Kiro 側には公式相当のプラグインが見つかっていない
 
 ## 旧 codex-bridge / kiro-bridge からの移行
@@ -46,7 +44,8 @@ Claude Code プラグインとして配布されており、レビューと実�
 |---|---|
 | `/codex-review` | 公式プラグインの `/codex:review`（敵対的レビューは `/codex:adversarial-review`） |
 | `/codex-implement` | 公式プラグインの `/codex:rescue` |
-| `/codex-ask`・`/codex-agents` | 変更なし（このプラグインに収録） |
+| `/codex-ask` | 変更なし（このプラグインに収録） |
+| `/codex-agents`（AGENTS.md 生成） | 2026-10-06 に削除。下の「Claude のルールを Codex にも効かせる」 |
 | `/kiro-review`・`/kiro-ask` | 変更なし（このプラグインに収録） |
 | `plugin install codex-bridge@workbench-ja` | 廃止 |
 | `plugin install kiro-bridge@workbench-ja` | `plugin install cli-bridge@workbench-ja` |
@@ -57,8 +56,6 @@ Claude Code プラグインとして配布されており、レビューと実�
 なるため、`/plugin install cli-bridge@workbench-ja` を一度だけ実行**してください。
 出典: [Plugin marketplaces](https://code.claude.com/docs/en/plugin-marketplaces)（2026-09-19 取得）。
 
-生成ずみの `AGENTS.md` は**そのまま使えます**。所有判定のセンチネルは旧
-`codex-bridge:generated` も受け付け、次の再生成で新しい印に置き換わります。
 `plan-review-codex.sh` の状態ディレクトリ（`.claude/codex-bridge/`）は、進行中セッションの
 ゲートが二重に開くのを避けるため**意図的に旧名のまま**です。
 
@@ -113,7 +110,6 @@ cli-bridge/
 │   └── plugin.json
 ├── skills/
 │   ├── codex-ask/SKILL.md
-│   ├── codex-agents/SKILL.md   # AGENTS.md ジェネレータ（/codex-agents）
 │   ├── kiro-review/SKILL.md
 │   └── kiro-ask/SKILL.md
 ├── agents/
@@ -121,8 +117,6 @@ cli-bridge/
 │   ├── kiro-reviewer.md        # read-only
 │   └── kiro-advisor.md         # read-only
 └── hooks/
-    ├── hooks.json              # SessionStart で AGENTS.md を再生成（常時ON・再生成のみ）
-    ├── gen-agents-md.sh        # AGENTS.md 生成スクリプト
     └── plan-review-codex.sh    # プラン提示前→Codex レビュー（opt-in）
 ```
 
@@ -135,32 +129,24 @@ cli-bridge/
 /plugin install cli-bridge@workbench-ja
 ```
 
-> **Kiro だけが目的の場合の注意**: プラグインを入れると `hooks.json` により
-> `SessionStart`（startup/resume）で `gen-agents-md.sh --auto` が走ります。これは
-> **既存の生成物を最新化するだけ**で、`AGENTS.md` が無ければ何もしません（プロセス1つ分の
-> コストだけ）。止めたい場合はコピー導入にして `hooks/` を持ち込まないでください。
-
 ### 方法2: コピーして導入する
 
 ```bash
 mkdir -p .claude/skills .claude/agents .claude/hooks
 cp -r plugins/cli-bridge/skills/*  .claude/skills/
 cp -r plugins/cli-bridge/agents/*  .claude/agents/
-cp plugins/cli-bridge/hooks/gen-agents-md.sh \
-   plugins/cli-bridge/hooks/plan-review-codex.sh  .claude/hooks/
+cp plugins/cli-bridge/hooks/plan-review-codex.sh  .claude/hooks/
 ```
 
 グローバルに使いたい場合は `~/.claude/skills/`・`~/.claude/agents/` にコピーします。
 
-> フックはコピーしただけでは動きません。下記「プランを提示する前に Codex にレビューさせる」
-> 「Claude のルールを Codex にも効かせる」を参照して `.claude/settings.json` に登録してください
-> （プラグイン導入なら `hooks.json` 由来の AGENTS.md 再生成は自動）。
+> フックはコピーしただけでは動きません。下記「プランを提示する前に Codex にレビューさせる」を
+> 参照して `.claude/settings.json` に登録してください（プラグイン導入でも同じ。opt-in です）。
 
 ## 使い方の例
 
 ```
 /codex-ask この再試行設計は妥当？指数バックオフと比べて
-/codex-agents                     # CLAUDE.md 等から AGENTS.md を生成・更新
 
 /kiro-review                      # 未コミット差分を Kiro にレビューさせる
 /kiro-review base main            # main との差分をレビュー
@@ -183,27 +169,18 @@ cp plugins/cli-bridge/hooks/gen-agents-md.sh \
 - 大きすぎる場合は「全文 → 関連抜粋 → `git diff` → パス名指し」の順に降格します。
 - 追加で渡したいファイルは `@path` で明示指定できます。
 
-## Claude のルールを Codex にも効かせる（AGENTS.md 生成）
+## Claude のルールを Codex にも効かせる（AGENTS.md）
 
-普段 Claude Code しか使わない人向けに、既存の Claude ルールを取り込んだ **`AGENTS.md`** を
-生成します。Codex が読むのは CLAUDE.md ではなく `AGENTS.md` ですが、`AGENTS.md` は `@import`
-非対応のため、**中身を取り込んだ（`@import` も展開した）平らな `AGENTS.md`** を
-マテリアライズして橋渡しします。
+以前は `/codex-agents` と SessionStart フックで CLAUDE.md から平らな `AGENTS.md` を生成していたが、
+2026-10-06 に削除した。生成物を同期し続けるより、**正本を1つにする**ほうが壊れない
+（[教訓2](../../docs/lessons.md)「重複を自動化する前に、重複そのものを消す」）。
 
-| ソース | 出力先 |
-|--------|--------|
-| `~/.claude/CLAUDE.md`（home） | `$CODEX_HOME/AGENTS.md`（既定 `~/.codex/AGENTS.md`・全 Codex セッション共通） |
-| プロジェクト `CLAUDE.md` ＋ `.claude/*.md`・`.claude/rules/*.md`（小ルール・深さ1） | `<プロジェクト>/AGENTS.md` |
-
-- **手動**: `/codex-agents`（`--project-only` で home をスキップ）。**新規作成もできます**。
-- **自動**: プラグイン導入時は `SessionStart`（startup/resume）で `gen-agents-md.sh --auto` が走り、
-  **既存の生成物を最新化するだけ**（新規作成しません）。初回は `/codex-agents` で作成してください。
-- **安全策**: 生成物は1行目にセンチネルを持ち、**手書きの `AGENTS.md`（センチネル無し）は
-  上書きしません**。生成済みは**差分があるときだけ**更新します。生成された `AGENTS.md` は
-  再生成物なので、**手編集せず CLAUDE.md 側を更新**してください（コミットしたくなければ
-  `.gitignore` 推奨）。旧 `codex-bridge` 時代のセンチネルも所有印として受け付けます。
-- Codex の AGENTS.md 階層連結（グローバル＋プロジェクト、後勝ち）の仕様はバージョンで
-  変わりうるため、実環境の挙動を確認のうえ利用してください。
+- **推奨**: ルールの正本を `AGENTS.md` に書き、`CLAUDE.md` からは `@AGENTS.md` で読み込む。
+  Claude Code は AGENTS.md もネイティブに読む（v2.1.277〜）。
+  出典: [Memory](https://code.claude.com/docs/en/memory)（2026-10-06 取得）
+- 正本を CLAUDE.md のままにしたいなら、Codex の設定で CLAUDE.md を**指示ファイルの代替名**として
+  読ませる（fallback filenames）。出典: [AGENTS.md（Codex）](https://learn.chatgpt.com/docs/agent-configuration/agents-md)
+- 複数ツール（Codex・Kiro・Cursor 等）へ配るなら [rulesync](https://github.com/dyoshikawa/rulesync)
 
 ## プランを提示する前に Codex にレビューさせる（opt-in）
 
@@ -252,7 +229,6 @@ Claude は「先に `/codex-ask` でプランをレビューさせ、致命的�
 | 出力が空・途中で切れる | プロンプト引数の長さ制限、または MCP 起動待ちで超過 | 詳細を stdin 側に寄せる。`--output-format stream-json` への切り替えも検討（[Headless mode](https://kiro.dev/docs/cli/headless/)） |
 | プランが提示されず「先にレビューせよ」と返る | `plan-review-codex.sh` を配線している（仕様どおり） | `/codex-ask` でプランをレビューさせ、P1・P2 を反映して再提示。ゲートは1セッション1回だけ |
 | プラン提示前レビューのフックが効かない | 配線漏れ／`session_id` が取れない／状態ファイルを作れない | `.claude/settings.json` の `PreToolUse` 登録を確認。異常系は**安全側に素通り**する設計 |
-| `AGENTS.md` が更新されない | 手書き（センチネル無し）でガード／取り込むソースが無い／`--project-only` | 既存 AGENTS.md を退避するか `/codex-agents` で再生成。CLAUDE.md 等のソース有無を確認 |
 | Windows で `bash\r` エラー | `.sh` が CRLF | リポジトリ直下の `.gitattributes`（`*.sh text eol=lf`）で LF に正規化。Git Bash/WSL を使用 |
 
 ## 安全方針

@@ -1,7 +1,7 @@
 ---
 name: task-pipeline
 description: >-
-  コード以外の成果物（drawio 図・ドキュメント・レポート等）を、5エージェントの連鎖と3つの人間承認（要件・ブリーフ・最終レビュー）で end-to-end に作るオーケストレーター。「この図を描いて」「〜のドキュメントを作って」「〜をまとめて」や /task-pipeline で発動し、/task-pipeline 再開 [slug] で再開できる。backlog.md を名指しした依頼は backlog-loop に任せる。
+  コード以外の成果物（drawio 図・ドキュメント・レポート等）を、5エージェントの連鎖と3つの人間承認（要件・ブリーフ・最終レビュー）で end-to-end に作るオーケストレーター。「この図を描いて」「〜のドキュメントを作って」「〜をまとめて」や /task-pipeline で発動し、/task-pipeline 再開 [slug] で再開できる。
 argument-hint: "[依頼の説明]"
 ---
 

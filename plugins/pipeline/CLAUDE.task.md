@@ -100,7 +100,7 @@
 
 このパイプラインの流れは AWS Labs [AI-DLC](https://github.com/awslabs/aidlc-workflows)（AIが提案・
 人間が承認するゲート付き開発ライフサイクル）の簡易版にあたる（対応表の全体は
-`model-setup/MODEL-GUIDE.md` §9）。既存のフェーズ・エージェント構成そのままの読み替えで、
+`model-setup/MODEL-GUIDE.md` §5）。既存のフェーズ・エージェント構成そのままの読み替えで、
 追加の操作は不要:
 
 - **Inception（要件・設計）** = 調査〜ブリーフ。`researcher`=調査役・

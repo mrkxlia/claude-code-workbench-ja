@@ -179,7 +179,6 @@ flowchart TD
     q1 -->|"ない（レガシー）"| se["cc-rsg 等（外部ツール）<br/>現状の挙動を SPEC.md に固定"]
     se --> ff["/feature-pipeline ＜機能の説明＞<br/>7エージェント + 3チェックポイント"]
     q1 -->|"ある / 新規開発"| ff
-    q0 -->|"パイプラインを通すほどではない<br/>小さな実装・修正"| bwt["/build-with-tests ＜タスク＞<br/>既存パターン確認 + テスト並行"]
     q0 -->|"実装メモを手動で<br/>残したい・更新したい"| nt["/notes<br/>（通常はビルダーが自動記録）"]
     q0 -->|"パイプラインの運用実績から<br/>定義を改善したい"| fi["/pipeline-improve<br/>失敗シグナル検出 + 修正提案"]
     q0 -->|"コード以外の成果物<br/>（図・ドキュメント・レポート）"| tf["/task-pipeline ＜依頼＞<br/>（成果物モード・5エージェント連鎖）"]
@@ -192,7 +191,6 @@ flowchart TD
 | `/task-pipeline <依頼の説明>` | コード以外の成果物を作る（5エージェント連鎖 + 3チェックポイント。詳細は成果物モード節） |
 | `/design-docs <フェーズ> <対象>` | 設計書（要件定義/基本設計/詳細設計/DB設計/図表）を章立てを固定して書く。単発でも task-pipeline に乗せても使える |
 | `/clarify <詰めたい要件>` | 要件・仕様を一問ずつ徹底質問で詰める（パイプライン内では Phase 2/3 の writer 起動前に自動で回る） |
-| `/build-with-tests <タスク>` | パイプラインを通すほどではない小さな実装・修正をテスト並行で行う |
 | `/notes` | 実装ノートを手動で開始・更新する（パイプライン内ではビルダーが自動記録） |
 | `/pipeline-improve [期間や slug]` | 運用実績から失敗シグナルを検出し、エージェント定義・スキル・CLAUDE.md の改善案を提案・適用する（自己改善ループ） |
 | `/pipeline-setup` | パイプライン一式を対象リポジトリへ自動導入する（コード/成果物のモード選択つき） |
@@ -305,7 +303,6 @@ pipeline/
 │   │   ├── SKILL.md
 │   │   └── references/                      #   templates.md（フェーズ別章立て）/ consistency.md（整合）
 │   ├── clarify/SKILL.md                     # 要件・仕様を一問ずつ詰める徹底質問スキル（dig/grill 由来）
-│   ├── build-with-tests/SKILL.md            # 小さな実装をテスト並行で行うスキル（コードモード）
 │   ├── notes/SKILL.md                       # 実装ノート（モード自動判定）
 │   ├── pipeline-improve/SKILL.md            # 自己改善ループ（失敗シグナル検出 → 定義の改善提案）
 │   └── pipeline-setup/                      # 一式を対象リポジトリへ自動導入（モード選択つき）
@@ -322,7 +319,7 @@ pipeline/
     └── settings.json                        # フック配線の設定サンプル（setup がモードに応じて絞る）
 ```
 
-プラグイン化されているのは**スキル8種とエージェント9種**です（いずれもプラグイン導入で自動配信）。
+プラグイン化されているのは**スキル7種とエージェント9種**です（いずれもプラグイン導入で自動配信）。
 CLAUDE.md サンプル・フックはプロジェクトごとの差し替え（担当範囲など）が前提のため、プラグインからは
 自動配信せず、`pipeline-setup` が対象リポジトリへコピー&カスタマイズします。
 
@@ -411,7 +408,6 @@ cp <このリポジトリ>/plugins/pipeline/agents/*.md .claude/agents/
 mkdir -p .claude/skills
 cp -r <このリポジトリ>/plugins/pipeline/skills/feature-pipeline .claude/skills/
 cp -r <このリポジトリ>/plugins/pipeline/skills/clarify .claude/skills/
-cp -r <このリポジトリ>/plugins/pipeline/skills/build-with-tests .claude/skills/
 cp -r <このリポジトリ>/plugins/pipeline/skills/notes .claude/skills/
 cp -r <このリポジトリ>/plugins/pipeline/skills/pipeline-improve .claude/skills/
 ```
@@ -480,18 +476,18 @@ git init
 ## 個別スキルを単体で使う（clarify など）
 
 パイプライン全体を導入しなくても、**汎用スキルだけを単体で使う**ことができます。とくに
-`clarify`（要件・仕様を質問で詰める）と `build-with-tests`（テスト並行の小さな実装）は
-パイプラインに依存せず単体で有用です。**パーソナルスキル**（`~/.claude/skills/`）に入れると、
-どのリポジトリでも `/clarify`・`/build-with-tests` が使えます。
+`clarify`（要件・仕様を質問で詰める）はパイプラインに依存せず単体で使えます。**パーソナルスキル**
+（`~/.claude/skills/`）に入れると、どのリポジトリでも `/clarify` が使えます。パイプラインを通すほどでは
+ない小さな実装は、superpowers の `test-driven-development` か mattpocock の `tdd` を使ってください
+（2026-10-06 に `build-with-tests` を削除。テストを先に失敗させる手順が無く、代替より弱かったため）。
 
 ```bash
 git clone --depth 1 https://github.com/mrkxlia/claude-code-workbench-ja /tmp/workbench
 mkdir -p ~/.claude/skills
 cp -r /tmp/workbench/plugins/pipeline/skills/clarify ~/.claude/skills/
-cp -r /tmp/workbench/plugins/pipeline/skills/build-with-tests ~/.claude/skills/
 ```
 
-- `clarify` / `build-with-tests` … パイプライン非依存。単体で使える。
+- `clarify` … パイプライン非依存。単体で使える。
 - `pipeline-improve` … パイプラインの運用ログ（`docs/pipeline/`）を前提にするため、単体利用には向かない。
 - `notes` … パイプライン非依存。単体でそのままコピーして使える。仕様逆引きが必要な場合は
   [daishir0/cc-rsg](https://github.com/daishir0/cc-rsg) 等の外部ツールを使う。
@@ -722,7 +718,6 @@ Nicholas Carlini による「16体並列で C コンパイラを書く」実験�
 | `feature-pipeline` | 維持 | 固有名・`docs/pipeline/` と結合 |
 | `task-pipeline` | 維持 | 固有名・`docs/task-pipeline/` と結合 |
 | `pipeline-setup` | 維持（旧 task-pipeline-setup を統合） | 固有名（パーソナルスキル） |
-| `build-with-tests` | 維持 | 固有名 |
 | `pipeline-improve` | 維持 | 固有名 |
 | `clarify` | モード自動判定の統合版 | 両モードに対応 |
 | `notes` | モード自動判定の統合版 | 両モードに対応（feature-pipeline / task-pipeline 共通） |

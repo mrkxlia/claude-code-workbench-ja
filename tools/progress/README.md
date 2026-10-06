@@ -6,7 +6,7 @@ Claude Code のステータスライン（1行）と `.dashboard/index.html`（1
 - **LLM を使いません。** Python 3 の標準ライブラリだけで動く決定的スクリプトなので、トークン費用は0です
 - **状態ファイルは読むだけで、書き換えません。** 書くのは `.dashboard/` 配下だけです。その中に `.gitignore`（中身は `*`）を自分で置くので、
   あなたのリポジトリのコミットに混ざりません
-- **判断待ちは表示するだけです。** 作業を「既定の動作で先に進める」ことはしません（model-setup ルール2「複数解釈を勝手に選ばない」と両立させるため）
+- **判断待ちは表示するだけです。** 作業を「既定の動作で先に進める」ことはしません（成果物が変わる判断は人間がする、という前提を崩さないため）
 
 ## 何を読むか
 
@@ -15,8 +15,6 @@ Claude Code のステータスライン（1行）と `.dashboard/index.html`（1
 | `docs/pipeline/*/status.md` | pipeline の `feature-pipeline` | 現在のフェーズ、承認待ち（🛑）、差し戻し回数 |
 | `docs/task-pipeline/*/status.md` | pipeline の `task-pipeline` | 同上 |
 | `.claude/self-correct/state.json` | self-correct の `self-correct` | ラウンド数、判定、未解決の指摘 ID。`ESCALATED` は判断待ちとして出す |
-| `docs/backlog.md`（無ければ `backlog.md`） | model-setup の `backlog-loop` | チェックボックスの完了数と、次のタスク |
-| `docs/long-run/brief.md`（`PROGRESS_BRIEF` 環境変数で変更可） | model-setup の `long-run` | ブリーフのチェックボックス。無ければ「実行中」 |
 
 無いファイルは黙って飛ばします。どれも無ければ、statusline は空行、HTML は「進行中の作業なし」になります。
 
@@ -45,7 +43,7 @@ Claude Code のステータスライン（1行）と `.dashboard/index.html`（1
 表示例:
 
 ```
-pipeline:login Phase3 🛑ブリーフ承認待ち | self-correct:drafts/article.md 2/3 FAIL(2) | backlog:docs/backlog.md 1/3
+pipeline:login Phase3 🛑ブリーフ承認待ち | self-correct:drafts/article.md 2/3 FAIL(2)
 ```
 
 statusline が呼ばれるたびに、前回から30秒以上たっていれば `.dashboard/index.html` も作り直します。
@@ -74,7 +72,7 @@ python3 tools/progress/progress.py html /path/to/repo
 ## 制約
 
 - Python 3 が必要です。Python が無い環境（会社 PC プロファイル等）では使えません
-- 読むのは上表のファイルだけです。`fan-out` のようにファイルへ進捗を残さないスキルの状態は出ません
+- 読むのは上表のファイルだけです。ファイルへ進捗を残さないスキルの状態は出ません
 - 状態ファイルの書式は各スキルの SKILL.md のテンプレートに従います。テンプレートを変えたら、このスクリプトの解析も見直してください
 
 ## ファイル構成

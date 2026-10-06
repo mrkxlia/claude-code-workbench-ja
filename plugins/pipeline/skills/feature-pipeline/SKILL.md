@@ -1,7 +1,7 @@
 ---
 name: feature-pipeline
 description: >-
-  機能開発を7エージェントの連鎖（調査→ストーリー→ブリーフ→バックエンド→フロントエンド→テスト→レビュー）で end-to-end に実装するオーケストレーター。ストーリー・ブリーフ・最終レビューの3つの人間承認で必ず止まる。「この機能を作って」「〜を実装して」や /feature-pipeline で発動し、/feature-pipeline 再開 [slug] で再開できる。backlog.md を名指しした依頼は backlog-loop に任せる。
+  機能開発を7エージェントの連鎖（調査→ストーリー→ブリーフ→バックエンド→フロントエンド→テスト→レビュー）で end-to-end に実装するオーケストレーター。ストーリー・ブリーフ・最終レビューの3つの人間承認で必ず止まる。「この機能を作って」「〜を実装して」や /feature-pipeline で発動し、/feature-pipeline 再開 [slug] で再開できる。
 argument-hint: "[機能の説明]"
 ---
 

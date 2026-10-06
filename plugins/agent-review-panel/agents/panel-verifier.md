@@ -6,7 +6,7 @@ description: >-
   CONFIRMED / LINE-MISMATCH / NOT-FOUND の表だけを返す。指摘の内容の良し悪しは
   判断しない。review-panel スキルから deep 指定時のみ Task ツールで起動される。
 tools: Read, Grep, Glob
-# 機械的照合のみで判断を伴わないため haiku（bulk-scanner と同じ安価ルーティング）
+# 機械的照合のみで判断を伴わないため haiku
 model: haiku
 color: yellow
 ---

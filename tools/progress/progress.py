@@ -92,26 +92,6 @@ def self_correct_entry(path):
     }
 
 
-def checklist_entry(path, kind, name):
-    items = parse_checklist(path)
-    if not items:
-        return None
-    done = sum(1 for d, _ in items if d)
-    current = next((t for d, t in items if not d), None)
-    return {
-        "kind": kind,
-        "name": name,
-        "source": path,
-        "done": done,
-        "total": len(items),
-        "current": current or "完了",
-        "short": f"{done}/{len(items)}",
-        "waiting": None,
-        "rejects": [],
-        "finished": current is None,
-    }
-
-
 def collect(root):
     entries = []
     for kind, pattern in (("pipeline", "docs/pipeline/*/status.md"), ("task-pipeline", "docs/task-pipeline/*/status.md")):
@@ -124,23 +104,6 @@ def collect(root):
         e = self_correct_entry(sc)
         if e:
             entries.append(e)
-    for b in ("docs/backlog.md", "backlog.md"):
-        p = os.path.join(root, b)
-        if os.path.isfile(p):
-            e = checklist_entry(p, "backlog", b)
-            if e:
-                entries.append(e)
-            break
-    brief = os.environ.get("PROGRESS_BRIEF", "docs/long-run/brief.md")
-    p = brief if os.path.isabs(brief) else os.path.join(root, brief)
-    if os.path.isfile(p):
-        e = checklist_entry(p, "long-run", os.path.relpath(p, root))
-        if e:
-            entries.append(e)
-        else:
-            entries.append({"kind": "long-run", "name": os.path.relpath(p, root), "source": p, "done": 0,
-                            "total": 0, "current": "ブリーフ固定済み（チェックボックスなし）", "short": "実行中",
-                            "waiting": None, "rejects": [], "finished": False})
     return entries
 
 

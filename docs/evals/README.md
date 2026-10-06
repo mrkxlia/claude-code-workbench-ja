@@ -1,6 +1,6 @@
 # evals — 主要スキルの「期待挙動」シナリオ
 
-11スキルについて、**「この入力に対して上位モデルはこう振る舞う」**を評価シナリオとして固定したもの。
+8スキルについて、**「この入力に対して上位モデルはこう振る舞う」**を評価シナリオとして固定したもの。
 Sonnet 5 と Opus 5 のパリティを実測するための物差し。
 
 ## 形式について
@@ -74,9 +74,7 @@ claude plugin eval "$T/model-setup" --trust-plugin --ablation none --runs 1 --no
 
 | ファイル | 対象スキル | 主に測るもの |
 |---|---|---|
-| [`task-brief.md`](task-brief.md) | `task-brief` | 一括質問・不要な質問をしない・範囲外は clarify へ |
 | [`verify-fresh.md`](verify-fresh.md) | `verify-fresh` | 反証フレーミング・網羅指示・**Opus 5 で反射的に呼ばない** |
-| [`long-run.md`](long-run.md) | `long-run` | 停止条件の閉じた列挙・証拠つき報告・ブリーフ固定 |
 | [`review-panel.md`](review-panel.md) | `review-panel` | ブラインド並列・単独レビューへの切り分け・deep の裁定 |
 | [`adoption-review.md`](adoption-review.md) | `adoption-review` | 一次情報の収集・自分の成果物のレビューを横取りしない・推測で埋めない・検証ゲートの分岐・スコアの根拠 |
 | [`self-correct.md`](self-correct.md) | `self-correct` | Ground Truth の無い基準で回さない・Judge に修正させない・停止条件で止まる |
@@ -84,7 +82,6 @@ claude plugin eval "$T/model-setup" --trust-plugin --ablation none --runs 1 --no
 | [`project-catchup.md`](project-catchup.md) | `project-catchup` | 一般論に逃げない・出典の無い理由を書かない・鮮度を書く |
 | [`feedback-rule.md`](feedback-rule.md) | `feedback-rule` | count を自動で上げない・いきなり禁止にしない・既存を探す |
 | [`deep-understand.md`](deep-understand.md) | `deep-understand` | 講義から始めない・クイズで実証する・曖昧な回答で通さない |
-| [`codebase-onboard.md`](codebase-onboard.md) | `codebase-onboard` | 実測が先・「入れない」と言える・承認の単位を守る |
 
 公式チェックリストの目安は**1スキルにつき最低3件**。
 
@@ -96,9 +93,9 @@ claude plugin eval "$T/model-setup" --trust-plugin --ablation none --runs 1 --no
 |---|---|---|---|---|---|---|
 | | | | | | | |
 
-## 追補ルール14 との関係
+## 追補ルール6 との関係
 
-`CLAUDE.private.md` の追補ルール14 は「Opus 計画・Sonnet 実行」を既定にし、`MODEL-GUIDE.md` §3 は
+`CLAUDE.private.md` の追補ルール6 は「Opus 計画・Sonnet 実行」を既定にし、`MODEL-GUIDE.md` §2 は
 **Opus 5 では検証指示を足さない**（自己検証が既定動作なので過剰検証になる）と定めている。
 この分岐が実際に効いているかを測るのが [`verify-fresh.md`](verify-fresh.md) の S-3 / S-4。
 ここが両モデルで同じ挙動になるなら、分岐は文面上のもので実効が無いということになる。
