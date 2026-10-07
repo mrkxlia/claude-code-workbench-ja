@@ -4,7 +4,8 @@ description: >-
   敵対的パネルレビュー（deep モード）の引用検証係。討論を生き残った全指摘の物証
   （file:line と引用文、または対象パッケージ内の行番号）を Read で機械的に照合し、
   CONFIRMED / LINE-MISMATCH / NOT-FOUND の表だけを返す。指摘の内容の良し悪しは
-  判断しない。review-panel スキルから deep 指定時のみ Task ツールで起動される。
+  判断しない。review-panel スキルから deep 指定時のみ Task ツールで起動される
+  （裁定者が新しく持ち込んだ指摘があれば、その分だけもう一度起動される）。
 tools: Read, Grep, Glob
 # 機械的照合のみで判断を伴わないため haiku
 model: haiku

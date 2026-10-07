@@ -105,7 +105,8 @@ Claude Code でそのまま実行します（clone 不要）。現在7つのプ�
 - **agent-review-panel** — 導入すると `/review-panel` で、コード差分・実装計画・ドキュメントを
   複数ペルソナのサブエージェント（既定3名）に**ブラインド並列レビュー→相互批判→応答・譲歩→統合**
   の討論つきでレビューさせられます（基本は依存ゼロ）。`deep` で引用検証＋裁定者の最終評決、
-  `codex`・`kiro` で外部パネリスト（OpenAI Codex／Kiro・任意・同時指定も可）を混成。詳しくは
+  `codex`・`kiro` で Claude 以外のモデル（OpenAI Codex／Kiro・任意・同時指定も可）を混成し、
+  相互批判と見落とし探しにも参加させます。「高」の指摘には反証テストを付けます。詳しくは
   [agent-review-panel/README.md](plugins/agent-review-panel/) を参照。
 - **adoption-review** — 導入すると `/adoption-review`（URL・GitHub リポジトリ・X ポスト・スライド・
   論文・SaaS・ツール名を渡すと、Web の一次情報を集めてから「実務で採用する価値があるか」を敵対的に
@@ -187,7 +188,7 @@ Claude に聞くのが一番早い方法です（導入済みスキルの説明�
 | 要件定義書・基本設計書・詳細設計書・DB設計書を毎回同じ型で書きたい | **pipeline**（`/design-docs`） | フェーズ別の章立てテンプレート＋フェーズ間整合を検査する design-doc-checker |
 | 別 AI（OpenAI Codex）にレビュー/実装を委譲したい | 公式プラグイン [openai/codex-plugin-cc](https://github.com/openai/codex-plugin-cc) | 本リポジトリでは扱わない（2026-09-19 に委譲） |
 | 別 AI（Codex / Kiro）に**相談**したい | **cli-bridge**（`/codex-ask`・`/kiro-ask`・`/kiro-review`） | Claude が各 CLI を非対話・read-only で駆動。ユーザーは外部 CLI を触らない |
-| 重要な判断を複数の視点で敵対的にレビュー・討論させたい | **agent-review-panel**（`/review-panel`） | 既定3名がブラインド並列→相互批判→統合。deep で引用検証＋裁定者、codex・kiro で異種モデル混成（同時指定も可） |
+| 重要な判断を複数の視点で敵対的にレビュー・討論させたい | **agent-review-panel**（`/review-panel`） | 既定3名がブラインド並列→相互批判→統合。deep で網羅監査・引用検証・裁定者、codex・kiro で Claude 以外のモデルを混成（相互批判にも参加・同時指定も可） |
 | 流れてきたツール・OSS・論文・X ポストを採用すべきか判断したい | **adoption-review**（`/adoption-review`） | Web の一次情報を集め、良い点より先に採用しない理由を探す。話題性・スター数は採用理由にしない |
 | 要件・仕様を質問で詰めたい | [mattpocock/skills](https://github.com/mattpocock/skills) の `grilling`（pipeline にも無改変で同梱） | 単体で使うなら上流を入れる |
 | 実装中の判断・逸脱を記録したい | **notes**（pipeline に同梱） | 単体利用も可。物証（file:line・テスト名）つきで記録 |
@@ -292,7 +293,9 @@ kiro-cli には Codex の `--sandbox workspace-write` に相当する OS レベ�
 `deep` 指定で引用検証（panel-verifier が file:line の実在を機械照合）と討論非関与の裁定者
 （panel-judge）による最終評決＋レポート出力を追加、`codex`・`kiro` 指定で外部パネリスト
 （panel-codex 経由の OpenAI Codex／panel-kiro 経由の Kiro・いずれも未導入なら欠席扱い・**同時指定も可**）
-を混成して同一モデルの相関バイアスを減らせます。1名で足りる相談は内蔵の Task サブエージェントに、単独の
+を混成して同一モデルの相関バイアスを減らせます。外部パネリストは相互批判（R2）にも参加し、deep では
+パネル全体の見落とし探しも担います。2026-10-07 に wan-huiyan/agent-review-panel から反証テスト・
+同一箇所の一致は1件と数える規則・外部知識の Web 確認などを取り込みました。1名で足りる相談は内蔵の Task サブエージェントに、単独の
 コードレビューは内蔵 `/code-review`・`/kiro-review`・公式 Codex プラグインに任せる住み分けです。
 **プラグイン1コマンドで導入可能**（上の「導入方法」参照）。
 
