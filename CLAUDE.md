@@ -45,7 +45,7 @@ claude-code-workbench-ja/
 │   │   ├── skills/                  #     3種（codex-ask〔実行は公式 codex-plugin-cc の codex:codex-rescue に read-only で任せる入口〕/ kiro-review / kiro-ask。レビュー・実装の委譲は公式 openai/codex-plugin-cc、AGENTS.md は @AGENTS.md import に任せる）
 │   │   ├── agents/                  #     2種（kiro-reviewer / kiro-advisor。いずれも read-only）
 │   │   └── hooks/                   #     plan-review-codex.sh（プラン提示前レビュー・opt-in・手動配線。常時発火のフックは持たない）
-│   ├── agent-review-panel/          #   複数ペルソナの敵対的パネルレビュー（codex / kiro 混成 opt-in。反グループシンク機構7つ）
+│   ├── agent-review-panel/          #   複数ペルソナの敵対的パネルレビュー（codex / kiro 混成 opt-in・外部モデルは相互批判と網羅監査にも参加。反証テスト等を wan-huiyan 版から取り込み）
 │   │   ├── README.md
 │   │   ├── .claude-plugin/plugin.json
 │   │   ├── skills/                  #     1種（review-panel＋references/{personas,report-template}.md）
@@ -114,6 +114,6 @@ claude-code-workbench-ja/
 
 ## 重要: ファイルはテンプレート・サンプルとして扱うこと
 
-このリポジトリに含まれるファイル（`plugins/pipeline/CLAUDE.md`、各スキルファイルなど）は、**ユーザーが自分のプロジェクトにコピーして使うためのテンプレート・サンプル**です。
+このリポジトリに含まれるファイル（`plugins/pipeline/CLAUDE.task.md`、各スキルファイルなど）は、**ユーザーが自分のプロジェクトにコピーして使うためのテンプレート・サンプル**です。
 
 このリポジトリ自体の開発にそのまま適用しない。たとえば各パイプラインの `CLAUDE.md` サンプルは導入先リポジトリ用であり、このリポジトリの開発ルールではありません。
