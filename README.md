@@ -186,7 +186,7 @@ Claude に聞くのが一番早い方法です（導入済みスキルの説明�
 | 機能をコードで end-to-end 実装したい | [obra/superpowers](https://github.com/obra/superpowers) | 本リポジトリは持たない（旧 `feature-pipeline` は 2026-10-06 に削除） |
 | 図・ドキュメント等コード以外の成果物を作りたい | **pipeline**（`/task-pipeline`） | 5エージェント連鎖。drawio 等のユーザー導入スキルも呼べる |
 | 要件定義書・基本設計書・詳細設計書・DB設計書を毎回同じ型で書きたい | **pipeline**（`/design-docs`） | フェーズ別の章立てテンプレート＋フェーズ間整合を検査する design-doc-checker |
-| 運用手順書・作業マニュアルを事故らない型で書きたい・直したい | **pipeline**（`/ops-manual`） | シナリオ（分岐）・タスク（事前条件と完了条件）・I/O の3層に分け、論理的・合目的的・伝承的の3レベルで検査。手順は実行しない |
+| 運用手順書・作業マニュアルを事故らない型で書きたい・直したい | **pipeline**（`/ops-manual`） | シナリオ（分岐）・タスク（事前条件と完了条件）・I/O の3層に分け、論理的・合目的的・伝承的の3レベルで検査。改訂・自動化済み作業の手動版も扱う。手順は実行しない |
 | 別 AI（OpenAI Codex）にレビュー/実装を委譲したい | 公式プラグイン [openai/codex-plugin-cc](https://github.com/openai/codex-plugin-cc) | 本リポジトリでは扱わない（2026-09-19 に委譲） |
 | 別 AI（Codex / Kiro）に**相談**したい | **cli-bridge**（`/codex-ask`・`/kiro-ask`・`/kiro-review`） | Claude が各 CLI を非対話・read-only で駆動。ユーザーは外部 CLI を触らない |
 | 重要な判断を複数の視点で敵対的にレビュー・討論させたい | **agent-review-panel**（`/review-panel`） | 既定3名がブラインド並列→相互批判→統合。deep で網羅監査・引用検証・裁定者、codex・kiro で Claude 以外のモデルを混成（相互批判にも参加・同時指定も可） |

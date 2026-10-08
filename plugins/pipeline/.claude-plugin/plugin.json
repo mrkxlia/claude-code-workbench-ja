@@ -1,7 +1,7 @@
 {
   "name": "pipeline",
   "version": "5.1.0",
-  "description": "コード以外の成果物（drawio 図・ドキュメント・レポート・設計書）を、5エージェントの連鎖（調査 → 成果物要件 → 作業ブリーフ → 作成 → レビュー）と3つの人間承認チェックポイントで作るパイプラインテンプレート（task-pipeline）。設計書の章立てを5フェーズで固定する design-docs と、フェーズ間整合を検査する design-doc-checker、運用手順書をシナリオ・タスク・I/O の3層と事前条件・完了条件で書く/直す ops-manual、徹底質問の grilling（mattpocock/skills から無改変で同梱・MIT）、作業判断を記録する notes、運用実績から定義を改善する pipeline-improve、対象リポジトリへ一式を導入する pipeline-setup を含む（スキル7種・エージェント6種）。5.0.0 でコードモード（feature-pipeline・backend/frontend-builder・test-verifier・guard-builder-writes）を削除し、コードの機能開発は obra/superpowers に委ねた。",
+  "description": "コード以外の成果物（drawio 図・ドキュメント・レポート・設計書）を、5エージェントの連鎖（調査 → 成果物要件 → 作業ブリーフ → 作成 → レビュー）と3つの人間承認チェックポイントで作るパイプラインテンプレート（task-pipeline）。設計書の章立てを5フェーズで固定する design-docs と、フェーズ間整合を検査する design-doc-checker、運用手順書をシナリオ・タスク・I/O の3層と事前条件・完了条件で書く・検査・改訂し、自動化済み作業の手動版も起こす ops-manual、徹底質問の grilling（mattpocock/skills から無改変で同梱・MIT）、作業判断を記録する notes、運用実績から定義を改善する pipeline-improve、対象リポジトリへ一式を導入する pipeline-setup を含む（スキル7種・エージェント6種）。5.0.0 でコードモード（feature-pipeline・backend/frontend-builder・test-verifier・guard-builder-writes）を削除し、コードの機能開発は obra/superpowers に委ねた。",
   "author": {
     "name": "mrkxlia",
     "url": "https://github.com/mrkxlia"
