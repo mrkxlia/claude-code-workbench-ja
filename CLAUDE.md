@@ -78,10 +78,10 @@ claude-code-workbench-ja/
 │   │   ├── README.md
 │   │   ├── .claude-plugin/plugin.json
 │   │   └── skills/                  #     1種（deep-understand。エージェント・フックは持たない）
-│   └── stuck-watch/                 #   長時間タスクの詰まり（ツールの連続失敗・完了が出ない時間）をトークン0で知らせる mod（function hooks。early access）
+│   └── progress-pane/               #   計画（html-plan の主張・決定）・タスク・詰まりを1枚のペインで見る mod（function hooks。early access。トークン0）
 │       ├── README.md
 │       ├── .claude-plugin/plugin.json  # types で $.state の型契約を宣言
-│       ├── hooks/                   #     hooks.json（modules）＋ register.ts（本体）
+│       ├── hooks/                   #     hooks.json（modules）＋ register.tsx（本体）＋ plan.ts（html-plan のページと回答を読む）
 │       ├── types/index.d.ts         #     $.state の型契約
 │       └── tests/                   #     claude plugin test のテスト
 ├── tools/                           # 独立ツール（プラグインとして配布しない単体スクリプト）
@@ -111,7 +111,7 @@ claude-code-workbench-ja/
 2. **各ディレクトリには README.md を置く** — セクションの目的・使い方・ファイル構成を説明する README.md を必ず用意する。
 3. **リポジトリ全体の言語は日本語** — README.md・CLAUDE.md など、このリポジトリ自体のドキュメントは日本語で記述する。
 4. **マーケットプレイス定義はルートの `.claude-plugin/` に置く** — Claude Code プラグイン仕様上の必須配置であり、規約1の例外。
-5. **プラグイン配下を変更したら version を上げる。プラグインのメタデータは plugin.json だけに書く** — `plugins/` 配下の8プラグイン（pipeline・cli-bridge・agent-review-panel・adoption-review・model-setup・feedback-rules・learning-coach・stuck-watch）の配信対象ファイル（`skills/`・`agents/`・`hooks/` 配下。これらは既定探索パスのためプラグイン導入で自動配信される）を変更したら、該当する `plugins/<name>/.claude-plugin/plugin.json` の `version` をセマンティックバージョニングで更新する。CLAUDE.md / CLAUDE.task.md サンプル・`setup/settings.json` は setup スキルがコピー配布するため version 対象外。
+5. **プラグイン配下を変更したら version を上げる。プラグインのメタデータは plugin.json だけに書く** — `plugins/` 配下の8プラグイン（pipeline・cli-bridge・agent-review-panel・adoption-review・model-setup・feedback-rules・learning-coach・progress-pane）の配信対象ファイル（`skills/`・`agents/`・`hooks/` 配下。これらは既定探索パスのためプラグイン導入で自動配信される）を変更したら、該当する `plugins/<name>/.claude-plugin/plugin.json` の `version` をセマンティックバージョニングで更新する。CLAUDE.md / CLAUDE.task.md サンプル・`setup/settings.json` は setup スキルがコピー配布するため version 対象外。
 
    **`version`・`description`・`keywords`・`license`・`author` は plugin.json のみに書き、`.claude-plugin/marketplace.json` 側には書かない。** marketplace のエントリは `name`・`source`・`category` だけを持つ。公式仕様上、エントリで省略された `description` 等は plugin.json の値が使われ（`strict` 未指定＝true のとき）、両方にあるとエントリ側が黙って優先される。二重に持つと必ずずれる（実際 pipeline の説明文は 2.3.0 の追加を反映しないまま「スキル7種・エージェント8種」と書き続けていた）。出典: [Plugin marketplaces](https://code.claude.com/docs/en/plugin-marketplaces)（2026-09-07 取得）。
 6. **プラグインの skills/agents/hooks は公式標準レイアウト（プラグインルート直下）に置く** — `<plugin>/skills/`・`<plugin>/agents/`・`<plugin>/hooks/hooks.json` が既定探索パスであり、plugin.json に `skills`/`hooks` フィールドを明示しない（宣言と実体の二重管理を避ける）。コピー導入用の `settings.json` サンプルはプラグインルート直下に置けない（Claude Code の予約パス）ため `<plugin>/setup/settings.json` に置く。pipeline の `hooks/` は導入先リポジトリへコピーする資材であり、この配置自体はプラグインとして自動発火しない（pipeline-setup が対象リポジトリの `.claude/hooks/` へコピーし `.claude/settings.json` に配線する）。

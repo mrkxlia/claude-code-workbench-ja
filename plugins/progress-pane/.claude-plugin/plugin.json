@@ -1,0 +1,23 @@
+{
+  "name": "progress-pane",
+  "version": "0.1.0",
+  "description": "計画・タスク・詰まりを1枚のペインで見る mod（function hooks）。html-plan の計画ページを書くと主張と決定（回答待ち・変更・既定のまま・開かずに既定のまま）を出し、Respond の貼り戻しで状態を更新する。タスク名の先頭に [1.2] と主張番号を付けると、タスクをその主張の下にまとめて進捗を数える。ツールの3回連続失敗と、未完了タスクのまま15分完了が出ない状態を詰まりとしてステータスラインとトーストで知らせる。/progress でペインを開く。トークン0で、判断待ちを既定で進めることも作業を止めることもしない。",
+  "author": {
+    "name": "mrkxlia",
+    "url": "https://github.com/mrkxlia"
+  },
+  "homepage": "https://github.com/mrkxlia/claude-code-workbench-ja/tree/main/plugins/progress-pane",
+  "repository": "https://github.com/mrkxlia/claude-code-workbench-ja",
+  "license": "MIT",
+  "keywords": [
+    "mod",
+    "function-hooks",
+    "pane",
+    "progress",
+    "html-plan",
+    "stuck",
+    "long-running",
+    "japanese"
+  ],
+  "types": "./types/index.d.ts"
+}

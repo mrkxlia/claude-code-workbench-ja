@@ -41,8 +41,8 @@
       "category": "productivity"
     },
     {
-      "name": "stuck-watch",
-      "source": "./plugins/stuck-watch",
+      "name": "progress-pane",
+      "source": "./plugins/progress-pane",
       "category": "productivity"
     }
   ],
