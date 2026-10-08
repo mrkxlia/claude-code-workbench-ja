@@ -13,7 +13,11 @@ import {
   bar,
   clock,
   humanStepped,
+  newLoop,
+  itemLabel,
   removeItem,
+  replaceTodos,
+  sameOr,
   setItem,
   sparkline,
   stuckOf,
@@ -21,15 +25,20 @@ import {
   taskTally,
   toolEnded,
   toolStarted,
-  withItems,
+  turnEnded,
+  turnStarted,
 } from './model'
 
 const PANE = 'progress'
 const SYNC_MS = 2000
 const CHART_MINUTES = 30
+// 同期がこの時間成功していなければ、ペインとステータスラインに「同期できていない」と出す
+const SYNC_STALE_MS = 15 * 1000
 
 const watch = atom({ plugin: 'progress-pane', key: 'watch' } as const, EMPTY)
 const tab = atom({ plugin: 'progress-pane', key: 'tab' } as const, 'overview' as Tab)
+
+const isSyncStale = (w: Watch, now: number) => w.syncFailing || (w.syncedAt !== null && now - w.syncedAt > SYNC_STALE_MS)
 
 const statusText = (w: Watch, now: number) => {
   const t = taskTally(w)
@@ -37,55 +46,73 @@ const statusText = (w: Watch, now: number) => {
   const stuck = stuckOf(w, now)
   const parts: string[] = []
   if (t.total > 0) parts.push(`進捗 ${t.done}/${t.total}`)
-  if (t.current) parts.push(`▶ ${t.current.label.slice(0, 40)}`)
+  if (t.current) parts.push(`▶ ${itemLabel(t.current).slice(0, 40)}`)
   if (a.running > 0) parts.push(`エージェント ${a.running} 実行中`)
   for (const s of stuck) parts.push(s.kind === 'failing' ? `⚠ 連続失敗 ${s.loop.streak}` : `⚠ ${s.minutes}分 完了なし`)
+  if (isSyncStale(w, now)) parts.push('⚠ progress-pane 同期できていません')
   return parts.length > 0 ? parts.join(' · ') : undefined
 }
 
-// 状態の更新・ステータスライン・初回だけのトーストをまとめて行う
+// 状態の更新・ステータスライン・初回だけのトーストをまとめて行う。
+// トーストを出すかは同じ update の中で決める（並列のツール呼び出しで何度も鳴らさないため）
 const refresh = async ($: EngineInterface, fn: (w: Watch, now: number) => Watch) => {
   const now = await $.clock.now()
-  const w = await update($, watch, prev => fn(prev, now))
-  $.ui.status(statusText(w, now))
-  const stuck = stuckOf(w, now)
-  if (stuck.length > 0 && !w.warned) {
-    await update($, watch, prev => ({ ...prev, warned: true }))
+  let toast: string | null = null
+  const w = await update($, watch, prev => {
+    const next = sameOr(prev, fn(prev, now))
+    const stuck = stuckOf(next, now)
+    toast = null
+    if (stuck.length === 0 || next.warned) return next
     const s = stuck[0]!
-    $.ui.toast(
+    toast =
       s.kind === 'failing'
         ? `progress-pane: ${loopName(s.loop)}でツールが ${s.loop.streak} 回続けて失敗しています。方針を見直すか止めてください`
-        : `progress-pane: ${s.minutes} 分タスクが完了していません`,
-    )
-  }
+        : `progress-pane: ${s.minutes} 分タスクが完了していません`
+    return { ...next, warned: true }
+  })
+  $.ui.status(statusText(w, now))
+  if (toast !== null) $.ui.toast(toast)
   return w
 }
 
 // エージェント一覧と使用量を取り込む。経過時間の表示を進めるため、何か動いている間は描き直す
 const sync = async ($: EngineInterface) => {
-  const [list, usage] = await Promise.all([$.agent.list(), $.session.usage().catch(() => null)])
-  const w = await refresh($, (w, now) => {
-    const synced = list.length > 0 || Object.keys(w.loops).length > 1 ? syncAgents(w, list, now) : w
-    return usage === null
-      ? synced
-      : {
-          ...synced,
-          usage: { startedAt: usage.startedAt, contextPercent: usage.context.percent ?? null, usd: usage.cost?.usd ?? null },
-        }
-  })
-  const isBusy = taskTally(w).current !== null || agentTally(w).running > 0
-  if (isBusy) $.ui.invalidate('ui.render')
+  try {
+    const [list, usage] = await Promise.all([$.agent.list(), $.session.usage()])
+    const w = await refresh($, (w, now) => {
+      const synced = list.length > 0 || Object.keys(w.loops).some(id => id !== MAIN) ? syncAgents(w, list, now) : w
+      return {
+        ...synced,
+        usage: { startedAt: usage.startedAt, contextPercent: usage.context.percent ?? null, usd: usage.cost?.usd ?? null },
+        syncedAt: now,
+        syncFailing: false,
+      }
+    })
+    const isBusy = taskTally(w).current !== null || agentTally(w).running > 0
+    if (isBusy) $.ui.invalidate('ui.render')
+  } catch {
+    // API が変わった・呼べなくなったときに黙らない。ペインとステータスラインに出す
+    await refresh($, w => ({ ...w, syncFailing: true }))
+  }
 }
 
-// 同期の時計は1つだけ動かす（session.start より先にツールが呼ばれても動くよう、最初に使ったときにも始める）
+// 同期の時計は1つだけ動かす。session.start の $ で始める（読み込み・再読み込みのたびに発火する）
 let isTicking = false
 const startTicking = ($: EngineInterface) => {
   if (isTicking) return
   isTicking = true
-  $.clock.every(SYNC_MS, () => void sync($).catch(() => undefined))
+  $.clock.every(SYNC_MS, () => void sync($))
 }
 
-const openPane = ($: EngineInterface) => $.ui.open({ id: PANE, title: '進捗' })
+// 頼まれずに開くのはセッションで1回だけ。人が閉じたあとは /progress でしか開かない
+const autoOpen = async ($: EngineInterface) => {
+  let isFirst = false
+  await update($, watch, w => {
+    isFirst = !w.autoOpened
+    return isFirst ? { ...w, autoOpened: true } : w
+  })
+  if (isFirst) void $.ui.open({ id: PANE, title: '進捗' })
+}
 
 const loopName = (l: Loop) => (l.id === MAIN ? 'メイン' : `${l.type}${l.description ? `「${l.description}」` : ''}`)
 
@@ -96,9 +123,13 @@ const STATUS: Record<Loop['status'], { icon: string; word: string; color: string
   waiting: { icon: '⏸', word: '待機', color: 'warning' },
   idle: { icon: '⏸', word: '待機', color: 'warning' },
   completed: { icon: '✔', word: '完了', color: 'success' },
+  gone: { icon: '·', word: '終了（一覧から消えた）', color: 'subtle' },
   failed: { icon: '✖', word: '失敗', color: 'error' },
   killed: { icon: '■', word: '停止', color: 'error' },
 }
+
+// 人の操作で入ったプロンプトだけを「介入」とみなす（バックグラウンドの完了通知や /loop は数えない）
+const isHuman = (kind: string) => kind === 'composer' || kind === 'bridge'
 
 // 各フックの .catch は fail-open: 観測だけのフックなので、自分が壊れても作業は止めない
 export const register: Register = on => {
@@ -108,27 +139,44 @@ export const register: Register = on => {
     return next(e)
   })
 
+  // /clear や resume で会話が替わったら、前の会話の表示を捨てる
+  on('session.end', async ($, e, next) => {
+    if (e.reason === 'clear' || e.reason === 'resume') await update($, watch, () => EMPTY)
+    return next(e)
+  }).catch(($, e, next) => next(e))
+
   on('command.run', { command: 'progress' }, async $ => {
-    await openPane($)
+    await $.ui.open({ id: PANE, title: '進捗' })
     return { text: '進捗ダッシュボードを開きました。1 概要 / 2 エージェント / 3 ログ で切り替えます。' }
   })
 
+  // 人がペインを閉じたら、以後は頼まれずに開かない
+  on('ui.close', async ($, e, next) => {
+    if (e.id === PANE && e.origin.kind === 'person') await update($, watch, w => ({ ...w, autoOpened: true }))
+    return next(e)
+  }).catch(($, e, next) => next(e))
+
   on('prompt.submit', async ($, e, next) => {
-    await refresh($, (w, now) => humanStepped(w, now))
+    if (isHuman(e.origin.kind)) await refresh($, (w, now) => humanStepped(w, now))
+    return next(e)
+  }).catch(($, e, next) => next(e))
+
+  // メインのターンが動いている間だけ15分の詰まりを数える（人の番で待っている時間は数えない）
+  on('turn.start', async ($, e, next) => {
+    await refresh($, (w, now) => turnStarted(w, now))
+    return next(e)
+  }).catch(($, e, next) => next(e))
+
+  on('turn.complete', async ($, e, next) => {
+    await refresh($, w => turnEnded(w))
     return next(e)
   }).catch(($, e, next) => next(e))
 
   on('tool.call', { tool: 'TodoWrite' }, async ($, e, next) => {
     const ran = await next(e)
     if (ran.deny === undefined && ran.isError !== true) {
-      await refresh($, (w, now) => {
-        let out = withItems(w, {}, now)
-        e.todos.forEach((t, i) => {
-          out = setItem(out, `todo-${i}`, t.status, t.status === 'in_progress' ? t.activeForm : t.content, now)
-        })
-        return withItems(w, out.items, now)
-      })
-      void openPane($)
+      await refresh($, (w, now) => replaceTodos(w, e.todos, now))
+      if (e.todos.length > 0) await autoOpen($)
     }
     return ran
   }).catch(($, e, next) => next(e))
@@ -137,8 +185,8 @@ export const register: Register = on => {
     const ran = await next(e)
     if (ran.deny === undefined && ran.isError !== true) {
       const id = ran.result.task.id
-      await refresh($, (w, now) => setItem(w, id, 'pending', e.subject, now))
-      void openPane($)
+      await refresh($, (w, now) => setItem(w, id, { status: 'pending', subject: e.subject, ...(e.activeForm ? { activeForm: e.activeForm } : {}) }, now))
+      await autoOpen($)
     }
     return ran
   }).catch(($, e, next) => next(e))
@@ -148,26 +196,36 @@ export const register: Register = on => {
     if (ran.deny === undefined && ran.isError !== true && ran.result.success) {
       await refresh($, (w, now) => {
         if (e.status === 'deleted') return removeItem(w, e.taskId, now)
-        const prev = w.items[e.taskId]
-        const status = e.status ?? prev?.status ?? 'pending'
-        const label = status === 'in_progress' && e.activeForm ? e.activeForm : (e.subject ?? prev?.label ?? e.taskId)
-        return setItem(w, e.taskId, status, label, now)
+        return setItem(
+          w,
+          e.taskId,
+          {
+            ...(e.status ? { status: e.status } : {}),
+            ...(e.subject ? { subject: e.subject } : {}),
+            ...(e.activeForm ? { activeForm: e.activeForm } : {}),
+          },
+          now,
+        )
       })
     }
     return ran
   }).catch(($, e, next) => next(e))
 
-  // すべてのツール呼び出しを、どのループ（メイン・サブエージェント）のものかつきで数える
+  // すべてのツール呼び出しを、どのループ（メイン・サブエージェント）のものかつきで数える。
+  // 中断や例外で next が終わらなくても、いま使っているツールと回答待ちは必ず戻す
   on('tool.call', async ($, e, next) => {
     const loop = e.agentId ?? MAIN
-    startTicking($)
     // 初めて見るエージェントは、すぐ一覧を取り直して地図に名前つきで載せる
-    if (loop !== MAIN && (await read($, watch)).loops[loop] === undefined) await sync($).catch(() => undefined)
+    if (loop !== MAIN && (await read($, watch)).loops[loop] === undefined) await sync($)
     await refresh($, (w, now) => toolStarted(w, loop, e.tool, now))
-    const ran = await next(e)
-    const outcome = ran.deny !== undefined ? null : { isError: ran.isError === true, text: ran.isError === true ? (ran.text ?? '') : '' }
-    await refresh($, (w, now) => toolEnded(w, loop, e.tool, outcome, now))
-    return ran
+    let outcome: { isError: boolean; text: string } | null = null
+    try {
+      const ran = await next(e)
+      if (ran.deny === undefined) outcome = { isError: ran.isError === true, text: ran.isError === true ? (ran.text ?? '') : '' }
+      return ran
+    } finally {
+      await refresh($, (w, now) => toolEnded(w, loop, e.tool, outcome, now))
+    }
   }).catch(($, e, next) => next(e))
 
   on('ui.render', { component: 'Pane', requestId: PANE }, async ($, e) => {
@@ -175,8 +233,9 @@ export const register: Register = on => {
     const now = await $.clock.now()
     const w = await read($, watch)
     const current = await read($, tab)
-    const columns = e.viewport?.columns ?? e.props.bodyColumns ?? 80
-    const rows = e.viewport?.rows ?? 30
+    // ドックしたペインは端末より狭い。描く幅と高さはペインの本体の大きさで決める
+    const columns = e.props.bodyColumns || 80
+    const rows = e.props.scroll.bodyRows || 30
     const isWide = columns >= 90
 
     const card = (key: string, title: string, color: string, body: JSX.Element[]) => (
@@ -215,7 +274,11 @@ export const register: Register = on => {
     const header = (
       <Box key="header" flexDirection="row" justifyContent="space-between">
         {tabs}
-        <Text dimColor>{`${elapsed}${ctx}${usd}`}</Text>
+        {isSyncStale(w, now) ? (
+          <Text color="warning">{`⚠ 同期できていません${w.syncedAt === null ? '' : `（最終 ${clock(now - w.syncedAt)}前）`}`}</Text>
+        ) : (
+          <Text dimColor>{`${elapsed}${ctx}${usd}`}</Text>
+        )}
       </Box>
     )
 
@@ -236,7 +299,7 @@ export const register: Register = on => {
         </Text>,
         <Text key="now" wrap="truncate-end" color={t.current ? 'claude' : undefined} dimColor={!t.current}>
           {t.current
-            ? `▶ ${t.current.label}${t.current.startedAt === null ? '' : `  ${clock(now - t.current.startedAt)}`}`
+            ? `▶ ${itemLabel(t.current)}${t.current.startedAt === null ? '' : `  ${clock(now - t.current.startedAt)}`}`
             : t.total === 0
               ? 'タスクはまだありません'
               : t.done === t.total
@@ -286,7 +349,7 @@ export const register: Register = on => {
         chart = <Raster key="chart" columns={wide.length} rows={3} cells={activityCells(wide, 3)} />
       } else if (e.surface === 'desktop' || e.surface === 'mobile') {
         const { Svg } = $.ui.resolve(e)
-        chart = <Svg key="chart" source={activitySvg(data, 480, 60)} alt="直近30分のツール実行数" width={480} height={60} />
+        chart = <Svg key="chart" source={activitySvg(data)} alt="直近30分のツール実行数" />
       } else {
         chart = <Text key="chart" color="success">{sparkline(data)}</Text>
       }
@@ -320,7 +383,7 @@ export const register: Register = on => {
               dimColor={i.status === 'completed'}
               strikethrough={i.status === 'completed'}
             >
-              {`${i.status === 'completed' ? '✔' : i.status === 'in_progress' ? '▶' : '○'} ${i.label}`}
+              {`${i.status === 'completed' ? '✔' : i.status === 'in_progress' ? '▶' : '○'} ${itemLabel(i)}`}
             </Text>
           ))}
           {list.length < items.length ? <Text dimColor>{`…完了済み ${items.length - list.length} 件を省略`}</Text> : ''}
@@ -386,7 +449,7 @@ export const register: Register = on => {
             <Text key={`fail-${i}`} wrap="truncate-end">
               <Text dimColor>{`${clock(now - f.at)}前 `}</Text>
               <Text color="error">{f.tool}</Text>
-              <Text dimColor>{` ${f.loop === MAIN ? '' : `(${loopName(w.loops[f.loop] ?? { ...EMPTY_LOOP, id: f.loop })}) `}`}</Text>
+              <Text dimColor>{` ${f.loop === MAIN ? '' : `(${loopName(w.loops[f.loop] ?? newLoop(f.loop, now))}) `}`}</Text>
               {f.text}
             </Text>
           ))}
@@ -404,16 +467,3 @@ export const register: Register = on => {
   })
 }
 
-const EMPTY_LOOP: Loop = {
-  id: '',
-  type: '?',
-  description: '',
-  parentId: null,
-  status: 'unknown',
-  startedAt: 0,
-  endedAt: null,
-  tools: 0,
-  errors: 0,
-  streak: 0,
-  current: null,
-}

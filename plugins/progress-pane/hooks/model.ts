@@ -5,11 +5,13 @@ import type { Failure, Item, ItemStatus, Loop, Watch } from '../types'
 
 // 連続でエラーになったツール呼び出しがこの回数に達したら「詰まり」とみなす（ループごとに数える）
 export const STREAK_LIMIT = 3
-// 未完了のタスクがあるのに、この時間タスクが1つも完了しなければ「詰まり」とみなす
+// メインのターンが動いていて、未完了のタスクがあるのに、この時間タスクが1つも完了しなければ「詰まり」とみなす
 export const IDLE_LIMIT_MS = 15 * 60 * 1000
 export const MAIN = 'main'
 const FAILURES_KEPT = 20
 const MINUTES_KEPT = 60
+// 終わったループはこの数だけ新しい順に残す（長いセッションで状態が膨らまないように）
+const ENDED_LOOPS_KEPT = 30
 
 export const EMPTY: Watch = {
   items: {},
@@ -21,13 +23,21 @@ export const EMPTY: Watch = {
   toolCounts: {},
   asking: 0,
   usage: { startedAt: null, contextPercent: null, usd: null },
+  turnActive: false,
+  turnStartedAt: null,
+  autoOpened: false,
+  syncedAt: null,
+  syncFailing: false,
 }
 
-const isEnded = (s: Loop['status']) => s === 'completed' || s === 'failed' || s === 'killed'
+const isEnded = (s: Loop['status']) => s === 'completed' || s === 'failed' || s === 'killed' || s === 'gone'
+
+// 地図と集計に載せるループ。一覧で一度も見ていないもの（ワークフロー・フォーク）は載せない
+export const isMapped = (l: Loop) => l.id !== MAIN && l.status !== 'unknown'
 
 export const newLoop = (id: string, now: number): Loop => ({
   id,
-  type: id === MAIN ? 'メイン' : '?',
+  type: id === MAIN ? 'メイン' : '内部のループ',
   description: '',
   parentId: null,
   status: id === MAIN ? 'running' : 'unknown',
@@ -43,24 +53,66 @@ const loopOf = (w: Watch, id: string, now: number) => w.loops[id] ?? newLoop(id,
 
 // ---- タスク ----
 
-const doneCount = (w: Watch) => Object.values(w.items).filter(i => i.status === 'completed').length
+const openCount = (items: Record<string, Item>) => Object.values(items).filter(i => i.status !== 'completed').length
+const doneCount = (items: Record<string, Item>) => Object.values(items).filter(i => i.status === 'completed').length
 
+// タスクの集合を差し替える。完了が増えたとき、または未完了が0件から増えたとき（新しい仕事の始まり）に起点を戻す
 export const withItems = (w: Watch, items: Record<string, Item>, now: number): Watch => {
-  const next = { ...w, items }
-  const hasProgress = doneCount(next) > doneCount(w) || w.lastProgressAt === null
-  return hasProgress ? { ...next, lastProgressAt: now, warned: false } : next
+  const hasProgress =
+    doneCount(items) > doneCount(w.items) || (openCount(w.items) === 0 && openCount(items) > 0) || w.lastProgressAt === null
+  return hasProgress ? { ...w, items, lastProgressAt: now, warned: false } : { ...w, items }
 }
 
-export const setItem = (w: Watch, id: string, status: ItemStatus, label: string, now: number): Watch => {
+const item = (prev: Item | undefined, status: ItemStatus, subject: string, activeForm: string | null, now: number): Item => ({
+  status,
+  subject,
+  activeForm,
+  // 実行中のまま更新されたときは経過時間を引き継ぐ
+  startedAt: status === 'in_progress' ? (prev?.status === 'in_progress' ? prev.startedAt : now) : null,
+})
+
+export const setItem = (
+  w: Watch,
+  id: string,
+  change: { status?: ItemStatus; subject?: string; activeForm?: string },
+  now: number,
+): Watch => {
   const prev = w.items[id]
-  const startedAt = status === 'in_progress' ? (prev?.status === 'in_progress' ? prev.startedAt : now) : null
-  return withItems(w, { ...w.items, [id]: { status, label, startedAt } }, now)
+  const next = item(
+    prev,
+    change.status ?? prev?.status ?? 'pending',
+    change.subject ?? prev?.subject ?? id,
+    change.activeForm ?? prev?.activeForm ?? null,
+    now,
+  )
+  return withItems(w, { ...w.items, [id]: next }, now)
 }
 
 export const removeItem = (w: Watch, id: string, now: number): Watch => {
   const { [id]: _, ...rest } = w.items
   return withItems(w, rest, now)
 }
+
+// TodoWrite は一覧全体の差し替え。同じ位置の項目は経過時間を引き継ぐ
+export const replaceTodos = (
+  w: Watch,
+  todos: readonly { content: string; status: ItemStatus; activeForm: string }[],
+  now: number,
+): Watch => {
+  const items: Record<string, Item> = {}
+  todos.forEach((t, i) => {
+    const id = `todo-${i}`
+    items[id] = item(w.items[id], t.status, t.content, t.activeForm, now)
+  })
+  return withItems(w, items, now)
+}
+
+export const itemLabel = (i: Item) => (i.status === 'in_progress' && i.activeForm ? i.activeForm : i.subject)
+
+// ---- ターン ----
+
+export const turnStarted = (w: Watch, now: number): Watch => ({ ...w, turnActive: true, turnStartedAt: now })
+export const turnEnded = (w: Watch): Watch => ({ ...w, turnActive: false })
 
 // ---- ツール呼び出し ----
 
@@ -70,6 +122,7 @@ export const toolStarted = (w: Watch, loop: string, tool: string, now: number): 
   asking: tool === 'AskUserQuestion' ? w.asking + 1 : w.asking,
 })
 
+// outcome が null のときは数えない（権限・フックの拒否、中断、例外）。いま使っているツールと回答待ちだけ戻す
 export const toolEnded = (
   w: Watch,
   loop: string,
@@ -79,7 +132,6 @@ export const toolEnded = (
 ): Watch => {
   const l = loopOf(w, loop, now)
   const asking = tool === 'AskUserQuestion' ? Math.max(0, w.asking - 1) : w.asking
-  // null は権限・フックによる拒否。作業の失敗ではないので数えない
   if (outcome === null) return { ...w, asking, loops: { ...w.loops, [loop]: { ...l, current: null } } }
 
   const minute = String(Math.floor(now / 60000))
@@ -98,16 +150,16 @@ export const toolEnded = (
     streak: outcome.isError ? l.streak + 1 : 0,
   }
   const loops = { ...w.loops, [loop]: nextLoop }
-  return {
+  const next = {
     ...w,
     asking,
     minutes,
     loops,
     toolCounts: { ...w.toolCounts, [tool]: (w.toolCounts[tool] ?? 0) + 1 },
     failures: outcome.isError ? [...w.failures, failure].slice(-FAILURES_KEPT) : w.failures,
-    // 詰まりが解けたら次の詰まりでまた知らせる
-    warned: stuckOf({ ...w, loops }, now).length > 0 ? w.warned : false,
   }
+  // 詰まりが解けたら次の詰まりでまた知らせる
+  return { ...next, warned: stuckOf(next, now).length > 0 ? w.warned : false }
 }
 
 // 人が介入したら、その時点を起点に詰まり判定をやり直す
@@ -124,20 +176,31 @@ export const syncAgents = (w: Watch, list: readonly AgentInfo[], now: number): W
   const loops = { ...w.loops }
   for (const a of list) {
     const l = loops[a.id] ?? newLoop(a.id, now)
-    const endedAt = isEnded(a.status) ? (l.endedAt ?? now) : null
+    const hasEnded = isEnded(a.status)
     loops[a.id] = {
       ...l,
       type: a.type,
       description: a.description || a.name || '',
       parentId: a.parentId ?? null,
       status: a.status,
-      endedAt,
+      endedAt: hasEnded ? (l.endedAt ?? now) : null,
+      current: hasEnded ? null : l.current,
     }
   }
-  // 一覧から消えたループは最後に見た状態のまま残し、走っていたものは終わったとみなす
+  // 一覧から消えたループは「一覧から消えた」として残す（完了か異常終了かは分からないので完了とは書かない）
   for (const [id, l] of Object.entries(loops)) {
     if (id !== MAIN && !list.some(a => a.id === id) && !isEnded(l.status) && l.status !== 'unknown') {
-      loops[id] = { ...l, status: 'completed', endedAt: l.endedAt ?? now, current: null }
+      loops[id] = { ...l, status: 'gone', endedAt: l.endedAt ?? now, current: null }
+    }
+  }
+  // 終わったループは新しい順に上限まで残し、一度も一覧に出なかった内部のループは最後のツールから10分で捨てる
+  const ended = Object.values(loops)
+    .filter(l => isEnded(l.status))
+    .sort((a, b) => (b.endedAt ?? 0) - (a.endedAt ?? 0))
+  for (const l of ended.slice(ENDED_LOOPS_KEPT)) delete loops[l.id]
+  for (const l of Object.values(loops)) {
+    if (l.status === 'unknown' && l.current === null && now - l.startedAt > 10 * 60 * 1000 && l.streak < STREAK_LIMIT) {
+      delete loops[l.id]
     }
   }
   return { ...w, loops }
@@ -151,9 +214,11 @@ export const stuckOf = (w: Watch, now: number): Stuck[] => {
   const out: Stuck[] = Object.values(w.loops)
     .filter(l => l.streak >= STREAK_LIMIT)
     .map(loop => ({ kind: 'failing' as const, loop }))
-  const open = Object.values(w.items).some(i => i.status !== 'completed')
-  if (open && w.lastProgressAt !== null && now - w.lastProgressAt >= IDLE_LIMIT_MS) {
-    out.push({ kind: 'idle', minutes: Math.floor((now - w.lastProgressAt) / 60000) })
+  // 15分の判定は、メインのターンが動いていて、人への質問も、実行中のツール（長いビルドなど）も無いときだけ
+  const isWorking = w.turnActive && w.asking === 0 && !Object.values(w.loops).some(l => l.current !== null)
+  const since = Math.max(w.lastProgressAt ?? 0, w.turnStartedAt ?? 0)
+  if (isWorking && openCount(w.items) > 0 && since > 0 && now - since >= IDLE_LIMIT_MS) {
+    out.push({ kind: 'idle', minutes: Math.floor((now - since) / 60000) })
   }
   return out
 }
@@ -165,12 +230,12 @@ export const taskTally = (w: Watch) => {
 }
 
 export const agentTally = (w: Watch) => {
-  const agents = Object.values(w.loops).filter(l => l.id !== MAIN)
+  const agents = Object.values(w.loops).filter(isMapped)
   const count = (pred: (l: Loop) => boolean) => agents.filter(pred).length
   return {
-    running: count(l => l.status === 'running' || l.status === 'pending' || l.status === 'unknown'),
+    running: count(l => l.status === 'running' || l.status === 'pending'),
     waiting: count(l => l.status === 'waiting' || l.status === 'idle'),
-    done: count(l => l.status === 'completed'),
+    done: count(l => l.status === 'completed' || l.status === 'gone'),
     failed: count(l => l.status === 'failed' || l.status === 'killed'),
   }
 }
@@ -185,13 +250,12 @@ export type TreeRow = { loop: Loop; prefix: string }
 
 // メインを根に、parentId でつないだ木を深さ優先で並べる（罫線つきの接頭辞を付ける）
 export const agentTree = (w: Watch, now: number): TreeRow[] => {
-  const loops = Object.values(w.loops)
+  const loops = Object.values(w.loops).filter(isMapped)
   const main = w.loops[MAIN] ?? newLoop(MAIN, now)
   const known = new Set(loops.map(l => l.id))
   const childrenOf = (id: string) =>
     loops
-      .filter(l => l.id !== MAIN && (l.parentId ?? MAIN) === id)
-      .concat(id === MAIN ? loops.filter(l => l.parentId !== null && !known.has(l.parentId)) : [])
+      .filter(l => (l.parentId !== null && known.has(l.parentId) ? l.parentId : MAIN) === id)
       .sort((a, b) => a.startedAt - b.startedAt)
   const rows: TreeRow[] = [{ loop: main, prefix: '' }]
   const walk = (id: string, indent: string, depth: number) => {
@@ -256,18 +320,19 @@ export const activityCells = (data: [number, number][], rows: number) => {
   return toBase64(new Uint8Array(words.buffer))
 }
 
-// 同じグラフをデスクトップ・モバイル用の SVG にする
-export const activitySvg = (data: [number, number][], width: number, height: number) => {
+// 同じグラフをデスクトップ・モバイル用の SVG にする（幅は viewBox で枠に合わせて伸縮させる）
+export const activitySvg = (data: [number, number][]) => {
+  const width = data.length * 16
+  const height = 60
   const max = Math.max(1, ...data.map(([ok, err]) => ok + err))
-  const w = width / data.length
   const rects = data
     .map(([ok, err], x) => {
       const h = ((ok + err) / max) * (height - 2)
       const fill = err > 0 ? '#e5534b' : '#4caf50'
-      return h > 0 ? `<rect x="${(x * w + 1).toFixed(1)}" y="${(height - h).toFixed(1)}" width="${Math.max(1, w - 2).toFixed(1)}" height="${h.toFixed(1)}" rx="1" fill="${fill}"/>` : ''
+      return h > 0 ? `<rect x="${x * 16 + 1}" y="${(height - h).toFixed(1)}" width="14" height="${h.toFixed(1)}" rx="1" fill="${fill}"/>` : ''
     })
     .join('')
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">${rects}</svg>`
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none">${rects}</svg>`
 }
 
 // VS Code 用の1行の柱グラフ
@@ -275,3 +340,6 @@ export const sparkline = (data: [number, number][]) => {
   const max = Math.max(1, ...data.map(([ok, err]) => ok + err))
   return data.map(([ok, err]) => BLOCKS[Math.round(((ok + err) / max) * 8)] ?? ' ').join('')
 }
+
+// 値が変わっていなければ同じ参照を返す（書き込みと描き直しを省くため）
+export const sameOr = <T,>(prev: T, next: T): T => (JSON.stringify(prev) === JSON.stringify(next) ? prev : next)

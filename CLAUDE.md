@@ -78,7 +78,7 @@ claude-code-workbench-ja/
 │   │   ├── README.md
 │   │   ├── .claude-plugin/plugin.json
 │   │   └── skills/                  #     1種（deep-understand。エージェント・フックは持たない）
-│   └── progress-pane/               #   Claude Code 内の進捗ダッシュボード（タスク・エージェントの地図・ツール実行グラフ・詰まり）。単独で動く mod（function hooks。early access。トークン0）
+│   └── progress-pane/               #   Claude Code 内の進捗ダッシュボード（タスク・エージェントの地図・ツール実行グラフ・詰まり）。単独で動く mod（function hooks。トークン0。タスク表示は現行モデルでは CLAUDE_CODE_ENABLE_TODO_TOOLS=1 が前提）
 │       ├── README.md
 │       ├── .claude-plugin/plugin.json  # types で $.state の型契約を宣言
 │       ├── hooks/                   #     hooks.json（modules）＋ register.tsx（フックと描画）＋ model.ts（状態の更新・木・グラフ）
