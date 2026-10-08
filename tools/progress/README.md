@@ -7,7 +7,7 @@ Claude Code のステータスライン（1行）と `.dashboard/index.html`（1
 - **状態ファイルは読むだけで、書き換えません。** 書くのは `.dashboard/` 配下だけです。その中に `.gitignore`（中身は `*`）を自分で置くので、
   あなたのリポジトリのコミットに混ざりません
 - **判断待ちは表示するだけです。** 作業を「既定の動作で先に進める」ことはしません（成果物が変わる判断は人間がする、という前提を崩さないため）
-- **task-pipeline を使わない普通のセッションでは何も出ません。** そちらで計画・タスク・詰まりを見たいときは [`plugins/progress-pane/`](../../plugins/progress-pane/)（Claude Code 内のペイン。トークン0の mod）を使います
+- **task-pipeline を使わない普通のセッションでは何も出ません。** そちらでタスク・エージェント・詰まりを見たいときは [`plugins/progress-pane/`](../../plugins/progress-pane/)（Claude Code 内のペイン。トークン0の mod）を使います
 
 ## 何を読むか
 

@@ -78,10 +78,10 @@ claude-code-workbench-ja/
 │   │   ├── README.md
 │   │   ├── .claude-plugin/plugin.json
 │   │   └── skills/                  #     1種（deep-understand。エージェント・フックは持たない）
-│   └── progress-pane/               #   計画（html-plan の主張・決定）・タスク・詰まりを1枚のペインで見る mod（function hooks。early access。トークン0）
+│   └── progress-pane/               #   Claude Code 内の進捗ダッシュボード（タスク・エージェントの地図・ツール実行グラフ・詰まり）。単独で動く mod（function hooks。early access。トークン0）
 │       ├── README.md
 │       ├── .claude-plugin/plugin.json  # types で $.state の型契約を宣言
-│       ├── hooks/                   #     hooks.json（modules）＋ register.tsx（本体）＋ plan.ts（html-plan のページと回答を読む）
+│       ├── hooks/                   #     hooks.json（modules）＋ register.tsx（フックと描画）＋ model.ts（状態の更新・木・グラフ）
 │       ├── types/index.d.ts         #     $.state の型契約
 │       └── tests/                   #     claude plugin test のテスト
 ├── tools/                           # 独立ツール（プラグインとして配布しない単体スクリプト）

@@ -1,36 +1,44 @@
 export type ItemStatus = 'pending' | 'in_progress' | 'completed'
 
-// claim は html-plan の主張番号（タスク名の先頭に [1.2] のように付いていたとき）
-export type Item = { status: ItemStatus; label: string; claim: string | null }
+export type Item = { status: ItemStatus; label: string; startedAt: number | null }
 
-export type Failure = { tool: string; text: string; at: number }
+export type Failure = { tool: string; text: string; at: number; loop: string }
 
-export type Claim = { no: string; text: string }
-
-// open: 回答前 / changed: 変更して回答 / kept: 開いて既定のまま / unopened: 開かずに既定のまま
-export type AskState = 'open' | 'changed' | 'kept' | 'unopened'
-
-export type Ask = { id: string; no: string; question: string; state: AskState; answer: string | null }
-
-export type Plan = {
-  path: string
-  title: string
-  claims: Claim[]
-  asks: Ask[]
-  isAnswered: boolean
+// 1つのモデルループ（メイン、またはサブエージェント・チームメイト）
+export type Loop = {
+  id: string
+  type: string
+  description: string
+  parentId: string | null
+  // claude-code の AgentStatus と同じ値＋まだ一覧で見ていない 'unknown'
+  status: 'pending' | 'running' | 'waiting' | 'idle' | 'completed' | 'failed' | 'killed' | 'unknown'
+  startedAt: number
+  endedAt: number | null
+  tools: number
+  errors: number
+  streak: number
+  current: string | null
 }
+
+export type Usage = { startedAt: number | null; contextPercent: number | null; usd: number | null }
 
 export type Watch = {
   items: Record<string, Item>
-  plan: Plan | null
   lastProgressAt: number | null
-  streak: number
   failures: Failure[]
   warned: boolean
+  loops: Record<string, Loop>
+  // 1分ごとの [成功, 失敗] の件数。キーは分（エポックからの分数）
+  minutes: Record<string, [number, number]>
+  toolCounts: Record<string, number>
+  asking: number
+  usage: Usage
 }
+
+export type Tab = 'overview' | 'agents' | 'log'
 
 declare module 'claude-code' {
   interface PluginState {
-    'progress-pane': { watch: Watch }
+    'progress-pane': { watch: Watch; tab: Tab }
   }
 }
