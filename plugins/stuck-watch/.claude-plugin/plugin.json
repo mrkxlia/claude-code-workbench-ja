@@ -1,0 +1,14 @@
+{
+  "name": "stuck-watch",
+  "version": "0.1.0",
+  "description": "長時間タスクの詰まりをトークン0で検知する mod（function hooks）。ツールの連続失敗（3回）と、未完了タスクがあるのに15分完了が出ない状態を、タスクリスト（TaskCreate/TaskUpdate/TodoWrite）とツール結果だけから判定し、ステータスラインに「進捗 n/m・連続失敗・完了なしの分数」を出して初回だけトーストで知らせる。/stuck で直近の失敗を表示。判断待ちを既定の動作で進めることはせず、知らせるだけで止めもしない。",
+  "author": {
+    "name": "mrkxlia",
+    "url": "https://github.com/mrkxlia"
+  },
+  "homepage": "https://github.com/mrkxlia/claude-code-workbench-ja/tree/main/plugins/stuck-watch",
+  "repository": "https://github.com/mrkxlia/claude-code-workbench-ja",
+  "license": "MIT",
+  "keywords": ["mod", "function-hooks", "statusline", "progress", "stuck", "long-running", "japanese"],
+  "types": "./types/index.d.ts"
+}

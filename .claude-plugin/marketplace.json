@@ -39,6 +39,11 @@
       "name": "learning-coach",
       "source": "./plugins/learning-coach",
       "category": "productivity"
+    },
+    {
+      "name": "stuck-watch",
+      "source": "./plugins/stuck-watch",
+      "category": "productivity"
     }
   ],
   "renames": {

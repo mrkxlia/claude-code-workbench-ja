@@ -70,6 +70,7 @@ flowchart TD
 | プラグイン | フック | 発火タイミング | 効果 |
 |---|---|---|---|
 | pipeline | block-secrets-commit / guard-deliverable-writes / guard-builder-paths / inject-spec-summary / spec-sync-reminder | コミット前／Edit・Write 前／セッション開始・サブエージェント開始・Stop | 機密のコミット防止、担当外・出力先外への書き込み防止（`guard-builder-paths` はビルダーの越境を exit 2 で拒否）、SPEC.md の確定要件の注入、仕様更新漏れの通知 |
+| stuck-watch | tool.call・prompt.submit（function hooks の mod） | すべてのツール呼び出しの後／プロンプト送信時 | ツールの連続失敗（3回）と、未完了タスクのまま15分完了が出ない状態をステータスラインとトーストで知らせる。止めはしない |
 | feedback-rules | feedback-hook（inject / guard / stop-check の3モード） | プロンプト送信時／Bash・Edit・Write 前／Stop | 繰り返し指摘された確定ルール（count 3 以上）を毎ターン注入し、違反しそうなツール実行を count に応じて ask / deny で止め、直すまでターンを終わらせない。**ルールが1件も無い間は素通り**する |
 
 > 上の表は「導入するだけで常時発火する」フックの一覧です。cli-bridge の `plan-review-codex` は手動配線の opt-in なので
@@ -79,7 +80,7 @@ flowchart TD
 
 ### 方法1: プラグインで導入する（最も簡単）
 
-Claude Code でそのまま実行します（clone 不要）。現在7つのプラグインを配信しています:
+Claude Code でそのまま実行します（clone 不要）。現在8つのプラグインを配信しています:
 
 ```
 /plugin marketplace add mrkxlia/claude-code-workbench-ja
@@ -90,6 +91,7 @@ Claude Code でそのまま実行します（clone 不要）。現在7つのプ�
 /plugin install model-setup@workbench-ja
 /plugin install feedback-rules@workbench-ja
 /plugin install learning-coach@workbench-ja
+/plugin install stuck-watch@workbench-ja
 ```
 
 - **pipeline** — 新しいセッションで `/pipeline:pipeline-setup` を実行すると、コード以外の成果物
@@ -134,6 +136,10 @@ Claude Code でそのまま実行します（clone 不要）。現在7つのプ�
   クイズで実証してから次へ進む。ELI5 / ELI14 / ELII の粒度指定に対応）。他プラグインが
   「Claude に良い仕事をさせる」ためのものであるのに対し、これは**人間の側の理解を作る**
   ためのものです。詳しくは [learning-coach/README.md](plugins/learning-coach/) を参照。
+- **stuck-watch** — 導入するだけで、長時間タスクの**詰まり**（ツールが3回続けて失敗した・未完了タスクが
+  あるのに15分完了が出ない）をステータスラインとトーストで知らせます。タスクリストとツール結果を数えるだけの
+  mod（function hooks）なのでトークン0。判断待ちを勝手に進めず、作業も止めません（知らせるだけ）。
+  function hooks は early access の API です。詳しくは [stuck-watch/README.md](plugins/stuck-watch/) を参照。
 
 ### 方法2: git clone してコピーする（全セクション共通）
 
@@ -250,7 +256,7 @@ UI 試作では避けて軽量な TDD スキル（superpowers の `test-driven-d
 （コピーして使うテンプレートが増えたら `templates/` を追加する規約になっています。
 詳細なディレクトリ構成は [`CLAUDE.md`](CLAUDE.md) 参照）。
 
-### plugins/ — プラグイン導入可能な7セクション
+### plugins/ — プラグイン導入可能な8セクション
 
 #### [`plugins/model-setup/`](plugins/model-setup/)
 モデル運用テンプレート（旧名 sonnet-setup。Opus+Sonnet の私用PC / Sonnet 単独の会社PC の2プロファイル）。
@@ -348,6 +354,12 @@ frontmatter の `count` から severity を自動決定します（**1〜2回目
 対応します。本体の `/goal` は再実装せず、外側の完了ゲートとして併用します（設計の経緯は
 [`docs/decisions/2026-09-05-learning-prompt-as-skill.md`](docs/decisions/2026-09-05-learning-prompt-as-skill.md)）。
 **プラグイン1コマンドで導入可能**（上の「導入方法」参照）。
+#### [`plugins/stuck-watch/`](plugins/stuck-watch/)
+長時間タスクの**詰まりをトークン0で知らせる mod**（function hooks のプラグイン）。タスクリスト
+（TaskCreate/TaskUpdate/TodoWrite）とツール結果だけを数え、①ツールが3回続けてエラー ②未完了タスクがあるのに
+15分完了が出ない、のどちらかでステータスラインに警告を出し、初回だけトーストで知らせます。`/stuck` で直近の
+失敗を表示。本体のタスクリストや質問ダイアログの出し直しはせず、判断待ちを既定で進めることも、作業を止める
+こともしません（経緯は [`docs/decisions/2026-10-08-tsundoku-stuck-watch-mod.md`](docs/decisions/2026-10-08-tsundoku-stuck-watch-mod.md)）。
 
 ### tools/ — 独立ツール
 
