@@ -76,16 +76,28 @@ S1＝2026 年の発表、S2＝2018 年の原典。
 
 ## 作ったもの
 
-pipeline プラグインのスキル `ops-manual`（pipeline 5.1.0）。
+pipeline プラグインに、**書く**スキルと**チェックして直す**スキルを分けて置き、検査は両者が共有する
+read-only のエージェントに任せた（pipeline 5.1.0。design-docs と design-doc-checker の分担に揃えた）。
 
-- `SKILL.md` — 手順書が担うもの（3側面・ノイズ除去・ストーリ保持・3レベルと目標）・中核ルール7つ・構造化の度合いの選び方・作成／レビュー／改訂／手動版の4フロー
-- `references/templates.md` — 簡易版／完全版（シナリオ・タスク・I/O）の章立て、通し版、手動版のヘッダ
-- `references/checklist.md` — 3レベル＋ノイズ・ストーリ＋改訂＋一般の検査項目と報告書式
-- `references/shell-guard.md` — CLI 作業向けの実行ガードの骨格（4つの終了経路をこのリポジトリで実行して確認済み）
+| 種類 | 名前 | 役割 |
+|---|---|---|
+| スキル | `ops-manual` | 手順書を新しく書く（作成）・自動化済み作業から手動版を起こす（手動版） |
+| スキル | `ops-manual-check` | 既存の手順書を検査 → 直す範囲を選んでもらう → 修正 → 再検査（1回まで）。変更の反映（改訂）もここ |
+| エージェント | `ops-manual-checker` | 手順書と関連資料だけを見て、checklist に沿って場所・直し方つきで報告する（Read/Grep/Glob のみ・修正しない） |
 
-発火の確認: `docs/evals/triggers.md` に ops-manual の5ケース（should 3・not 2）を足し、衝突する `task-pipeline` の
-「運用手順書を工程を踏んで作って」と合わせた6ケースを `claude plugin eval`（Sonnet 5.5・各3回）で流し、全件合格
-（with 1.00。should は without 0.00 で Δ +1.00）。
+- `ops-manual/SKILL.md` — 手順書が担うもの（3側面・ノイズ除去・ストーリ保持・3レベルと目標）・中核ルール7つ・構造化の度合いの選び方・作成と手動版の2フロー
+- `ops-manual/references/templates.md` — 簡易版／完全版（シナリオ・タスク・I/O）の章立て、通し版、手動版のヘッダ
+- `ops-manual/references/shell-guard.md` — CLI 作業向けの実行ガードの骨格（4つの終了経路をこのリポジトリで実行して確認済み）
+- `ops-manual-check/SKILL.md` — 中核ルール6つ・チェックして直すフロー・改訂フロー・指摘の種類ごとの直し方の型
+- `ops-manual-check/references/checklist.md` — 3レベル＋ノイズ・ストーリ＋改訂＋一般の検査項目と報告書式
+
+書くスキルと直すスキルを分けた理由: 利用者の依頼が「書いて」と「チェックして直して」で分かれており、1つのスキルの
+モード切り替えにすると、直す側の規律（選ばれた指摘だけを直す・意図を創作しない・再検査は1回まで）が作成の手順に
+埋もれるため。検査をエージェントに切ったのは、書いた本人（または直した本人）が自分で合格を出さないようにするため。
+
+発火の確認: `docs/evals/triggers.md` に ops-manual の5ケースと ops-manual-check の5ケースを足し、衝突する
+`task-pipeline` の「運用手順書を工程を踏んで作って」と合わせて `claude plugin eval`（Sonnet 5.5・各3回）で流した
+（結果は下の「発火の結果」）。
 
 新しいプラグインにしなかった理由: 手順書は pipeline の「コード以外の成果物」に入り、`task-pipeline` の連結モード
 （ブリーフの構成案に型を転記する）と `design-docs` の `【要確認】` 書式をそのまま使えるため（教訓4）。

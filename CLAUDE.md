@@ -35,8 +35,8 @@ claude-code-workbench-ja/
 │   │   ├── README.md
 │   │   ├── CLAUDE.task.md           #     コピーして使う CLAUDE.md サンプル
 │   │   ├── .claude-plugin/plugin.json
-│   │   ├── skills/                  #     7種（task-pipeline / pipeline-setup〔references 分冊。spec-summary.md に SPEC 抽出規則〕/ pipeline-improve / grilling〔mattpocock/skills から無改変で同梱・MIT〕/ notes / design-docs〔設計書5フェーズの章立て。references 分冊: templates / consistency〕/ ops-manual〔運用手順書をシナリオ・タスク・I/O の3層で書く。references 分冊: templates / checklist / shell-guard〕）
-│   │   ├── agents/                  #     6種（researcher / requirements-writer / brief-writer / final-reviewer / deliverable-builder / design-doc-checker）
+│   │   ├── skills/                  #     8種（task-pipeline / pipeline-setup〔references 分冊。spec-summary.md に SPEC 抽出規則〕/ pipeline-improve / grilling〔mattpocock/skills から無改変で同梱・MIT〕/ notes / design-docs〔設計書5フェーズの章立て。references 分冊: templates / consistency〕/ ops-manual〔運用手順書をシナリオ・タスク・I/O の3層で書く。references 分冊: templates / shell-guard〕/ ops-manual-check〔既存の手順書を検査して直す。references 分冊: checklist〕）
+│   │   ├── agents/                  #     7種（researcher / requirements-writer / brief-writer / final-reviewer / deliverable-builder / design-doc-checker / ops-manual-checker）
 │   │   ├── hooks/                   #     5種（block-secrets-commit・guard-deliverable-writes・guard-builder-paths・inject-spec-summary・spec-sync-reminder。導入先へコピーする資材＝非自動配線）
 │   │   └── setup/settings.json      #     コピー導入用テンプレート
 │   ├── cli-bridge/                  #   外部 AI コーディング CLI（Codex・Kiro）への相談・レビュー委譲（read-only 専用。旧 codex-bridge ＋ 旧 kiro-bridge）

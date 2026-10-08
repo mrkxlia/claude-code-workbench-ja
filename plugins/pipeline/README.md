@@ -37,6 +37,7 @@ Claude Code のサブエージェント・スキル・フックを組み合わ�
 | `deliverable-builder` | ブリーフどおりに成果物を作る。**Skill ツール**を持ち、CLAUDE.md の「利用可能なスキル」表で許可された drawio 等を呼べる |
 | `final-reviewer` | 成果物を要件・ブリーフと突き合わせ、ギャップを Critical / Important / Minor で報告する（read-only） |
 | `design-doc-checker` | 設計書のフェーズ間の矛盾・用語ゆれ・実コードとの乖離を検査する（read-only・design-docs 用） |
+| `ops-manual-checker` | 手順書を3レベル＋ノイズ・改訂・一般の検査項目で検査し、場所と直し方つきで報告する（read-only・ops-manual / ops-manual-check 用） |
 
 ## スキル
 
@@ -44,7 +45,8 @@ Claude Code のサブエージェント・スキル・フックを組み合わ�
 |---|---|
 | `/task-pipeline <依頼>` | 成果物を5工程で作る（入口） |
 | `/design-docs [フェーズ] [対象]` | 要件定義・基本設計・詳細設計・DB設計・図表を、フェーズごとに固定した章立てで書く |
-| `/ops-manual [作成 \| レビュー \| 改訂 \| 手動版] [作業名 \| パス]` | 運用手順書・作業マニュアルを、シナリオ・タスク・I/O の3層と事前条件・完了条件で書く／検査して直す／改訂する／自動化済み作業の手動版を起こす |
+| `/ops-manual [作成 \| 手動版] [作業名 \| パス]` | 運用手順書・作業マニュアルを、シナリオ・タスク・I/O の3層と事前条件・完了条件で書く／自動化済み作業の手動版を起こす |
+| `/ops-manual-check [パス] [改訂 内容]` | 既存の手順書を ops-manual-checker で検査し、選んだ指摘を直して再検査する／変更を反映する |
 | `/grilling <詰めたい要件>` | 要件・構成を徹底質問で詰める（[mattpocock/skills](https://github.com/mattpocock/skills) の `grilling` を無改変で同梱・MIT。パイプライン内では Phase 2/3 の writer 起動前に自動で回る） |
 | `/notes` | 作業中の判断・逸脱・ハマりどころを `implementation-notes.md` に記録し続ける |
 | `/pipeline-improve [期間]` | 運用実績（LEARNINGS・実装ノート・差し戻し回数・会話履歴）から失敗シグナルを拾い、エージェント定義・スキルの改善案を出す（明示専用） |
@@ -69,7 +71,7 @@ Claude Code のサブエージェント・スキル・フックを組み合わ�
 - 用語集は導入先の CLAUDE.md に1か所だけ置く（[`CLAUDE.task.md`](CLAUDE.task.md) の「用語集」節）
 - `【要確認】` は人にしか答えられないことだけに立てる。Grep/Glob で確かめられるものはその場で確かめて根拠つきで書く
 
-### 運用手順書を書く場合（ops-manual）
+### 運用手順書を書く・直す場合（ops-manual / ops-manual-check）
 
 運用手順書は「一本道で長く、途中で失敗すると最初からやり直し」「分岐と共通手順が混ざって直すたびに矛盾が増える」
 「手順どおりにやったのに目的を果たせない」の3つで事故る成果物です。
@@ -86,6 +88,7 @@ Claude Code のサブエージェント・スキル・フックを組み合わ�
 - 検査は論理的・合目的的・伝承的の3レベル（主目標は合目的的）＋ノイズ（使われない分岐・曖昧な条件）＋改訂時の条件の連鎖＋runbook の一般的な実践
 - 手順書の役割を「事業継続・暗黙知の明示化・論理の組み立て」と「ノイズ除去・ストーリ保持」で捉え、ヒアリングで暗黙知を引き出す。自動化済みの作業には、手でやり直すための手動版を起こす
 - 構造化の度合いは発表の構造化レベル0〜2に対応。完全版を正本にしたまま、教育用の通し版を生成できる
+- **書くのは `/ops-manual`、直すのは `/ops-manual-check`。** どちらも検査は書き手と別の文脈の `ops-manual-checker` が行う（書いた本人が合格を出さない）。`/ops-manual-check` は 検査 → 直す範囲を選んでもらう → 修正 → 再検査（1回まで）の1往復で、意図が読めない箇所は創作せず `【要確認】` にする
 - **手順は実行しない。** 人が試走するための計画（未経験者・本番以外・事前条件の破壊テスト）を添えて返す
 - 採否の経緯と、敵対役の反論をどう反映したかは [`docs/decisions/2026-10-08-ops-manual.md`](../../docs/decisions/2026-10-08-ops-manual.md)
 
@@ -96,11 +99,12 @@ pipeline/
 ├── README.md
 ├── CLAUDE.task.md                           # コピーして使う CLAUDE.md サンプル（出力先・利用可能なスキル・表記規約）
 ├── .claude-plugin/plugin.json
-├── agents/                                  # 6種（researcher / requirements-writer / brief-writer / deliverable-builder / final-reviewer / design-doc-checker）
+├── agents/                                  # 7種（researcher / requirements-writer / brief-writer / deliverable-builder / final-reviewer / design-doc-checker / ops-manual-checker）
 ├── skills/
 │   ├── task-pipeline/SKILL.md               # オーケストレーター（5工程）
 │   ├── design-docs/{SKILL.md,references/}   # 設計書の章立て（templates.md / consistency.md）
-│   ├── ops-manual/{SKILL.md,references/}    # 運用手順書の型（templates.md / checklist.md / shell-guard.md）
+│   ├── ops-manual/{SKILL.md,references/}    # 運用手順書を書く（templates.md / shell-guard.md）
+│   ├── ops-manual-check/{SKILL.md,references/} # 手順書を検査して直す（checklist.md）
 │   ├── grilling/{SKILL.md,LICENSE}          # 徹底質問（mattpocock/skills から無改変で同梱・MIT）
 │   ├── notes/SKILL.md                       # 実装ノート
 │   ├── pipeline-improve/SKILL.md            # 自己改善ループ

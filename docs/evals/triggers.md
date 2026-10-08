@@ -34,7 +34,12 @@
 | task-pipeline | not | README の誤字を1つ直して |
 | task-pipeline | not | ユーザー招待機能を要件から実装・テスト・レビューまで end-to-end で作って |
 | ops-manual | should | DB のメジャーバージョンアップの作業手順書を書きたい。途中で失敗しても途中から再開できる形にして |
-| ops-manual | should | この運用マニュアル、分岐と共通手順がぐちゃぐちゃなのでレビューして直し方を教えて |
 | ops-manual | should | Terraform で自動化してある構築作業、自動化が壊れたときに手でやれるように手順を残しておきたい |
 | ops-manual | not | 新サービスの運用手順書を、調査から最終レビューまで工程を踏んで作って |
 | ops-manual | not | 通知バッチの詳細設計書を書いて |
+| ops-manual | not | docs/manuals/db-upgrade の手順書、抜け漏れがないかチェックして直して |
+| ops-manual-check | should | この運用マニュアル、分岐と共通手順がぐちゃぐちゃなのでレビューして直して |
+| ops-manual-check | should | 手順どおりにやったのに事故った。docs/manuals/cert-renew の手順書のどこが悪いか見て修正して |
+| ops-manual-check | should | 監視エージェントのバージョンが上がったので、既存の手順書に変更を反映して |
+| ops-manual-check | not | DB のメジャーバージョンアップの作業手順書を新しく書いて |
+| ops-manual-check | not | 通知バッチの詳細設計書と基本設計書の食い違いをチェックして |
