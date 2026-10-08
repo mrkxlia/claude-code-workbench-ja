@@ -33,3 +33,7 @@
 | task-pipeline | should | 新サービスの運用手順書を、調査から最終レビューまで工程を踏んで作って |
 | task-pipeline | not | README の誤字を1つ直して |
 | task-pipeline | not | ユーザー招待機能を要件から実装・テスト・レビューまで end-to-end で作って |
+| ops-manual | should | DB のメジャーバージョンアップの作業手順書を書きたい。途中で失敗しても途中から再開できる形にして |
+| ops-manual | should | この運用マニュアル、分岐と共通手順がぐちゃぐちゃなのでレビューして直し方を教えて |
+| ops-manual | not | 新サービスの運用手順書を、調査から最終レビューまで工程を踏んで作って |
+| ops-manual | not | 通知バッチの詳細設計書を書いて |
