@@ -33,3 +33,14 @@
 | task-pipeline | should | 新サービスの運用手順書を、調査から最終レビューまで工程を踏んで作って |
 | task-pipeline | not | README の誤字を1つ直して |
 | task-pipeline | not | ユーザー招待機能を要件から実装・テスト・レビューまで end-to-end で作って |
+| manual-write | should | DB のメジャーバージョンアップの作業手順書を書きたい。途中で失敗しても途中から再開できる形にして |
+| manual-write | should | 経費精算システムの申請のしかたを、新入社員向けのマニュアルにまとめて |
+| manual-write | should | DB レプリケーション遅延のアラートが鳴ったときの runbook を用意したい |
+| manual-write | not | 新サービスの運用手順書を、調査から最終レビューまで工程を踏んで作って |
+| manual-write | not | 通知バッチの詳細設計書を書いて |
+| manual-write | not | docs/manuals/db-upgrade の手順書、抜け漏れがないかチェックして直して |
+| manual-check | should | この業務マニュアル、手順と経緯がごちゃ混ぜで読みにくいのでレビューして直して |
+| manual-check | should | 手順どおりにやったのに事故った。docs/manuals/cert-renew の手順書のどこが悪いか見て修正して |
+| manual-check | should | 監視エージェントのバージョンが上がったので、既存の手順書に変更を反映して |
+| manual-check | not | DB のメジャーバージョンアップの作業手順書を新しく書いて |
+| manual-check | not | 通知バッチの詳細設計書と基本設計書の食い違いをチェックして |
