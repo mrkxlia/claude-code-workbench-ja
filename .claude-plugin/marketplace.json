@@ -39,6 +39,26 @@
       "name": "learning-coach",
       "source": "./plugins/learning-coach",
       "category": "productivity"
+    },
+    {
+      "name": "task-band",
+      "source": "./plugins/task-band",
+      "category": "productivity"
+    },
+    {
+      "name": "agent-flow",
+      "source": "./plugins/agent-flow",
+      "category": "productivity"
+    },
+    {
+      "name": "unstuck",
+      "source": "./plugins/unstuck",
+      "category": "productivity"
+    },
+    {
+      "name": "watch-kit",
+      "source": "./plugins/watch-kit",
+      "category": "productivity"
     }
   ],
   "renames": {

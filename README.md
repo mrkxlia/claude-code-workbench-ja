@@ -70,6 +70,9 @@ flowchart TD
 | プラグイン | フック | 発火タイミング | 効果 |
 |---|---|---|---|
 | pipeline | block-secrets-commit / guard-deliverable-writes / guard-builder-paths / inject-spec-summary / spec-sync-reminder | コミット前／Edit・Write 前／セッション開始・サブエージェント開始・Stop | 機密のコミット防止、担当外・出力先外への書き込み防止（`guard-builder-paths` はビルダーの越境を exit 2 で拒否）、SPEC.md の確定要件の注入、仕様更新漏れの通知 |
+| task-band | tool.call・turn.start/complete・prompt.submit・ui.render（function hooks の mod） | ツール呼び出しの前後／ターンの開始・終了／プロンプト送信時／1秒ごと | プロンプトの上にタスクの進捗を1行で出し、ターン中15分どのタスクも完了しなければ帯を黄色にして1度だけ知らせる。止めはしない |
+| unstuck（同梱） | tool.call・ui.render（function hooks の mod） | Bash・Edit・Write の後 | 堂々巡りの信号を点数化してトースト・ステータスライン・赤い帯で知らせ、🔴 のときは Claude に「止まって仮説を3つ」と伝える文をツールの結果に添える。エラーを握りつぶす編集を止める設定は既定で無効 |
+| agent-flow（同梱） | agent.spawn・tool.call・turn.complete（function hooks の mod） | サブエージェントの起動・ツール呼び出し・ターン終了 | サブエージェントの木を記録する（観測のみ）。最初の起動時、144桁以上の端末ではペインを自動で開く |
 | feedback-rules | feedback-hook（inject / guard / stop-check の3モード） | プロンプト送信時／Bash・Edit・Write 前／Stop | 繰り返し指摘された確定ルール（count 3 以上）を毎ターン注入し、違反しそうなツール実行を count に応じて ask / deny で止め、直すまでターンを終わらせない。**ルールが1件も無い間は素通り**する |
 
 > 上の表は「導入するだけで常時発火する」フックの一覧です。cli-bridge の `plan-review-codex` は手動配線の opt-in なので
@@ -79,7 +82,7 @@ flowchart TD
 
 ### 方法1: プラグインで導入する（最も簡単）
 
-Claude Code でそのまま実行します（clone 不要）。現在7つのプラグインを配信しています:
+Claude Code でそのまま実行します（clone 不要）。現在11のプラグインを配信しています:
 
 ```
 /plugin marketplace add mrkxlia/claude-code-workbench-ja
@@ -90,6 +93,10 @@ Claude Code でそのまま実行します（clone 不要）。現在7つのプ�
 /plugin install model-setup@workbench-ja
 /plugin install feedback-rules@workbench-ja
 /plugin install learning-coach@workbench-ja
+/plugin install task-band@workbench-ja
+/plugin install agent-flow@workbench-ja
+/plugin install unstuck@workbench-ja
+/plugin install watch-kit@workbench-ja   # task-band・agent-flow・unstuck をまとめて入れる
 ```
 
 - **pipeline** — 新しいセッションで `/pipeline:pipeline-setup` を実行すると、コード以外の成果物
@@ -134,6 +141,18 @@ Claude Code でそのまま実行します（clone 不要）。現在7つのプ�
   クイズで実証してから次へ進む。ELI5 / ELI14 / ELII の粒度指定に対応）。他プラグインが
   「Claude に良い仕事をさせる」ためのものであるのに対し、これは**人間の側の理解を作る**
   ためのものです。詳しくは [learning-coach/README.md](plugins/learning-coach/) を参照。
+- **task-band** — 導入すると、プロンプトのすぐ上に `▰▰▰▱▱ 3/5 ▶ API を書いています 4:02` のような**タスクの進捗の帯**が
+  出ます（トークン0・何も保存しない）。ターン中15分どのタスクも完了しなければ帯を黄色にして知らせます。エージェントの地図は
+  claude-agent-flow、詰まりの詳しい検知は unstuck といった既存の mod との併用が前提です。現行モデルでは
+  `CLAUDE_CODE_ENABLE_TODO_TOOLS=1` が要ります。詳しくは [task-band/README.md](plugins/task-band/) を参照。
+- **agent-flow**（同梱） — `/flow` で、サブエージェントとチームメイトの**木**をペインに出します（状態・いまの作業とその経過時間・
+  承認待ちの強調・`[+]` で詳細）。[Charlie0113-T/claude-agent-flow](https://github.com/Charlie0113-T/claude-agent-flow) を無改変で同梱
+  （Apache-2.0）。詳しくは [agent-flow/README.md](plugins/agent-flow/) を参照。
+- **unstuck**（同梱） — Claude Code の**堂々巡り**（同じエラーの繰り返し・見せかけの修正・エラーの握りつぶし等）を検知して知らせ、
+  `/unstuck` から1キーで抜け出せます（最後に通った状態へ戻す・きれいにやり直す・別の見立て）。
+  [sniperunder123/unstuck](https://github.com/sniperunder123/unstuck) を無改変で同梱（MIT）。詳しくは [unstuck/README.md](plugins/unstuck/) を参照。
+- **watch-kit** — 上の task-band・agent-flow・unstuck を**1回で入れる**バンドルです（中身は依存関係だけ）。
+  `/plugin install watch-kit@workbench-ja` で3つが一緒に入ります。詳しくは [watch-kit/README.md](plugins/watch-kit/) を参照。
 
 ### 方法2: git clone してコピーする（全セクション共通）
 
@@ -252,7 +271,7 @@ UI 試作では避けて軽量な TDD スキル（superpowers の `test-driven-d
 （コピーして使うテンプレートが増えたら `templates/` を追加する規約になっています。
 詳細なディレクトリ構成は [`CLAUDE.md`](CLAUDE.md) 参照）。
 
-### plugins/ — プラグイン導入可能な7セクション
+### plugins/ — プラグイン導入可能な11セクション
 
 #### [`plugins/model-setup/`](plugins/model-setup/)
 モデル運用テンプレート（旧名 sonnet-setup。Opus+Sonnet の私用PC / Sonnet 単独の会社PC の2プロファイル）。
@@ -350,6 +369,20 @@ frontmatter の `count` から severity を自動決定します（**1〜2回目
 対応します。本体の `/goal` は再実装せず、外側の完了ゲートとして併用します（設計の経緯は
 [`docs/decisions/2026-09-05-learning-prompt-as-skill.md`](docs/decisions/2026-09-05-learning-prompt-as-skill.md)）。
 **プラグイン1コマンドで導入可能**（上の「導入方法」参照）。
+#### [`plugins/task-band/`](plugins/task-band/)
+**プロンプトの上に、タスクの進捗を1行で出す mod**（function hooks のプラグイン）。TaskCreate・TaskUpdate・TodoWrite を数えるだけで
+トークンは0、何も保存しません。`▰▰▰▱▱ 3/5 ▶ 実行中のタスク 経過時間 次: …` を出し、全部終わったら完了を出して、あなたの次の
+プロンプトで畳みます。メインのターンが動いているのに15分どのタスクも完了しないときは帯を黄色にして1度だけ知らせます（人の番・
+質問中・ツール実行中は数えない）。公開 mod を読み比べた結果、エージェントの地図（claude-agent-flow）と詰まりの詳しい検知（unstuck）は
+既存の mod に任せ、空いていた「タスクの進捗」だけを受け持ちます（経緯は
+[`docs/decisions/2026-10-08-tsundoku-task-band-mod.md`](docs/decisions/2026-10-08-tsundoku-task-band-mod.md)）。
+
+#### [`plugins/agent-flow/`](plugins/agent-flow/)・[`plugins/unstuck/`](plugins/unstuck/)（同梱）
+公開されている mod を読み比べ、このリポジトリで作るより上回っていた2つを、上流のまま同梱しています（ソースは改変しない。直したい点は上流へ）。
+**agent-flow** はサブエージェントの木（Apache-2.0）、**unstuck** は堂々巡りの検知と抜け出す手段（MIT）。どちらも同梱前にソースを読み、
+プロセスの実行・ネットワーク・ファイルの書き込みの有無を確かめました（unstuck の `git restore` 等はボタンを押したときだけ）。
+上流との同期の手順は各 README にあります。task-band と組み合わせると、タスクの進捗（帯）・エージェントの木（ペイン）・堂々巡り（帯とペイン）が揃います。
+3つまとめて入れるときは [`plugins/watch-kit/`](plugins/watch-kit/)（依存関係だけのバンドル）を使います。
 
 ### tools/ — 独立ツール
 

@@ -1,0 +1,261 @@
+import type { Level, Settings, Tracker } from '../types'
+
+export const DEFAULTS: Settings = {
+  detectRepeat: true,
+  detectCommand: true,
+  detectPhantom: true,
+  detectPingPong: true,
+  detectHacks: true,
+  nudge: true,
+  blockHacks: false,
+  deadEnds: true,
+  band: true,
+  toast: true,
+  status: true,
+  yellowAt: 2,
+  redAt: 3,
+}
+
+export const EMPTY: Tracker = {
+  key: '',
+  excerpt: '',
+  failCommand: '',
+  repeats: 0,
+  cmdFails: 0,
+  phantoms: 0,
+  pingpongs: 0,
+  hacks: 0,
+  since: 0,
+  usdAtStart: 0,
+  usd: 0,
+  claimedFix: false,
+  nudged: false,
+}
+
+// The last group is an assertion's values: when they change, Claude is making progress.
+const ERROR_LINE = /error|fail|exception|cannot|can't|not found|undefined|denied|refused|panic|actual|expected|received|!==|===/i
+
+/** A failing test's own line (node, jest, TAP, pytest, go): it names which test failed. */
+const TEST_LINE = /^\s*(?:✖|✗|×|●|not ok\b|FAIL(?:ED)?\b|--- FAIL)/
+const FRAME = /^\s*at\s/
+
+/** The lines that identify a failure: error messages, failing test names, and where it was thrown. */
+const errorLines = (text: string) => {
+  const lines = text.split('\n')
+  const kept = lines.filter(line => ERROR_LINE.test(line) || TEST_LINE.test(line))
+  const frame = lines.find(line => FRAME.test(line))
+  if (frame !== undefined && !kept.includes(frame)) kept.push(frame)
+
+  return kept.length > 0 ? kept : lines
+}
+
+/**
+ * What stays the same when the same failure comes back, and differs between two failures.
+ * Dropped: line and column numbers, folders (the file name stays), addresses, timestamps, durations.
+ * Kept: the test name, the file name and the values, so a changing `actual` reads as progress.
+ */
+// ponytail: regex heuristic, swap for per-tool parsers if it misgroups errors
+export const normalize = (text: string) =>
+  errorLines(text)
+    .join('\n')
+    .replace(/\d{4}-\d\d-\d\dT[\d:.]+Z?|\b\d\d:\d\d:\d\d(?:\.\d+)?\b/g, '<time>')
+    .replace(/(?:[A-Za-z]:)?(?:[\w.@-]*[\\/])+([\w.@-]*[A-Za-z][\w.@-]*)/g, '$1')
+    .replace(/:\d+(?::\d+)?\b/g, ':#')
+    .replace(/\bline \d+/gi, 'line #')
+    .replace(/0x[0-9a-f]+/gi, '<hex>')
+    .replace(/\d+(?:\.\d+)?\s?(?:ms|s)\b/g, '#ms')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 400)
+
+const excerptOf = (text: string) => {
+  const lines = errorLines(text).map(line => line.trim())
+
+  return (lines.find(line => /\w(?:Error|Exception)\b/.test(line)) ?? lines.find(line => line && !/^exit code/i.test(line)) ?? '').slice(0, 160)
+}
+
+export const onError = (t: Tracker, text: string, command: string, now: number, usd: number): Tracker => {
+  const key = normalize(text)
+  const cmd = command.trim()
+  const isSameCommand = cmd === t.failCommand
+
+  if (key === t.key) {
+    return {
+      ...t,
+      failCommand: cmd,
+      repeats: t.repeats + 1,
+      cmdFails: isSameCommand ? t.cmdFails + 1 : 1,
+      phantoms: t.phantoms + (t.claimedFix ? 1 : 0),
+      usd,
+      claimedFix: false,
+    }
+  }
+
+  // A new error on the same command is still the same fight, and edit-side
+  // signals with no error yet belong to it too: keep their counters.
+  const isSameFight = isSameCommand || t.repeats === 0
+  const fresh = !isSameFight
+    ? { ...EMPTY, since: now, usdAtStart: usd }
+    : t.since
+      ? t
+      : { ...t, since: now, usdAtStart: usd }
+  return {
+    ...fresh,
+    key,
+    excerpt: excerptOf(text),
+    failCommand: cmd,
+    repeats: 1,
+    cmdFails: isSameCommand ? t.cmdFails + 1 : 1,
+    usd,
+    claimedFix: false,
+  }
+}
+
+/**
+ * The failing command passes, or tests/build pass: the loop is over. Not while
+ * an error was silenced: a test that passes because it was skipped proves nothing.
+ */
+export const onSuccess = (t: Tracker, command: string): Tracker =>
+  !isIdle(t) && t.hacks === 0 && (command.trim() === t.failCommand || isHealthCheck(command)) ? EMPTY : t
+
+/** A passing test/build is a state worth going back to, unless it was cheated. */
+export const isGreen = (t: Tracker, command: string) => isHealthCheck(command) && t.hacks === 0
+
+export const isIdle = (t: Tracker) => t.repeats === 0 && t.pingpongs === 0 && t.hacks === 0
+
+/** Counts an edit-side signal, starting the clock when nothing was going on. */
+export const bump = (t: Tracker, field: 'pingpongs' | 'hacks', now: number, usd: number): Tracker => ({
+  ...t,
+  [field]: t[field] + 1,
+  since: t.since || now,
+  usdAtStart: t.since ? t.usdAtStart : usd,
+  usd,
+})
+
+const FIX_CLAIM = /\b(fixed|resolved|should (now )?work|works now|corrig[ée]|r[ée]gl[ée]|r[ée]solu)\b/i
+
+export const claimsFix = (answer: string) => FIX_CLAIM.test(answer)
+
+const JS = /\.[cm]?[jt]sx?$/i
+const PY = /\.pyi?$/i
+
+// [marker, label, files it can hide an error in]
+const HACKS: [RegExp, string, RegExp][] = [
+  [/@ts-ignore/g, '@ts-ignore', JS],
+  [/@ts-nocheck/g, '@ts-nocheck', JS],
+  [/@ts-expect-error/g, '@ts-expect-error', JS],
+  [/eslint-disable/g, 'eslint-disable', JS],
+  [/\bas any\b/g, 'as any', JS],
+  [/\b(?:it|test|describe)\.skip\(/g, '.skip()', JS],
+  [/\bx(?:it|describe)\(/g, 'xit()', JS],
+  [/#\s*type:\s*ignore/g, '# type: ignore', PY],
+  [/#\s*noqa/g, '# noqa', PY],
+  [/@pytest\.mark\.skip/g, '@pytest.mark.skip', PY],
+  [/@SuppressWarnings/g, '@SuppressWarnings', /\.(java|kt)$/i],
+  [/#\[allow\(/g, '#[allow(...)]', /\.rs$/i],
+  [/\/\/\s*nolint/g, '//nolint', /\.go$/i],
+]
+
+const count = (text: string, re: RegExp) => text.match(re)?.length ?? 0
+
+/**
+ * Error-silencing markers the edit adds to a file of a language they work in
+ * (present more often after than before). Docs and other languages only talk about them.
+ */
+export const hacksAdded = (file: string, before: string, after: string) =>
+  HACKS.filter(([re, , lang]) => lang.test(file) && count(after, re) > count(before, re)).map(([, label]) => label)
+
+/** The edit writes back text it replaced earlier in the same file. */
+export const isPingPong = (replacedBefore: readonly string[], written: string) =>
+  written.trim().length > 0 && replacedBefore.includes(written)
+
+const points = (t: Tracker, s: Settings) => {
+  const errPts = t.repeats === 0 ? 0 : s.detectRepeat ? t.repeats : 1
+  const cmdPts = s.detectCommand ? Math.max(0, t.cmdFails - 1) : 0
+
+  return (
+    Math.max(errPts, cmdPts) +
+    (s.detectPhantom ? t.phantoms : 0) +
+    (s.detectPingPong ? t.pingpongs : 0) +
+    (s.detectHacks ? t.hacks : 0)
+  )
+}
+
+export const levelOf = (t: Tracker, s: Settings): Level => {
+  const p = points(t, s)
+
+  return p >= s.redAt ? 'red' : p >= s.yellowAt ? 'yellow' : 'green'
+}
+
+/** What is going on, in words, strongest signal first. */
+export const reasonsOf = (t: Tracker, s: Settings) =>
+  [
+    s.detectRepeat && t.repeats > 1 && `same error ${t.repeats}×`,
+    s.detectCommand && t.cmdFails > t.repeats && t.cmdFails > 1 && `same command failed ${t.cmdFails}×`,
+    s.detectPhantom && t.phantoms > 0 && `${t.phantoms} fake fix${t.phantoms > 1 ? 'es' : ''}`,
+    s.detectPingPong && t.pingpongs > 0 && `${t.pingpongs} undone edit${t.pingpongs > 1 ? 's' : ''}`,
+    s.detectHacks && t.hacks > 0 && `${t.hacks} silenced error${t.hacks > 1 ? 's' : ''}`,
+  ].filter((r): r is string => typeof r === 'string')
+
+export const burnedOf = (t: Tracker) => Math.max(0, t.usd - t.usdAtStart)
+
+const DEAD_END_DAYS = 14
+
+/**
+ * The dead-end notes still worth reading: the last 5, none older than 14 days.
+ * An old bug is usually fixed, and "do not retry X" would then mislead.
+ */
+export const freshDeadEnds = (text: string, now: number) =>
+  text
+    .split(/\n(?=## )/)
+    .map(entry => entry.trim())
+    .filter(entry => {
+      const date = /^## (\d{4}-\d\d-\d\d)/.exec(entry)?.[1]
+      return date !== undefined && now - Date.parse(date) <= DEAD_END_DAYS * 86_400_000
+    })
+    .slice(-5)
+    .join('\n\n')
+
+/** A test, build or type-check runner, at the start of a step (not the word "test" anywhere: `ls tests/` is no test run). */
+const RUNNER =
+  /^(?:(?:npx|pnpm|yarn|bun|npm)\s+(?:run\s+)?(?:test|build|lint|typecheck|check)\b|npm\s+t\b|(?:npx\s+|pnpm\s+(?:exec\s+)?)?(?:tsc|vitest|jest|mocha|eslint)\b|(?:python3?\s+-m\s+)?pytest\b|cargo\s+(?:test|build|check|clippy)\b|go\s+(?:test|build|vet)\b|make\s+(?:test|build|check)\b|dotnet\s+(?:test|build)\b|mvn\s+(?:\S+\s+)*(?:test|verify|package)\b|\.?\/?gradlew?\s+(?:test|build|check)\b|node\s+--test\b|deno\s+test\b)/
+
+/** Each step of a command line, without what it is piped into: `cd x && npm test | tail` -> `cd x`, `npm test`. */
+const steps = (command: string) => command.split(/&&|\|\||;/).map(step => step.split('|')[0]!.trim())
+
+export const isHealthCheck = (command: string) => steps(command).some(step => RUNNER.test(step))
+
+/** A runner's output that says it failed, for when the exit code lies (`npm test | tail`, `|| true`). */
+const FAILED_OUTPUT =
+  /\b[1-9]\d* (?:failed|failing|errors?)\b|^\s*(?:✖|✗|FAIL(?:ED)?\b|not ok\b|--- FAIL)|npm ERR!|\berror TS\d+|Traceback \(most recent call last\)|^\s*Tests?:\s+[1-9]\d* failed/im
+
+export const looksFailed = (command: string, output: string) => isHealthCheck(command) && FAILED_OUTPUT.test(output)
+
+export const nudgeFor = (t: Tracker, s: Settings) =>
+  `[unstuck] You are going in circles (${reasonsOf(t, s).join(', ')}). Stop editing. Before any change:\n` +
+  `1. List every fix you already tried.\n` +
+  `2. List 3 hypotheses for the root cause that those fixes did not address.\n` +
+  `3. Confirm the most likely one with logging or a minimal repro before touching the code.\n` +
+  `Do not repeat a previous fix, and do not silence the error.`
+
+export const hackNote = (labels: string[]) =>
+  `[unstuck] This edit adds ${labels.join(', ')}, which hides the problem instead of fixing it. ` +
+  `Unless the user asked for it, revert that part and fix the root cause.`
+
+export const HANDOFF_PROMPT =
+  'Write a handoff note for a fresh session that will continue this task with no memory of this conversation. ' +
+  'Plain text, under 200 words, these sections: Goal. Current error (exact message). ' +
+  'What was tried and failed (one line each). What NOT to retry. Suggested next step. ' +
+  'Reply with the note only.'
+
+export const opinionPrompt = (handoff: string) =>
+  `Another agent is stuck on a bug and keeps failing. Give a second opinion with fresh eyes.\n\n${handoff}\n\n` +
+  `Investigate the code read-only (do not edit anything). Find the root cause the previous attempts missed. ` +
+  `Reply in under 200 words: the most likely root cause, the evidence (file:line), and the fix to try.`
+
+export const diagnosePrompt = (t: Tracker) =>
+  `Diagnostic mode: do not try another fix for "${t.excerpt}". ` +
+  `Add logging or write a minimal repro that shows exactly where the assumption breaks, run it, and report what you found before changing any code.`
+
+export const webPrompt = (t: Tracker) =>
+  `Search the web for this exact error and summarize the known causes and fixes before trying anything else:\n${t.excerpt}`
