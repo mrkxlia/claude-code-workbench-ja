@@ -204,5 +204,5 @@ cp -r /tmp/workbench/plugins/pipeline/skills/notes ~/.claude/skills/
 
 [@sairahul1 氏の記事](https://x.com/sairahul1/status/2058832033628241931)のコンセプト（専門エージェントの連鎖・
 3チェックポイント・CLAUDE.md の育て方）に基づく独自実装です。リポジトリの [LICENSE](../../LICENSE)（MIT）に従います。
-`skills/grilling/` は [mattpocock/skills](https://github.com/mattpocock/skills)（MIT、上流コミット `6fd9479`・2026-10-06 取得）を
+`skills/grilling/` は [mattpocock/skills](https://github.com/mattpocock/skills)（MIT、上流コミット `49dd158`・2026-10-10 取得）を
 無改変で同梱しており、同ディレクトリの LICENSE に従います。
