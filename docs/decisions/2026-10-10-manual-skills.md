@@ -97,7 +97,17 @@ FAA）と、公的機関・仕様の定める作法が中心。形式（チェ�
 ## 発火の確認
 
 `docs/evals/triggers.md` の manual-write・manual-check のケースと、衝突する `task-pipeline` の「運用手順書を工程を踏んで作って」を
-`claude plugin eval`（Sonnet 5.5・各3回）で流す。結果は下に追記する。
+`claude plugin eval`（Sonnet 5.5・各3回）で流した。12ケース（manual-write の should 3・not 3、manual-check の should 3・not 2、
+task-pipeline の should 1）すべて合格（with 1.00。should は without 0.00 で Δ +1.00）。
+
+## 実地テスト
+
+欠陥を仕込んだ証明書更新の手順書（パスワードの直書き・警告なしの `rm -rf`・環境の分岐と食い違うコマンド・推測語・
+「担当者に連絡」で終わる・経緯の混入）に `claude -p` で `/pipeline:manual-check` を実行した。manual-checker は初回 Critical 8・
+Important 8・Minor 1 を報告し、修正後の版では、秘密の値の削除とローテーションの勧め、退避と差分確認と戻し方の追加、
+環境ごとの値の表への分離、各手順の確認と期待結果、うまくいかない場合の行き先の表、経緯の末尾への移動が入った。
+ホスト名・連絡先・restart と reload のどちらにするかなど、人にしか分からない値は創作されず `【要確認】` で残った。
+再検査は規定どおり1回で止まった。
 
 ## 試すなら検証方法
 
