@@ -70,7 +70,7 @@ flowchart TD
 | プラグイン | フック | 発火タイミング | 効果 |
 |---|---|---|---|
 | pipeline | block-secrets-commit / guard-deliverable-writes / guard-builder-paths / inject-spec-summary / spec-sync-reminder | コミット前／Edit・Write 前／セッション開始・サブエージェント開始・Stop | 機密のコミット防止、担当外・出力先外への書き込み防止（`guard-builder-paths` はビルダーの越境を exit 2 で拒否）、SPEC.md の確定要件の注入、仕様更新漏れの通知 |
-| progress-pane | tool.call・prompt.submit・ui.render（function hooks の mod） | ツール呼び出しの前後／プロンプト送信時／2秒ごと | タスク・エージェントの地図・ツール実行グラフ・詰まりを「進捗」ペインとステータスラインに出す。どれかのループでの3回連続失敗と15分完了なしはトーストでも知らせる。止めはしない |
+| task-band | tool.call・turn.start/complete・prompt.submit・ui.render（function hooks の mod） | ツール呼び出しの前後／ターンの開始・終了／プロンプト送信時／1秒ごと | プロンプトの上にタスクの進捗を1行で出し、ターン中15分どのタスクも完了しなければ帯を黄色にして1度だけ知らせる。止めはしない |
 | feedback-rules | feedback-hook（inject / guard / stop-check の3モード） | プロンプト送信時／Bash・Edit・Write 前／Stop | 繰り返し指摘された確定ルール（count 3 以上）を毎ターン注入し、違反しそうなツール実行を count に応じて ask / deny で止め、直すまでターンを終わらせない。**ルールが1件も無い間は素通り**する |
 
 > 上の表は「導入するだけで常時発火する」フックの一覧です。cli-bridge の `plan-review-codex` は手動配線の opt-in なので
@@ -91,7 +91,7 @@ Claude Code でそのまま実行します（clone 不要）。現在8つのプ�
 /plugin install model-setup@workbench-ja
 /plugin install feedback-rules@workbench-ja
 /plugin install learning-coach@workbench-ja
-/plugin install progress-pane@workbench-ja
+/plugin install task-band@workbench-ja
 ```
 
 - **pipeline** — 新しいセッションで `/pipeline:pipeline-setup` を実行すると、コード以外の成果物
@@ -136,11 +136,10 @@ Claude Code でそのまま実行します（clone 不要）。現在8つのプ�
   クイズで実証してから次へ進む。ELI5 / ELI14 / ELII の粒度指定に対応）。他プラグインが
   「Claude に良い仕事をさせる」ためのものであるのに対し、これは**人間の側の理解を作る**
   ためのものです。詳しくは [learning-coach/README.md](plugins/learning-coach/) を参照。
-- **progress-pane** — 導入すると、Claude Code の中に「進捗」ダッシュボードのペインが開きます（単独で動く・トークン0）。
-  **概要**（タスクの進捗バー・順調／詰まりのカード・直近30分のツール実行グラフ・経過時間と文脈と費用）、
-  **エージェント**（サブエージェントの親子の地図：状態・経過時間・ツール回数・いま使っているツール）、**ログ**（よく使った
-  ツール・直近の失敗）の3タブ。ツールの3回連続失敗・15分完了なしは詰まりとして知らせます。function hooks の
-  mod で、判断待ちを勝手に進めず作業も止めません。詳しくは [progress-pane/README.md](plugins/progress-pane/) を参照。
+- **task-band** — 導入すると、プロンプトのすぐ上に `▰▰▰▱▱ 3/5 ▶ API を書いています 4:02` のような**タスクの進捗の帯**が
+  出ます（トークン0・何も保存しない）。ターン中15分どのタスクも完了しなければ帯を黄色にして知らせます。エージェントの地図は
+  claude-agent-flow、詰まりの詳しい検知は unstuck といった既存の mod との併用が前提です。現行モデルでは
+  `CLAUDE_CODE_ENABLE_TODO_TOOLS=1` が要ります。詳しくは [task-band/README.md](plugins/task-band/) を参照。
 
 ### 方法2: git clone してコピーする（全セクション共通）
 
@@ -355,14 +354,13 @@ frontmatter の `count` から severity を自動決定します（**1〜2回目
 対応します。本体の `/goal` は再実装せず、外側の完了ゲートとして併用します（設計の経緯は
 [`docs/decisions/2026-09-05-learning-prompt-as-skill.md`](docs/decisions/2026-09-05-learning-prompt-as-skill.md)）。
 **プラグイン1コマンドで導入可能**（上の「導入方法」参照）。
-#### [`plugins/progress-pane/`](plugins/progress-pane/)
-**Claude Code の中の進捗ダッシュボードとエージェントの地図**（function hooks の mod）。単独で動き、Claude が使うツールの
-入出力と本体のエージェント一覧を数えるだけなのでトークンは0。`1 概要`（タスクの進捗バー・順調／詰まりのカード・
-エージェントの集計・直近30分のツール実行グラフ）、`2 エージェント`（親子の木：状態・経過時間・ツール回数・失敗数・
-いま使っているツール）、`3 ログ`（よく使ったツール・どのエージェントで起きたかつきの直近の失敗）の3タブを `/progress` で開きます。
-どれかのループでのツールの3回連続失敗と、未完了タスクのまま15分完了なしを詰まりとして知らせます。判断待ちを既定で
-進めることも、作業を止めることもしません（経緯は
-[`docs/decisions/2026-10-08-tsundoku-progress-pane-mod.md`](docs/decisions/2026-10-08-tsundoku-progress-pane-mod.md)）。
+#### [`plugins/task-band/`](plugins/task-band/)
+**プロンプトの上に、タスクの進捗を1行で出す mod**（function hooks のプラグイン）。TaskCreate・TaskUpdate・TodoWrite を数えるだけで
+トークンは0、何も保存しません。`▰▰▰▱▱ 3/5 ▶ 実行中のタスク 経過時間 次: …` を出し、全部終わったら完了を出して、あなたの次の
+プロンプトで畳みます。メインのターンが動いているのに15分どのタスクも完了しないときは帯を黄色にして1度だけ知らせます（人の番・
+質問中・ツール実行中は数えない）。公開 mod を読み比べた結果、エージェントの地図（claude-agent-flow）と詰まりの詳しい検知（unstuck）は
+既存の mod に任せ、空いていた「タスクの進捗」だけを受け持ちます（経緯は
+[`docs/decisions/2026-10-08-tsundoku-task-band-mod.md`](docs/decisions/2026-10-08-tsundoku-task-band-mod.md)）。
 
 ### tools/ — 独立ツール
 

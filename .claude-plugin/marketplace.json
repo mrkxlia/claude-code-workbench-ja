@@ -41,8 +41,8 @@
       "category": "productivity"
     },
     {
-      "name": "progress-pane",
-      "source": "./plugins/progress-pane",
+      "name": "task-band",
+      "source": "./plugins/task-band",
       "category": "productivity"
     }
   ],
