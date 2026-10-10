@@ -25,13 +25,14 @@ Claude Code の **function hooks（mod）** で書いたプラグインです。
 ## 何を任せ、何をしないか（併用を前提にしています）
 
 2026-10-10 に公開されている mod を読み比べたところ、エージェントの地図と詰まりの検知には、これより手厚い mod がすでにありました。
-task-band は**それらに無かった「タスクの進捗」だけ**を受け持ちます。
+それらは自作せず**このマーケットプレイスに同梱**し（agent-flow・unstuck）、task-band は**それらに無かった「タスクの進捗」だけ**を受け持ちます。
+3つ入れると `/plugin install task-band@workbench-ja`・`agent-flow@workbench-ja`・`unstuck@workbench-ja` で揃います。
 
 | やりたいこと | 使うもの |
 |---|---|
 | **Claude のタスクがどこまで進んだかを、いつも目に入る場所で見る** | **task-band（本プラグイン）** |
-| サブエージェントの親子・状態・いま使っているツール・承認待ちを見る | mod の [Charlie0113-T/claude-agent-flow](https://github.com/Charlie0113-T/claude-agent-flow)（`/flow`。Apache-2.0）。何も入れないなら本体のサブエージェントパネル |
-| 同じエラーの繰り返し・「直した」直後の同じ失敗・エラーの握りつぶしに気付き、1キーで抜け出す | mod の [sniperunder123/unstuck](https://github.com/sniperunder123/unstuck)（MIT） |
+| サブエージェントの親子・状態・いま使っているツール・承認待ちを見る | [`agent-flow`](../agent-flow/)（`/flow`。claude-agent-flow をこのマーケットプレイスに同梱）。何も入れないなら本体のサブエージェントパネル |
+| 同じエラーの繰り返し・「直した」直後の同じ失敗・エラーの握りつぶしに気付き、1キーで抜け出す | [`unstuck`](../unstuck/)（`/unstuck`。このマーケットプレイスに同梱） |
 | 文脈の使用率を見る | mod の [hamzafer/claude-code-mods](https://github.com/hamzafer/claude-code-mods) の context-bar（MIT） |
 | task-pipeline のフェーズと承認待ちを見る | [`tools/progress/`](../../tools/progress/) |
 

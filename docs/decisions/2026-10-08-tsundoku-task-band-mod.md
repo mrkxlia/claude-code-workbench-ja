@@ -138,11 +138,25 @@ mod で足り、タスクの進捗は現行モデルでは既定で空になる�
 
 ## 取り込んだ差分
 
-- `plugins/task-band/`（0.1.0）を追加し、marketplace に登録した（8プラグイン目）。`claude plugin validate`・`claude plugin test`
+- `plugins/task-band/`（0.1.0）を追加し、marketplace に登録した。`claude plugin validate`・`claude plugin test`
   （12件、帯の1行は terminal と desktop の両方）・`tsc` が通ることを確認した
 - README の「何を任せ、何をしないか」に、claude-agent-flow・unstuck・context-bar との併用を書いた
 - 前提として、現行モデルでは `CLAUDE_CODE_ENABLE_TODO_TOOLS=1` が要ることを README の冒頭に書いた
 - 1秒ごとの時計で、経過時間の表示を進め、ツール呼び出しが止まっていても15分の詰まりに気付く（モデルは呼ばない）
+
+### 5. 上回っていた mod の同梱（2026-10-10）
+
+ユーザーの指示で、第4段で「相手が上」と判定した2つを、自作の代わりに**無改変で同梱**した（`grilling` を mattpocock/skills から
+同梱したのと同じ扱い）。
+
+| 同梱したもの | 上流 | ライセンス | 同梱前にソースで確かめたこと |
+|---|---|---|---|
+| `plugins/agent-flow/` | Charlie0113-T/claude-agent-flow `76ef8fb`（2026-10-08） | Apache-2.0 | 観測のみ。プロセス・ネットワーク・ファイル書き込み・モデル呼び出しなし。`$.store` はペインの開閉の好みだけ |
+| `plugins/unstuck/` | sniperunder123/unstuck `5bf7196`（2026-10-08） | MIT | `git`（stash create・rev-parse・restore）は「⏪ 戻す」ボタンだけ。`$.model.fork`・`$.agent.spawn` もボタンだけ。ネットワークへの直接の通信なし。握りつぶしの編集を止める設定は既定で無効。Claude への一文の追加（nudge）は既定で有効 |
+
+上流の README は英語のまま `README.upstream.md` に置き、日本語の `README.md` に同梱の経緯・確認したこと・上流との同期の手順を書いた。
+上流の開発用ファイル（agent-flow の `bun/`・`tests/`・`vendor/`・`scripts/`、unstuck の `demo/`・画像生成スクリプト）は同梱していない。
+CLAUDE.md の規約5に「同梱したものはここで書き換えず、取り込み直したときに上流の version に従う」を足した。
 
 ## 確認できなかったこと
 
