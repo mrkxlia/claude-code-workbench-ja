@@ -1,0 +1,15 @@
+{
+  "name": "watch-kit",
+  "displayName": "watch-kit（task-band・agent-flow・unstuck をまとめて入れる）",
+  "version": "0.1.0",
+  "description": "長時間タスクを見守る mod 3つを1回で入れるバンドル。中身は依存関係だけで、task-band（プロンプトの上のタスクの進捗の帯）・agent-flow（/flow のサブエージェントの木。claude-agent-flow を同梱）・unstuck（堂々巡りの検知と1キーで抜け出す手段。sniperunder123/unstuck を同梱）を同じマーケットプレイスから入れる。どれも何も止めず、task-band と agent-flow はトークン0。",
+  "author": {
+    "name": "mrkxlia",
+    "url": "https://github.com/mrkxlia"
+  },
+  "homepage": "https://github.com/mrkxlia/claude-code-workbench-ja/tree/main/plugins/watch-kit",
+  "repository": "https://github.com/mrkxlia/claude-code-workbench-ja",
+  "license": "MIT",
+  "keywords": ["bundle", "mod", "function-hooks", "tasks", "subagents", "stuck", "japanese"],
+  "dependencies": ["task-band", "agent-flow", "unstuck"]
+}

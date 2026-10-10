@@ -82,7 +82,7 @@ flowchart TD
 
 ### 方法1: プラグインで導入する（最も簡単）
 
-Claude Code でそのまま実行します（clone 不要）。現在10のプラグインを配信しています:
+Claude Code でそのまま実行します（clone 不要）。現在11のプラグインを配信しています:
 
 ```
 /plugin marketplace add mrkxlia/claude-code-workbench-ja
@@ -96,6 +96,7 @@ Claude Code でそのまま実行します（clone 不要）。現在10のプラ
 /plugin install task-band@workbench-ja
 /plugin install agent-flow@workbench-ja
 /plugin install unstuck@workbench-ja
+/plugin install watch-kit@workbench-ja   # task-band・agent-flow・unstuck をまとめて入れる
 ```
 
 - **pipeline** — 新しいセッションで `/pipeline:pipeline-setup` を実行すると、コード以外の成果物
@@ -150,6 +151,8 @@ Claude Code でそのまま実行します（clone 不要）。現在10のプラ
 - **unstuck**（同梱） — Claude Code の**堂々巡り**（同じエラーの繰り返し・見せかけの修正・エラーの握りつぶし等）を検知して知らせ、
   `/unstuck` から1キーで抜け出せます（最後に通った状態へ戻す・きれいにやり直す・別の見立て）。
   [sniperunder123/unstuck](https://github.com/sniperunder123/unstuck) を無改変で同梱（MIT）。詳しくは [unstuck/README.md](plugins/unstuck/) を参照。
+- **watch-kit** — 上の task-band・agent-flow・unstuck を**1回で入れる**バンドルです（中身は依存関係だけ）。
+  `/plugin install watch-kit@workbench-ja` で3つが一緒に入ります。詳しくは [watch-kit/README.md](plugins/watch-kit/) を参照。
 
 ### 方法2: git clone してコピーする（全セクション共通）
 
@@ -266,7 +269,7 @@ UI 試作では避けて軽量な TDD スキル（superpowers の `test-driven-d
 （コピーして使うテンプレートが増えたら `templates/` を追加する規約になっています。
 詳細なディレクトリ構成は [`CLAUDE.md`](CLAUDE.md) 参照）。
 
-### plugins/ — プラグイン導入可能な10セクション
+### plugins/ — プラグイン導入可能な11セクション
 
 #### [`plugins/model-setup/`](plugins/model-setup/)
 モデル運用テンプレート（旧名 sonnet-setup。Opus+Sonnet の私用PC / Sonnet 単独の会社PC の2プロファイル）。
@@ -377,6 +380,7 @@ frontmatter の `count` から severity を自動決定します（**1〜2回目
 **agent-flow** はサブエージェントの木（Apache-2.0）、**unstuck** は堂々巡りの検知と抜け出す手段（MIT）。どちらも同梱前にソースを読み、
 プロセスの実行・ネットワーク・ファイルの書き込みの有無を確かめました（unstuck の `git restore` 等はボタンを押したときだけ）。
 上流との同期の手順は各 README にあります。task-band と組み合わせると、タスクの進捗（帯）・エージェントの木（ペイン）・堂々巡り（帯とペイン）が揃います。
+3つまとめて入れるときは [`plugins/watch-kit/`](plugins/watch-kit/)（依存関係だけのバンドル）を使います。
 
 ### tools/ — 独立ツール
 

@@ -26,7 +26,7 @@ Claude Code の **function hooks（mod）** で書いたプラグインです。
 
 2026-10-10 に公開されている mod を読み比べたところ、エージェントの地図と詰まりの検知には、これより手厚い mod がすでにありました。
 それらは自作せず**このマーケットプレイスに同梱**し（agent-flow・unstuck）、task-band は**それらに無かった「タスクの進捗」だけ**を受け持ちます。
-3つ入れると `/plugin install task-band@workbench-ja`・`agent-flow@workbench-ja`・`unstuck@workbench-ja` で揃います。
+3つまとめて入れるなら `/plugin install watch-kit@workbench-ja`（[`watch-kit`](../watch-kit/)。依存関係だけのバンドル）。
 
 | やりたいこと | 使うもの |
 |---|---|

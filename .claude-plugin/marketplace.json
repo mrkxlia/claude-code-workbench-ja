@@ -54,6 +54,11 @@
       "name": "unstuck",
       "source": "./plugins/unstuck",
       "category": "productivity"
+    },
+    {
+      "name": "watch-kit",
+      "source": "./plugins/watch-kit",
+      "category": "productivity"
     }
   ],
   "renames": {

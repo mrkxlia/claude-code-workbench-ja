@@ -158,6 +158,14 @@ mod で足り、タスクの進捗は現行モデルでは既定で空になる�
 上流の開発用ファイル（agent-flow の `bun/`・`tests/`・`vendor/`・`scripts/`、unstuck の `demo/`・画像生成スクリプト）は同梱していない。
 CLAUDE.md の規約5に「同梱したものはここで書き換えず、取り込み直したときに上流の version に従う」を足した。
 
+### 6. 1回で入れられるようにする（2026-10-10）
+
+ユーザーの指示で、task-band・agent-flow・unstuck を1回で入れられるようにした。3つを1つのプラグインに混ぜる案は採らなかった。
+同梱した2つは `$.state` と `$.store` をプラグイン名（`agent-flow`・`unstuck`）で引いており、混ぜるとソースを書き換えることになり、
+「無改変で同梱」と上流との同期が崩れるため。代わりに、公式の [Plugin dependencies](https://code.claude.com/docs/en/plugins/dependencies)
+の「Bundle plugins for a team」に従い、`dependencies` だけを持つ `plugins/watch-kit/` を足した。空の設定ディレクトリで
+`claude plugin install watch-kit@workbench-ja` を実行し、3つが依存関係として入って有効になることを確かめた。
+
 ## 確認できなかったこと
 
 - 原典 X ポストの本文は x.com が HTTP 402 を返したため、fxtwitter API 経由の本文で評価した（x.com の原文とは照合していない）
