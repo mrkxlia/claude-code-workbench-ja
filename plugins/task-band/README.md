@@ -58,7 +58,7 @@ task-band/
 │   ├── register.tsx              # フック（tool.call・turn.start/complete・prompt.submit・session.end・command.run）と帯の描画（ui.render の AbovePrompt）
 │   └── model.ts                  # 状態の更新と表示用の計算。エンジンに触れない純粋な関数
 ├── types/index.d.ts              # $.state（task-band.band）の型契約
-└── tests/task-band.test.ts       # claude plugin test で走る12件
+└── tests/task-band.test.ts       # claude plugin test で走るテスト
 ```
 
 ## 導入方法
@@ -84,11 +84,8 @@ claude plugin validate plugins/task-band
 claude plugin test plugins/task-band
 ```
 
-テストは12件です。状態の計算（新しい仕事の始まりで起点を戻す・TodoWrite の差し替えで経過時間を引き継ぐ・完了したら件名で見せる・
-ツール実行中と質問中は数えない・メーターの縮め方）を関数単位で確かめます。帯の1行の中身は terminal と desktop の両方で確かめます。
-エンジン経由では、完了の表示と人の次のプロンプトで畳むこと、バックグラウンド通知では畳まないこと、ターン中15分で1度だけ知らせること、
-人の番の時間を数えないこと、サブエージェントのターン終了を無視すること、on/off/list、`/clear` で捨てること、並列呼び出しでも
-トーストが1度だけなことを確かめます。
+状態の計算は関数単位で、帯の1行・通知・コマンドはエンジン経由（帯は terminal と desktop の両方）で確かめます。何を確かめているかは
+[`tests/task-band.test.ts`](tests/task-band.test.ts) のテスト名を見てください。
 
 **実機（端末・デスクトップの画面）での描画は、まだ確かめていません。** テストはテストキット上の描画と状態遷移です。
 

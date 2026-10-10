@@ -2,7 +2,9 @@ import { describe, expect, mock, test } from 'claude-code/testing'
 import type { Engine } from 'claude-code/testing'
 import type { On } from 'claude-code'
 
-import { EMPTY, idleMinutes, itemLabel, meter, replaceTodos, setItem, toolEnded, toolStarted, turnStarted } from '../hooks/model'
+import { EMPTY, idleMinutes, itemLabel, meter, replaceTodos, restartClock, setItem } from '../hooks/model'
+
+const working = { turnActive: true, inFlight: 0 }
 
 // エンジン側の代役: タスク系・TodoWrite は成功を返す
 const engine = (on: On) => {
@@ -53,10 +55,9 @@ const row = async ($: Engine, surface: 'terminal' | 'desktop' = 'terminal', body
 
 describe('model.ts', () => {
   test('前の完了から時間がたってから新しいタスクを足しても、すぐ詰まりにしない', () => {
-    let b = setItem(EMPTY, '1', { status: 'completed', subject: '前の仕事' }, 0)
-    b = turnStarted(b, 0)
-    b = setItem(b, '2', { status: 'pending', subject: '次の仕事' }, 20 * 60 * 1000)
-    expect(idleMinutes(b, 20 * 60 * 1000)).toBeNull()
+    let b = setItem(EMPTY, '1', { status: 'completed', subject: '前の仕事' }, 1000)
+    b = setItem(b, '2', { status: 'pending', subject: '次の仕事' }, 1000 + 20 * 60 * 1000)
+    expect(idleMinutes(b, working, 1000 + 20 * 60 * 1000)).toBeNull()
   })
 
   test('TodoWrite で一覧を差し替えても、実行中の項目の経過時間を引き継ぐ', () => {
@@ -73,13 +74,12 @@ describe('model.ts', () => {
     expect(itemLabel(b.items['1']!)).toBe('テストを書く')
   })
 
-  test('長いツールの実行中（ビルドなど）や質問中は詰まりと数えない', () => {
+  test('ツールの実行中（長いビルド・質問）と人の番は詰まりと数えない', () => {
     const at = (min: number) => 1000 + min * 60 * 1000
-    let b = turnStarted(setItem(EMPTY, '1', { status: 'pending', subject: 'ビルド' }, at(0)), at(0))
-    expect(idleMinutes(toolStarted(b, 'Bash'), at(16))).toBeNull()
-    expect(idleMinutes(toolStarted(b, 'AskUserQuestion'), at(16))).toBeNull()
-    b = toolEnded(toolStarted(b, 'Bash'), 'Bash')
-    expect(idleMinutes(b, at(16))).toBe(16)
+    const b = restartClock(setItem(EMPTY, '1', { status: 'pending', subject: 'ビルド' }, at(0)), at(0))
+    expect(idleMinutes(b, { ...working, inFlight: 1 }, at(16))).toBeNull()
+    expect(idleMinutes(b, { ...working, turnActive: false }, at(16))).toBeNull()
+    expect(idleMinutes(b, working, at(16))).toBe(16)
   })
 
   test('メーターはタスクが多いと幅に合わせて縮める', () => {

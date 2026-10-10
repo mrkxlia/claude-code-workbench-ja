@@ -1,33 +1,39 @@
 // 状態の更新と、帯に出す値の計算。エンジンに触れない純粋な関数だけを置く
-import type { Band, Item, ItemStatus } from '../types'
+import type { BuiltinToolInputs } from 'claude-code'
+
+import type { Activity, Band, Item, ItemStatus } from '../types'
 
 // メインのターンが動いていて、未完了のタスクがあるのに、この時間タスクが1つも完了しなければ「詰まり」とみなす
-export const IDLE_LIMIT_MS = 15 * 60 * 1000
+const IDLE_LIMIT_MS = 15 * 60 * 1000
 
-export const EMPTY: Band = {
-  items: {},
-  lastProgressAt: null,
-  turnActive: false,
-  turnStartedAt: null,
-  inFlight: 0,
-  asking: 0,
-  warned: false,
-  isDismissed: false,
-  isHidden: false,
+export const EMPTY: Band = { items: {}, idleSince: null, warned: false, isDismissed: false, isHidden: false }
+export const IDLE: Activity = { turnActive: false, inFlight: 0 }
+
+type Todo = BuiltinToolInputs['TodoWrite']['todos'][number]
+
+export const tally = (items: Record<string, Item>) => {
+  const all = Object.values(items)
+  const done = all.filter(i => i.status === 'completed').length
+  return {
+    done,
+    total: all.length,
+    open: all.length - done,
+    current: all.find(i => i.status === 'in_progress') ?? null,
+    next: all.find(i => i.status === 'pending') ?? null,
+  }
 }
+
+// 15分の時計を今から数え直す（進捗・ターンの開始・人のプロンプト）
+export const restartClock = (b: Band, now: number): Band => ({ ...b, idleSince: now, warned: false })
 
 // ---- タスク ----
 
-const openCount = (items: Record<string, Item>) => Object.values(items).filter(i => i.status !== 'completed').length
-const doneCount = (items: Record<string, Item>) => Object.values(items).filter(i => i.status === 'completed').length
-
-// タスクの集合を差し替える。完了が増えたとき、または未完了が0件から増えたとき（新しい仕事の始まり）に起点を戻す。
+// タスクの集合を差し替える。完了が増えたとき、または未完了が0件から増えたとき（新しい仕事の始まり）に時計を戻す。
 // タスクが動いたら、畳んだ帯をまた出す
 export const withItems = (b: Band, items: Record<string, Item>, now: number): Band => {
-  const hasProgress =
-    doneCount(items) > doneCount(b.items) || (openCount(b.items) === 0 && openCount(items) > 0) || b.lastProgressAt === null
+  const [before, after] = [tally(b.items), tally(items)]
   const next = { ...b, items, isDismissed: false }
-  return hasProgress ? { ...next, lastProgressAt: now, warned: false } : next
+  return after.done > before.done || (before.open === 0 && after.open > 0) ? restartClock(next, now) : next
 }
 
 const item = (prev: Item | undefined, status: ItemStatus, subject: string, activeForm: string | null, now: number): Item => ({
@@ -61,11 +67,7 @@ export const removeItem = (b: Band, id: string, now: number): Band => {
 }
 
 // TodoWrite は一覧全体の差し替え。同じ位置の項目は経過時間を引き継ぐ
-export const replaceTodos = (
-  b: Band,
-  todos: readonly { content: string; status: ItemStatus; activeForm: string }[],
-  now: number,
-): Band => {
+export const replaceTodos = (b: Band, todos: readonly Todo[], now: number): Band => {
   const items: Record<string, Item> = {}
   todos.forEach((t, i) => {
     const id = `todo-${i}`
@@ -76,53 +78,18 @@ export const replaceTodos = (
 
 export const itemLabel = (i: Item) => (i.status === 'in_progress' && i.activeForm ? i.activeForm : i.subject)
 
-// ---- ターン・ツール・人 ----
-
-export const turnStarted = (b: Band, now: number): Band => ({ ...b, turnActive: true, turnStartedAt: now })
-export const turnEnded = (b: Band): Band => ({ ...b, turnActive: false, inFlight: 0 })
-
-export const toolStarted = (b: Band, tool: string): Band => ({
-  ...b,
-  inFlight: b.inFlight + 1,
-  asking: tool === 'AskUserQuestion' ? b.asking + 1 : b.asking,
-})
-
-export const toolEnded = (b: Band, tool: string): Band => ({
-  ...b,
-  inFlight: Math.max(0, b.inFlight - 1),
-  asking: tool === 'AskUserQuestion' ? Math.max(0, b.asking - 1) : b.asking,
-})
-
-// 人が次のプロンプトを送った。15分の起点をやり直し、すべて完了していれば帯を畳む
+// 人が次のプロンプトを送った。時計を戻し、すべて完了していれば帯を畳む
 export const humanStepped = (b: Band, now: number): Band => {
-  const t = tally(b)
-  return {
-    ...b,
-    warned: false,
-    lastProgressAt: b.lastProgressAt === null ? null : now,
-    isDismissed: b.isDismissed || (t.total > 0 && t.done === t.total),
-  }
+  const t = tally(b.items)
+  return { ...restartClock(b, now), isDismissed: b.isDismissed || (t.total > 0 && t.open === 0) }
 }
 
 // ---- 表示用の計算 ----
 
-export const tally = (b: Band) => {
-  const items = Object.values(b.items)
-  const done = items.filter(i => i.status === 'completed').length
-  return {
-    done,
-    total: items.length,
-    current: items.find(i => i.status === 'in_progress') ?? null,
-    next: items.find(i => i.status === 'pending') ?? null,
-  }
-}
-
-// 15分の詰まり（分）。ターンが動いていて、人への質問も、実行中のツール（長いビルドなど）も無いときだけ数える
-export const idleMinutes = (b: Band, now: number): number | null => {
-  const isWorking = b.turnActive && b.asking === 0 && b.inFlight === 0
-  const since = Math.max(b.lastProgressAt ?? 0, b.turnStartedAt ?? 0)
-  if (!isWorking || openCount(b.items) === 0 || since === 0 || now - since < IDLE_LIMIT_MS) return null
-  return Math.floor((now - since) / 60000)
+// 15分の詰まり（分）。ターンが動いていて、実行中のツール（長いビルド・質問）が無く、未完了があるときだけ数える
+export const idleMinutes = (b: Band, a: Activity, now: number): number | null => {
+  if (!a.turnActive || a.inFlight > 0 || b.idleSince === null || tally(b.items).open === 0) return null
+  return now - b.idleSince >= IDLE_LIMIT_MS ? Math.floor((now - b.idleSince) / 60000) : null
 }
 
 export const isVisible = (b: Band) => !b.isHidden && !b.isDismissed && Object.keys(b.items).length > 0
@@ -141,6 +108,3 @@ export const meter = (done: number, total: number, width: number) => {
   const filled = total === 0 ? 0 : Math.round((done / total) * cells)
   return { filled: '▰'.repeat(filled), empty: '▱'.repeat(cells - filled) }
 }
-
-// 値が変わっていなければ同じ参照を返す（書き込みと描き直しを省くため）
-export const sameOr = <T,>(prev: T, next: T): T => (JSON.stringify(prev) === JSON.stringify(next) ? prev : next)
