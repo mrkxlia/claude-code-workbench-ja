@@ -205,6 +205,8 @@ Claude に聞くのが一番早い方法です（導入済みスキルの説明�
 | 機能をコードで end-to-end 実装したい | [obra/superpowers](https://github.com/obra/superpowers) | 本リポジトリは持たない（旧 `feature-pipeline` は 2026-10-06 に削除） |
 | 図・ドキュメント等コード以外の成果物を作りたい | **pipeline**（`/task-pipeline`） | 5エージェント連鎖。drawio 等のユーザー導入スキルも呼べる |
 | 要件定義書・基本設計書・詳細設計書・DB設計書を毎回同じ型で書きたい | **pipeline**（`/design-docs`） | フェーズ別の章立てテンプレート＋フェーズ間整合を検査する design-doc-checker |
+| 業務マニュアル・手順書・runbook・チェックリストを「あるべき姿」で書きたい | **pipeline**（`/manual-write`） | 種類（手順・教育・一覧・解説）を混ぜず、EPA・NASA・原子力の作成ガイド・DITA 等に基づく原則で書く。手順は実行しない |
+| 既存のマニュアルをチェックして直したい・変更を反映したい | **pipeline**（`/manual-check`） | 書き手と別の文脈の manual-checker が出典つきの検査項目で検査し、選んだ指摘を直して再検査する |
 | 別 AI（OpenAI Codex）にレビュー/実装を委譲したい | 公式プラグイン [openai/codex-plugin-cc](https://github.com/openai/codex-plugin-cc) | 本リポジトリでは扱わない（2026-09-19 に委譲） |
 | 別 AI（Codex / Kiro）に**相談**したい | **cli-bridge**（`/codex-ask`・`/kiro-ask`・`/kiro-review`） | Claude が各 CLI を非対話・read-only で駆動。ユーザーは外部 CLI を触らない |
 | 重要な判断を複数の視点で敵対的にレビュー・討論させたい | **agent-review-panel**（`/review-panel`） | 既定3名がブラインド並列→相互批判→統合。deep で網羅監査・引用検証・裁定者、codex・kiro で Claude 以外のモデルを混成（相互批判にも参加・同時指定も可） |
@@ -281,7 +283,7 @@ fresh-verifier エージェント、プロファイル設計メモ（`MODEL-GUID
 
 #### [`plugins/pipeline/`](plugins/pipeline/)
 コード以外の成果物（図・ドキュメント・レポート・設計書）を作るパイプラインテンプレート（旧 software-pipeline / task-pipeline の後継）。
-`/task-pipeline` が 調査 → 成果物要件 → 作業ブリーフ → 作成 → レビュー の5工程を連鎖実行し、3つの人間承認チェックポイントで停止します（ビルダーは drawio などユーザー導入スキルを呼び出せます）。対象リポジトリを解析して一式を自動導入する **pipeline-setup**、運用実績から定義を改善する **pipeline-improve**、設計書の章立てを5フェーズで固定する **design-docs** を含むスキル6種と、エージェント6種（researcher / requirements-writer / brief-writer / final-reviewer / deliverable-builder / design-doc-checker）、フック5種（機密コミットブロック・出力先外書き込みガード・SPEC 要約の注入・仕様更新漏れ通知）・CLAUDE.md サンプルを収録しています。ビルダーが作成中の判断を `docs/task-pipeline/<slug>/implementation-notes.md` に記録し、既存資料には [cc-rsg](https://github.com/daishir0/cc-rsg) 等の外部ツールで仕様を固めてから導入できます。**コードの機能開発は [obra/superpowers](https://github.com/obra/superpowers) に任せます**（旧コードモード `/feature-pipeline` は 2026-10-06 に削除）。**プラグイン2コマンドで導入可能**（上の「導入方法」参照）。
+`/task-pipeline` が 調査 → 成果物要件 → 作業ブリーフ → 作成 → レビュー の5工程を連鎖実行し、3つの人間承認チェックポイントで停止します（ビルダーは drawio などユーザー導入スキルを呼び出せます）。対象リポジトリを解析して一式を自動導入する **pipeline-setup**、運用実績から定義を改善する **pipeline-improve**、設計書の章立てを5フェーズで固定する **design-docs**、マニュアルを出典つきの原則で書く **manual-write**、マニュアルを検査して直す **manual-check** を含むスキル8種と、エージェント7種（researcher / requirements-writer / brief-writer / final-reviewer / deliverable-builder / design-doc-checker / manual-checker）、フック5種（機密コミットブロック・出力先外書き込みガード・SPEC 要約の注入・仕様更新漏れ通知）・CLAUDE.md サンプルを収録しています。ビルダーが作成中の判断を `docs/task-pipeline/<slug>/implementation-notes.md` に記録し、既存資料には [cc-rsg](https://github.com/daishir0/cc-rsg) 等の外部ツールで仕様を固めてから導入できます。**コードの機能開発は [obra/superpowers](https://github.com/obra/superpowers) に任せます**（旧コードモード `/feature-pipeline` は 2026-10-06 に削除）。**プラグイン2コマンドで導入可能**（上の「導入方法」参照）。
 
 #### [`plugins/cli-bridge/`](plugins/cli-bridge/)
 外部の AI コーディング CLI（**OpenAI Codex**・**Kiro**）に相談・レビューを委譲するスキル3種と

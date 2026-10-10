@@ -37,6 +37,7 @@ Claude Code のサブエージェント・スキル・フックを組み合わ�
 | `deliverable-builder` | ブリーフどおりに成果物を作る。**Skill ツール**を持ち、CLAUDE.md の「利用可能なスキル」表で許可された drawio 等を呼べる |
 | `final-reviewer` | 成果物を要件・ブリーフと突き合わせ、ギャップを Critical / Important / Minor で報告する（read-only） |
 | `design-doc-checker` | 設計書のフェーズ間の矛盾・用語ゆれ・実コードとの乖離を検査する（read-only・design-docs 用） |
+| `manual-checker` | マニュアルを8群の検査項目（種類・構成・ステップ・安全と回復・語彙・論理・ライフサイクル・形式別）で検査し、場所と直し方つきで報告する（read-only・manual-write / manual-check 用） |
 
 ## スキル
 
@@ -44,6 +45,8 @@ Claude Code のサブエージェント・スキル・フックを組み合わ�
 |---|---|
 | `/task-pipeline <依頼>` | 成果物を5工程で作る（入口） |
 | `/design-docs [フェーズ] [対象]` | 要件定義・基本設計・詳細設計・DB設計・図表を、フェーズごとに固定した章立てで書く |
+| `/manual-write [作りたいマニュアル]` | 業務マニュアル・手順書・runbook・操作マニュアル・チェックリストを、種類と形式を決めて出典つきの原則で書く |
+| `/manual-check [パス] [改訂 内容]` | 既存のマニュアルを manual-checker で検査し、選んだ指摘を直して再検査する／変更を反映する |
 | `/grilling <詰めたい要件>` | 要件・構成を徹底質問で詰める（[mattpocock/skills](https://github.com/mattpocock/skills) の `grilling` を無改変で同梱・MIT。パイプライン内では Phase 2/3 の writer 起動前に自動で回る） |
 | `/notes` | 作業中の判断・逸脱・ハマりどころを `implementation-notes.md` に記録し続ける |
 | `/pipeline-improve [期間]` | 運用実績（LEARNINGS・実装ノート・差し戻し回数・会話履歴）から失敗シグナルを拾い、エージェント定義・スキルの改善案を出す（明示専用） |
@@ -68,6 +71,29 @@ Claude Code のサブエージェント・スキル・フックを組み合わ�
 - 用語集は導入先の CLAUDE.md に1か所だけ置く（[`CLAUDE.task.md`](CLAUDE.task.md) の「用語集」節）
 - `【要確認】` は人にしか答えられないことだけに立てる。Grep/Glob で確かめられるものはその場で確かめて根拠つきで書く
 
+### マニュアルを書く・直す場合（manual-write / manual-check）
+
+マニュアルが役に立たなくなる原因は、種類が混ざる（手順の途中に経緯や一覧が入る）・読者に合わない・うまくいかなかったときの
+ことが書いていない・古いまま直されない、のどれかであることが多い成果物です。`manual-write` と `manual-check` は、
+特定の流儀ではなく、公的ガイド・仕様・現場の実践から集めた23の原則（出典つき）に沿って書き・直します。
+
+| 出典 | 主に効いている原則 |
+|---|---|
+| EPA「Guidance for Preparing SOPs（QA/G-6）」 | 読者（経験の浅い人が監督なしで再現できる詳しさ）・文体・書いた人以外の試走・改訂と定期見直し・廃止 |
+| NASA/TM-2016-219421「Designing Flightdeck Procedures」 | 手順の要件（正しい・確実・頑健・回復性）・文章/構成/語彙/数値の指針・チェックリスト（do-list と check-list）・実行可能性と実用性の試験 |
+| NUREG-0899 に沿った緊急時操作手順書の作成ガイド | 1ステップ1つの考え・対象と数値の明示・状態に結びつけたきっかけ・条件の書き方・2列形式（期待結果／得られない場合）・注意書きの位置 |
+| OASIS DITA 1.3 task トピック | 前提 → 背景 → 手順 → 結果 → 後続作業 の構成、各ステップに操作が必須 |
+| Diátaxis | 手順・教育・一覧・解説の4種類を混ぜない |
+| Google SRE Workbook | runbook はアラートごとに1項目、呼び出されたときに更新する |
+| Flight Safety Foundation「Procedural Drift」 | 手順が使われない原因（無い・入手できない・誤り・現場と合わない・非公式な近道） |
+| 運用設計ラボ「ミスを許さない手順書」 | 分岐・再利用・中断が多い作業の構造化（シナリオ／タスク／I/O）。選択肢の一つ |
+
+- 形式は6つ — 基本の手順書・2列形式・runbook・チェックリスト・業務マニュアル・構造化。小さい作業に重い型を強いない
+- **書くのは `/manual-write`、直すのは `/manual-check`。** どちらも検査は書き手と別の文脈の `manual-checker` が行う（書いた本人が合格を出さない）。検査項目（8群・約50項目、出典つき）は checker の定義に埋め込んであり、ファイルの読み込み権限に左右されない
+- `/manual-check` は 検査 → 直す範囲を選んでもらう → 修正 → 再検査（1回まで）の1往復。意図・判断基準・値・連絡先が読めない箇所は創作せず `【要確認】` にする
+- **手順は実行しない。** 人が試走するための計画（書いた人以外・本番以外・前提をわざと崩す試験）を添えて返す
+- 根拠の一覧・確認できなかった出典・採否の経緯は [`docs/decisions/2026-10-10-manual-skills.md`](../../docs/decisions/2026-10-10-manual-skills.md)
+
 ## ファイル構成
 
 ```
@@ -75,10 +101,12 @@ pipeline/
 ├── README.md
 ├── CLAUDE.task.md                           # コピーして使う CLAUDE.md サンプル（出力先・利用可能なスキル・表記規約）
 ├── .claude-plugin/plugin.json
-├── agents/                                  # 6種（researcher / requirements-writer / brief-writer / deliverable-builder / final-reviewer / design-doc-checker）
+├── agents/                                  # 7種（researcher / requirements-writer / brief-writer / deliverable-builder / final-reviewer / design-doc-checker / manual-checker）
 ├── skills/
 │   ├── task-pipeline/SKILL.md               # オーケストレーター（5工程）
 │   ├── design-docs/{SKILL.md,references/}   # 設計書の章立て（templates.md / consistency.md）
+│   ├── manual-write/{SKILL.md,references/}  # マニュアルを書く（templates.md / structured.md / shell-guard.md）
+│   ├── manual-check/SKILL.md                # マニュアルを検査して直す（検査項目は manual-checker に埋め込み）
 │   ├── grilling/{SKILL.md,LICENSE}          # 徹底質問（mattpocock/skills から無改変で同梱・MIT）
 │   ├── notes/SKILL.md                       # 実装ノート
 │   ├── pipeline-improve/SKILL.md            # 自己改善ループ
