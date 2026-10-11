@@ -24,8 +24,25 @@ export type Activity = {
   inFlight: number
 }
 
+// task-pipeline（pipeline プラグイン）の status.md から読んだ、進行中のパイプライン1件
+export type Pipeline = {
+  slug: string
+  // 「Phase3」など、最初の未チェック行のフェーズ
+  phase: string
+  done: number
+  total: number
+  // 成果物は保存済みで、人の承認を待っている関門の名前（「ブリーフ承認」）
+  waiting: string | null
+  // このフェーズの終わりにある、まだ来ていない関門の名前
+  gate: string | null
+  // 「差し戻し 1/3」の 1/3
+  rejects: string | null
+  // 同時に進行中のほかのパイプラインの数（帯には一番新しく更新された1件だけを出す）
+  others: number
+}
+
 declare module 'claude-code' {
   interface PluginState {
-    'task-band': { band: Band; activity: Activity }
+    'task-band': { band: Band; activity: Activity; pipeline: Pipeline | null }
   }
 }

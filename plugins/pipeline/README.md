@@ -14,14 +14,11 @@ Claude Code のサブエージェント・スキル・フックを組み合わ�
 
 人間が判断するのは3つの承認チェックポイントだけで、その間は専門エージェントが自走します。途中経過は
 `docs/task-pipeline/<slug>/`（status.md / research.md / requirements.md / brief.md）にファイルとして残るので、
-セッションが切れても `/task-pipeline 再開 <slug>` で続きから再開できます。
+セッションが切れても `/task-pipeline 再開 <slug>` で続きから再開できます。いまどのフェーズで、何があなたの承認を待っているかは
+[task-band](../task-band/) を入れるとプロンプトの上に1行で出ます。
 
-> **コードの機能開発は superpowers を使ってください。** 以前あったコードモード（`/feature-pipeline`・
-> backend/frontend-builder・test-verifier）は 2026-10-06 に削除しました（pipeline 5.0.0）。
-> [obra/superpowers](https://github.com/obra/superpowers)（導入手順は上流の README）が
-> 計画・TDD・サブエージェント駆動の実装・レビュー・worktree 隔離まで、継続的に保守された形で持っているためです
-> （経緯は [`docs/decisions/2026-10-06-repo-cleanup.md`](../../docs/decisions/2026-10-06-repo-cleanup.md) の第10段）。
-> 導入済みプロジェクトの `docs/pipeline/` はそのまま残せますが、`/feature-pipeline 再開` はできなくなります。
+> **コードの機能開発は [obra/superpowers](https://github.com/obra/superpowers) を使ってください**（計画・TDD・サブエージェント駆動の
+> 実装・レビュー・worktree 隔離まで保守された形で持っているため）。
 
 > 本セクションは @sairahul1 氏の記事
 > [How to Build a Software Factory with Claude Code That Ships Features While You Sleep](https://x.com/sairahul1/status/2058832033628241931)
@@ -199,6 +196,25 @@ cp -r /tmp/workbench/plugins/pipeline/skills/notes ~/.claude/skills/
   そこから各エージェントを順番に起動します
 - 既存の図・ドキュメントからの仕様逆引き（SPEC.md の作成）は持ちません。[daishir0/cc-rsg](https://github.com/daishir0/cc-rsg)
   等の外部ツールに委ねます
+
+## 一般的な仕様駆動開発（SDD）との対応
+
+GitHub [spec-kit](https://github.com/github/spec-kit)・Kiro・cc-sdd などは `requirements → design → tasks` を前提にします。
+このパイプラインの対応物は次のとおりです。
+
+| 一般的な SDD | このパイプラインの相当物 |
+|--------------|--------------------------|
+| requirements.md | `requirements.md`（受け入れ基準つき成果物要件） |
+| design.md | `brief.md`（作業ブリーフ） |
+| tasks.md | Phase の連鎖＋ `status.md`（進行管理） |
+| PRD / living spec | `SPEC.md`（完了時に増分更新） |
+| spec-tracker（更新漏れ警告） | `spec-sync-reminder` フック |
+| spec-validator（成果物と仕様の突合） | `final-reviewer` エージェント |
+
+違いは、(1) 対象を**コード以外の成果物**に絞ったこと（コードは superpowers や上記ツールに任せる）、(2) 各工程を独立した
+サブエージェントに分けたこと、(3) `notes` の実装ノートと `SPEC.md` を連動させ「1 Todo = 1 Commit = 1 Spec Update」で
+仕様を同期させること、の3点です（参考: [Zenn / Luup Developers](https://zenn.dev/luup_developers/articles/server-jang-20251215)・
+[Qiita / kanagawa41 氏](https://qiita.com/kanagawa41/items/ef134490b61b41675e01)）。
 
 ## ライセンス・出典
 

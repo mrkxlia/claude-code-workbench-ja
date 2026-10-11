@@ -1,16 +1,19 @@
 import { atom, read, update } from 'claude-code'
 import type { EngineInterface, Register } from 'claude-code'
 
-import type { Activity, Band } from '../types'
+import type { Activity, Band, Pipeline } from '../types'
 import {
   EMPTY,
   IDLE,
+  PIPELINE_DIR,
   clock,
   humanStepped,
   idleMinutes,
   isVisible,
   itemLabel,
   meter,
+  parseStatus,
+  pipelineLabel,
   removeItem,
   replaceTodos,
   restartClock,
@@ -22,6 +25,29 @@ const TICK_MS = 1000
 
 const band = atom({ plugin: 'task-band', key: 'band' } as const, EMPTY)
 const activity = atom({ plugin: 'task-band', key: 'activity' } as const, IDLE)
+const pipeline = atom({ plugin: 'task-band', key: 'pipeline' } as const, null as Pipeline | null)
+
+// docs/task-pipeline/*/status.md を読み、進行中のうち一番新しく更新された1件を帯に載せる。
+// 読むだけで書かない。フォルダが無いリポジトリでは何もしない
+const scanPipelines = async ($: EngineInterface) => {
+  const dirs = (await $.fs.list(PIPELINE_DIR).catch(() => [])).filter(d => d.kind === 'dir')
+  const found = await Promise.all(
+    dirs.map(async d => {
+      const path = `${PIPELINE_DIR}/${d.name}`
+      const files = await $.fs.list(path).catch(() => [])
+      const status = files.find(f => f.name === 'status.md')
+      if (!status) return null
+      const text = await $.fs.read(`${path}/status.md`).catch(() => '')
+      const p = parseStatus(typeof text === 'string' ? text : '', d.name, new Set(files.map(f => f.name)))
+      return p ? { p, mtime: status.mtimeMs } : null
+    }),
+  )
+  const active = found.filter(x => x !== null).sort((a, b) => b.mtime - a.mtime)
+  const next: Pipeline | null = active[0] ? { ...active[0].p, others: active.length - 1 } : null
+  // 変わったときだけ書く（書けば帯を描き直すため）
+  await update($, pipeline, prev => (JSON.stringify(prev) === JSON.stringify(next) ? prev : next))
+}
+const rescan = ($: EngineInterface) => scanPipelines($).catch(() => undefined)
 
 // 帯の状態を更新し、15分の詰まりに初めて入ったら warned を立ててトーストを出す。
 // 立てるかどうかは同じ update の中で決める（並列のツール呼び出しで何度も鳴らさないため）
@@ -57,11 +83,17 @@ const succeeded = <R extends { deny?: string; isError?: true }>(r: R): r is Excl
 // fail-open: 観測だけのフックなので、自分が壊れても作業は止めない
 const passThrough = <E, R>(_: unknown, e: E, next: (e: E) => R) => next(e)
 
-const listText = (b: Band) => {
+const pipelineText = (p: Pipeline) =>
+  `${pipelineLabel(p)} ${p.done}/${p.total}${p.waiting ? ` 🛑${p.waiting}待ち` : p.gate ? ` → ${p.gate}` : ''}`
+
+const listText = (b: Band, p: Pipeline | null) => {
   const items = Object.values(b.items)
-  if (items.length === 0) return 'タスクはまだありません（現行モデルでは CLAUDE_CODE_ENABLE_TODO_TOOLS=1 が必要です）。'
+  const head = p ? [pipelineText(p)] : []
+  if (items.length === 0)
+    return [...head, 'タスクはまだありません（現行モデルでは CLAUDE_CODE_ENABLE_TODO_TOOLS=1 が必要です）。'].join('\n')
   const t = tally(b.items)
   return [
+    ...head,
     `タスク ${t.done}/${t.total}`,
     ...items.map(i => `${i.status === 'completed' ? '✔' : i.status === 'in_progress' ? '▶' : '○'} ${itemLabel(i)}`),
   ].join('\n')
@@ -74,6 +106,7 @@ export const register: Register = on => {
       description: 'プロンプトの上のタスク進捗の帯: on / off で表示を切り替え、list で全タスクを表示',
     })
     $.clock.every(TICK_MS, () => void tick($).catch(() => undefined))
+    await rescan($)
     return next(e)
   })
 
@@ -92,7 +125,7 @@ export const register: Register = on => {
       await update($, band, b => ({ ...b, isHidden: arg === 'off' }))
       return { text: arg === 'off' ? 'タスクの帯を隠しました（/task-band on で戻します）。' : 'タスクの帯を表示します。' }
     }
-    return { text: listText(await read($, band)) }
+    return { text: listText(await read($, band), await read($, pipeline)) }
   })
 
   on('prompt.submit', async ($, e, next) => {
@@ -104,11 +137,15 @@ export const register: Register = on => {
   on('turn.start', async ($, e, next) => {
     await track($, a => ({ ...a, turnActive: true }))
     await refresh($, restartClock)
+    await rescan($)
     return next(e)
   }).catch(passThrough)
 
   on('turn.complete', async ($, e, next) => {
-    if (e.agentId === undefined) await track($, () => IDLE)
+    if (e.agentId === undefined) {
+      await track($, () => IDLE)
+      await rescan($)
+    }
     return next(e)
   }).catch(passThrough)
 
@@ -150,6 +187,19 @@ export const register: Register = on => {
     return ran
   }).catch(passThrough)
 
+  // status.md や成果物が書かれたら、パイプラインの表示を読み直す（サブエージェントの書き込みも含む）
+  on('tool.call', { tool: 'Write' }, async ($, e, next) => {
+    const ran = await next(e)
+    if (succeeded(ran) && e.file_path.includes(PIPELINE_DIR)) await rescan($)
+    return ran
+  }).catch(passThrough)
+
+  on('tool.call', { tool: 'Edit' }, async ($, e, next) => {
+    const ran = await next(e)
+    if (succeeded(ran) && e.file_path.includes(PIPELINE_DIR)) await rescan($)
+    return ran
+  }).catch(passThrough)
+
   // メインのループで実行中のツールを数える（長いビルドや質問の間は詰まりと数えない）。
   // 中断や例外で next が終わらなくても必ず戻す
   on('tool.call', async ($, e, next) => {
@@ -163,8 +213,9 @@ export const register: Register = on => {
   }).catch(passThrough)
 
   on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
-    const b = await read($, band)
-    if (e.props.hasSurvey || !isVisible(b)) return next(e)
+    const [b, p] = await Promise.all([read($, band), read($, pipeline)])
+    const showTasks = isVisible(b)
+    if (e.props.hasSurvey || b.isHidden || (!showTasks && p === null)) return next(e)
 
     const { Box, Text } = $.ui.resolve(e)
     const now = await $.clock.now()
@@ -172,21 +223,47 @@ export const register: Register = on => {
     const columns = e.props.bodyColumns || 80
     const m = meter(t.done, t.total, columns < 60 ? 8 : 16)
 
+    // パイプラインは人の承認待ちを一番目立たせる（承認するまで先へ進まないため）
+    const stage =
+      p === null ? null : (
+        <Text>
+          <Text color="claude">{pipelineLabel(p)}</Text>
+          {p.waiting ? (
+            <Text color="warning" bold>{`  🛑 ${p.waiting}待ち`}</Text>
+          ) : (
+            <Text dimColor>{p.gate ? `  → ${p.gate}` : ''}</Text>
+          )}
+          <Text dimColor>{showTasks ? '  │  ' : ''}</Text>
+        </Text>
+      )
+
+    if (!showTasks) {
+      return (
+        <Box flexDirection="row">
+          <Text wrap="truncate-end">{stage}</Text>
+        </Box>
+      )
+    }
+
     if (t.open === 0) {
       return (
-        <Box>
-          <Text color="success">{`${m.filled} ✔ ${t.done}/${t.total} 完了`}</Text>
+        <Box flexDirection="row">
+          <Text wrap="truncate-end">
+            {stage}
+            <Text color="success">{`${m.filled} ✔ ${t.done}/${t.total} 完了`}</Text>
+          </Text>
         </Box>
       )
     }
 
     const label = t.current ? itemLabel(t.current) : null
     const elapsed = t.current?.startedAt == null ? '' : `  ${clock(now - t.current.startedAt)}`
-    const nextUp = columns >= 90 && t.next && t.current ? `  次: ${t.next.subject}` : ''
+    const nextUp = columns >= 90 && p === null && t.next && t.current ? `  次: ${t.next.subject}` : ''
     const idle = b.warned && b.idleSince !== null ? Math.floor((now - b.idleSince) / 60000) : null
     return (
       <Box flexDirection="row">
         <Text wrap="truncate-end">
+          {stage}
           <Text color={idle === null ? 'success' : 'warning'}>{m.filled}</Text>
           <Text dimColor>{m.empty}</Text>
           <Text bold>{` ${t.done}/${t.total}`}</Text>

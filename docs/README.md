@@ -1,44 +1,42 @@
-# docs/ — リポジトリ横断の設計ノート
+# docs/ — リポジトリ横断のドキュメント
 
-このディレクトリは、特定のセクション（`pipeline/` など）単体に閉じない、
-**複数セクションをまたぐ設計提案・検討資料**を置く場所です。
+特定のプラグインに閉じない資料を置く場所です。プラグイン固有のことは各プラグインの `README.md` に書きます。
 
-セクション固有のドキュメントは各セクションの `README.md` に置き、ここには
-「どのセクションに実装するかを含めて検討する段階」の資料を置きます。
+| パス | 内容 |
+|------|------|
+| [`lessons.md`](lessons.md) | 過去 PR から蒸留した「繰り返さない判断」。何かを作る前に読む |
+| [`skill-authoring.md`](skill-authoring.md) | スキルの書き方（公式ガイド準拠。frontmatter・分冊基準・CI の検査との対応） |
+| [`evals/`](evals/) | 主要スキル5件の期待挙動シナリオと発火ケース。走らせ方は [`evals/README.md`](evals/README.md) |
+| [`decisions/`](decisions/) | 日付つきの決定記録（下記） |
 
-## ファイル一覧
+## decisions/ — 決定記録
 
-`decisions/` には日付つきの決定記録・監査記録（変更しない。覆すときは新しい記録を足す）、
-直下には執筆ガイド・教訓・eval を置く。
+記録は書いたら変えない。覆すときは新しい記録を足す。中身の要約はここに写さず、各記録の冒頭を読む（要約を二重に持つとずれる）。
 
-**残す基準（2026-10-06〜）**: 決定記録は、現行のプラグイン・ツール・CI・README・`lessons.md` から引かれている
-（＝今あるコードの理由になっている）か、積読索引のように「評価済みかどうか」の照合に実際に使われているものだけを残す。
-外部記事の採否レビューで取り込みがほぼ無く、どこからも引かれていないものは、結論を書いたうえで削除してよい
-（git 履歴から `git show <commit>:<path>` で引ける）。完了したバックログ・置き換えられた提案資料も同様。
-経緯は [`decisions/2026-10-06-repo-cleanup.md`](decisions/2026-10-06-repo-cleanup.md)。
+**残す基準**: 現行のプラグイン・ツール・CI・`lessons.md` から引かれている（＝今あるコードの理由になっている）か、
+積読索引のように「評価済みかどうか」の照合に実際に使われているものだけを残す。それ以外は結論を書いたうえで削除してよい
+（`git show <commit>:<path>` で引ける）。経緯は [`2026-10-06-repo-cleanup.md`](decisions/2026-10-06-repo-cleanup.md)。
 
-| ファイル | 内容 |
-|---------|------|
-| `decisions/2026-09-03-fable-5-1-audit.md` | Fable 5.1 自身による model-setup（ルール・追補・スキル・エージェント・パリティマップ）の監査記録。各項目を (a)再現済み／(b)過剰処方（Opus 5 で逆効果）／(c)欠落 に分類し、反映した差分と意図的に変えなかったものを記録（model-setup 3.2.0） |
-| `decisions/2026-09-03-long-run-constraints-and-spec-load.md` | 「完全には埋まらない」とされてきた2件 — 長時間作業での序盤制約の保持・SPEC.md の必須ロード保証 — を Claude Code のフック仕様（SessionStart `compact`・SubagentStart の `additionalContext`）で構造化する決定記録。敵対的レビュー3名の指摘と対応つき。実装は pipeline の `inject-spec-summary`（model-setup の `reinject-brief` は 2026-10-06 に `long-run` とともに削除） |
-| `decisions/2026-09-05-design-doc-subagents.md` | 外部記事の「設計書フェーズ別サブエージェント5体」を、既存流用（requirements-writer / brief-writer / deliverable-builder / final-reviewer）＋2点追加（`design-docs` スキル・`design-doc-checker` エージェント）に絞った決定記録。フェーズ別ビルダー4体を作らなかった理由と教訓1・2・4 との照合、見送った案（haiku 図表エージェント等） |
-| `decisions/2026-09-05-feedback-rules.md` | 人間の指摘を1指摘1ファイルで永続化し、指摘回数（count）で強制力を warn → ask → deny と段階的に上げる仕組みを `plugins/feedback-rules/` として実装した決定記録。公式 `hookify`・claude-reflect・agentmemory・本体の `.claude/rules/` 等の先行事例調査（何が上回っていて何が無かったか）、取り込んだ4点（訂正の自動捕捉・失効管理・`.claude/rules/` 書き出し・agent 型フックの opt-in）、実装しなかった4点（count の自動更新・ルールの自動生成・AGENTS.md 同期・セキュリティ用途）、`self-correct` と統合しない理由 |
-| `decisions/2026-09-05-learning-prompt-as-skill.md` | 2026-08-11 の Anthropic メンバーの「仕事の学習用プロンプト」を `plugins/learning-coach/`（スキル `deep-understand`）として実装した決定記録。既存8プラグインがすべて「Claude に良い仕事をさせる」ためのもので「人間の側の理解を作る」主題を持たないため独立させた線引き、`/goal` を再実装しない判断、エージェント・フックを持たせない理由、「全問を出すまで答えを明かさない」を `AskUserQuestion` の構造で担保した設計 |
-| `decisions/2026-09-06-adoption-review.md` | 外部の技術（OSS・AI ツール・SaaS・論文・スライド・X ポスト）を Web の一次情報から敵対的にレビューし採用可否を判定する仕組みを `plugins/adoption-review/` として実装した決定記録。先行事例調査（本体 `/code-review`・`review-panel`・ThoughtWorks Technology Radar・tech-radar / Tech Stack Evaluator スキル・claude-code-radar）で「無かった3点」＝敵対の順序・Web 一次情報・確認できなかったことの明示、に絞った線引き、サブエージェント2種（証拠収集は並列・敵対役は肯定寄りのときだけ起動）の理由、`agent-review-panel` に同居させない判断、実装しなかったもの（パネル討論・TCO 計算・技術レーダー生成・フック） |
-| `decisions/2026-09-06-plan-review-before-present.md` | X ポスト（2026-08-11）の「Claude Code がプランを提示する**前に**自動で Codex にレビューさせる」を `/adoption-review` の手順で評価し、**残余1点（自動発火）だけ**を opt-in フック `plan-review-codex.sh`（`PreToolUse` matcher `ExitPlanMode`・`permissionDecision:"deny"`・1セッション1回）として取り込んだ記録。採らなかった5点（`-m gpt-5.3-codex` は公式が非推奨・`resume --last` は cwd スコープで誤セッションを掴みうる・「致命的な点だけ」は偽陰性を増やす・CLAUDE.md ではタイミングを保証できない・新規スキルは `/codex-ask` と重複）、代替可能性の照合表（A〜E）、外部評価（先行事例3件・公式 codex-plugin-cc のゲートは Stop フックで別位置） |
-| `decisions/2026-09-07-plugin-inventory-and-official-spec-alignment.md` | 全10プラグイン・33スキル・31サブエージェントを `/adoption-review` の判定枠組み（代替手段＝本体機能・既存OSS・何もしない／導入・運用・学習・撤退コスト／中核ルール11）で棚卸しした記録。**プラグインの削除はゼロ**。ただし 2026-08 のレビュー当時は存在しなかった先行事例が3件に重なることが判明したため、`codex-bridge`（OpenAI 公式 `codex-plugin-cc`）・`agent-review-panel`（同名 OSS `wan-huiyan/agent-review-panel`）・`self-correct`（公式 `ralph-loop`・`sdsrss/loop_eng`）を**審議中**として、次に読むべきファイルを名指しで記録した（README の一致は実装の一致ではないため、未読を根拠に削除しない）。適用した改善は marketplace.json の単一情報源化、CI の許可キーを公式現況へ追随（教訓9 の発端）、description 1024字・三人称・references 1階層・100行超の目次、Codex/Kiro の一次情報反映、`/skill-doctor`・`/batch`・`/goal` の事実追加、eval の公式 skill-creator 形式化と11スキルへの拡充、フック配線の exec 形式化、review-panel への反グループシンク機構2つ（統制検証ゲート・ブラインド最終採点）|
-| `decisions/2026-09-13-skill-duplication-check.md` | **スキル33件を1件ずつ**先行事例と突き合わせ、「車輪の再発明」になっていないかを判定した記録（前回はプラグイン10件の粒度）。圧力の強い順に本体機能＞公式プラグイン＞先行 OSS の3層で見て、重なり度 A（先行事例が同等以上）12件／B（中核は重なるが差分が機能する）13件／C（隣接するが担当が違う）3件／D（該当を確認できず）5件。前回**審議中**とした3件は、`codex-review`/`codex-implement` は公式 `openai/codex-plugin-cc` がジョブ管理まで持つ上位互換（ただし AGENTS.md 生成は無く `codex-agents` の理由は保たれる）、`review-panel` は `wan-huiyan/agent-review-panel` の機構が厚く存在理由は**異種モデル混成**に絞られる（相手は Claude 専用と明記）、`self-correct` は `sdsrss/loop_eng` が同等以上で差分は `judge-eval`、と決着。副産物として、前回「存在しない」と書いた **`claude plugin eval` は実在し**、ベースライン比較（ablation）・trigger eval・CI ゲートを本体が持つことが判明（`docs/evals/` の手作業手順はそこへ移すのが筋。本記録では変更していない）。実装本体は今回も未読であることを明示 |
-| `decisions/2026-09-19-retire-codex-bridge-and-cli-bridge.md` | 2026-09-13 の棚卸しの**示唆1〜6を実装に落とした**記録。`codex-bridge` をプラグインごと廃止し（`/codex-review`・`/codex-implement` は OpenAI 公式 `openai/codex-plugin-cc` が敵対的レビューとバックグラウンドジョブ管理まで含めて広くカバーするため）、公式に無い `codex-ask`・`codex-agents` を旧 `kiro-bridge` と統合して **`cli-bridge` へ改名**（プラグイン10→9・スキル33→31）。計画を自リポジトリの基準で敵対的に検証して**実装前に5件直した** — 未読 README を削除根拠にしかけた点（一次情報を取り直し、理由を「下位互換」から「用途が公式でカバーされ、差分は要約の作法だけ」に改めた）、marketplace の `renames` を知らず既存利用者の設定キーを孤児にするところだった点、AGENTS.md のセンチネルにプラグイン名が埋まっていて改名すると再生成が無言で止まる点、「追記のみ」の決定記録を書き換える計画だった点、他人のコマンド名を31スキルの description に散らすところだった点（教訓9）。示唆2〜6 は**削除せず線引きを明記**（fan-out↔`/batch`・long-run↔`/goal`・backlog-loop↔`Backlog.md`・review-panel は異種モデル混成・self-correct は `judge-eval`・context-audit はレイヤー横断・deep-understand は3点差分）。示唆4（build-with-tests・clarify を畳む案）は `clarify` が pipeline の部品かつ手動起動の入口であるため見送り |
-| `decisions/2026-10-02-sonnet-5-5-model-effort-review.md` | 公式ブログ「Building with Claude Sonnet 5.5」と Claude Code 公式ドキュメントに照らした**モデル割り当てと effort の見直し**。外部 CLI の中継役5種・`panel-reviewer`・`instruction-auditor`・`feedback-auditor` を `inherit` から **sonnet** へ移し、`model: sonnet` の全エージェントに `effort`（範囲が明確なら medium、検証役は high）を明示。ユーザー設定のトップレベル `effortLevel` が Opus 5.5／Sonnet 5.5 に効かないことを受けて設定サンプルの `xhigh` を外し、MODEL-GUIDE に Sonnet 5.5 の仕様と段階表、PROMPTS に 5.5 の API 破壊的変更を追記。逆効果な指示（think less・推論の出力・do not be lazy 等）は見つからなかった。`loop-judge` は `/judge-eval` で測ってから判断する |
-| `decisions/2026-10-03-tsundoku-claude-code-16-items-adoption.md` | 個人の読書メモ索引「積読」の Claude Code 関連16件（リンク先の原典）を `/adoption-review` の手順で1件ずつ評価し、**取り込みを2点に絞った**記録。`clarify` に「答えが返ってこないとき」の3分岐（理解不足→`deep-understand`／決定権不足→確認先つきで持ち越し／実証不足→別タスクの試作）を既存の受け皿で追加（pipeline 2.5.1）、PROMPTS.md に #11「テストの棚卸し」（洗い出しのみ・削除は別依頼）を追加。進捗ダッシュボード案は「判断待ちを既定で進める」が model-setup ルール2 と矛盾するため不採用。不採用14件の理由と確認できなかったこと |
-| `decisions/2026-10-03-skill-usability-and-mattpocock.md` | 公式マーケットプレイス登録済みの `mattpocock-skills`（v1.2.3）の SKILL.md 27件を精読し、同日の積読レビューの #1（Grilling 分岐）・#3（進捗ダッシュボード）を覆した記録。上流の teach・to-questionnaire 等は `disable-model-invocation` でモデルから呼べず委譲は成立しない、grilling と clarify は「grill」で発火を取り合う、スキル一覧の description には文脈の1%の予算がある、を確認。`/which-skill` は本体 `/skills` の再発明として作らず README に2行、上流のコマンド名は skills-guide の1節に集約。初版計画への敵対的検証24件の処理表つき |
-| `decisions/2026-10-03-skill-description-budget.md` | 「スキルが自動で発火しない」の原因候補として、スキル一覧の description 予算（文脈の1%・共有）を実測した記録。9プラグインを載せると同居する他プラグインの6スキルが名前だけになり（Opus 5.5・Sonnet 5.5 で同じ）、400字超の10件を短縮して合計 7,383 字にすると1件まで戻った。CI に自動発火スキルの description 合計 7,500 字の予算を追加。`claude plugin eval` の32ケースで短縮前後とも全件合格（1プラグイン単独では発火はもともと正しく、主因は同居時の予算超過とプラグインをまたぐ衝突と判断） |
-| `decisions/2026-10-06-tsundoku-agent-14-items-adoption.md` | 「積読」索引のうち前回未評価の Claude Code・AI エージェント関連14件（リンク先の原典）を `/adoption-review` の手順で評価し、**取り込みを3点に絞った**記録。PROMPTS.md に #12「AI レビューが収束しないとき」（確かめた指摘を再現テストに固定・終了条件を「0件表示」にしない）、skills-guide に日本語技術文書の規範 japanese-tech-writing を掲載のみ、`judge-eval` の再検定に診断で使っていないサンプルを足す規則（self-correct 0.3.2）。Lyra（相互批評＋ルール集計）は review-panel と重なり効果の数値が無いため不採用。不採用10件の理由と確認できなかったこと |
-| `decisions/2026-10-06-repo-cleanup.md` | リポジトリの整理。完了済みバックログ・旧提案資料・読み手の無い `evals.json`・どこからも参照されない採否レビュー8件を削除し（結論は1行ずつ残す）、決定記録を残す基準を定めた記録。前回以降の公式機能を一次情報で取り直し、`/doctor prompt-audit`（2.1.283）と重なった `context-audit` を削除。第3段で「代替より良いか」を基準に全件を判定し直し、スキル7種・エージェント5種・公式ガイドの翻訳を削除。第4段で codebase-setup プラグインを廃止。第5〜8段で clarify→grilling・adoption-review の証拠集め→`/deep-research`・codex-ask→公式 codex-plugin-cc・pr-merge 削除。第9段で代替にだけあった機能を取り込み、第10段で feature-pipeline を obra/superpowers に、self-correct を sdsrss/loop_eng に任せて削除 |
-| `decisions/2026-10-07-review-panel-wan-huiyan-import.md` | review-panel を「Claude 以外のモデルを混ぜられる」強みで残すと決め、wan-huiyan/agent-review-panel（v3.9.1）の SKILL.md から軽く取り込める仕組みを選んだ記録。外部モデルを相互批判（R2）と網羅監査にも参加させ、反証テスト・同一箇所の一致は1件・稼働中の状態の扱い・外部知識の Web 確認・裁定後の検証・討論の欠落チェック・推論の型・初見の読者を追加（agent-review-panel 0.7.0）。HTML レポート・複数回実行・データフロー追跡・主観品質の評価モードは見送り |
-| `decisions/2026-10-08-tsundoku-task-band-mod.md` | 積読インデックスの AI 関連32件を再走査（30件は評価済みかテーマ外）。新規の html-plan は STE 英語固定などで「小さく検証」に留め取り込まない。前回 #3 の進捗ダッシュボードを、詰まりの信号 → html-plan と組み合わせたペイン → 単独の3タブのダッシュボード（progress-pane）と広げたが、敵対的検証・`/deep-research`・公開 mod の読み比べで、エージェントの地図は claude-agent-flow、詰まりの検知は unstuck が上回ると分かり、空いていた「タスクの進捗」だけをプロンプトの上の帯 `plugins/task-band/`（0.1.0）として残した。上回っていた2つ（claude-agent-flow・unstuck）は `plugins/agent-flow/`・`plugins/unstuck/` に無改変で同梱し、3つを1回で入れるバンドル `plugins/watch-kit/`（dependencies だけ）を足した |
-| `decisions/2026-10-10-manual-skills.md` | マニュアルを書く `manual-write`・チェックして直す `manual-check`・検査エージェント `manual-checker`（pipeline）の決定記録。`/deep-research`（25主張を3票で検証・24件確認）と補足調査で集めた根拠（EPA の SOP ガイド・NASA の手順設計ガイド・原子力の手順書作成ガイド・DITA・Diátaxis・SRE・Flight Safety Foundation）、確認できなかった出典、書くと直すを分けた理由、検査項目を checker の定義に埋め込んだ理由（実地テストで判明した読み込み権限の問題）、運用設計ラボの発表の評価（条件付きで有用）と構造化を選択肢の一つに下げた経緯 |
-| `decisions/2026-10-10-grilling-unanswerable-and-understanding-debt.md` | Algomatic の「Grilling で詰まったら分岐する」・Zenn の理解負債の記事・Issue 運用の X ポストを `/adoption-review` で再評価し、**取り込みを1点に絞った**記録。10-06 の clarify→grilling 置換で消えていた「答えが返ってこない問い」の扱いを、敵対役の反論（推測は黙った同意から入る・CP で止めないと札を付けるだけ）を受けて task-pipeline の CP1・CP2 で未解決の質問を1件ずつ判断させる形で復活（pipeline 5.2.0）。deep-research の裏取りで「yes」の1行が問いと推奨の向きを揃える修正（Issue #706）と分かり、上流 grilling を無改変で再コピー。explain-visually は要約の誤りを検出できない・macOS 固定のため情報収集に留める |
-| `skill-authoring.md` | 公式ガイド「The Complete Guide to Building Skills for Claude」（2026-09-05 取得）に沿ってスキルを書くための指針。3段階の開示・frontmatter のキー採否・山括弧禁止・別冊に切る基準・CI が守っている項目。末尾にスキルの監査結果（変更しなかったものも全件）と積み残し。**どのスキルを入れるか**は `skills-guide/` |
-| `lessons.md` | 過去の PR から蒸留した「このリポジトリで繰り返さない判断」。作る前の3点確認（本体・公式プラグイン・著名 OSS）、重複を自動化する前に統合する、既定探索パスに従う、残す理由は「差分」でなく「代替より良いか」、など10件。根拠の PR 番号つき |
-| `evals/` | 主要スキル5件（verify-fresh / review-panel / adoption-review / feedback-rule / deep-understand）の「期待挙動」シナリオと、同一プラグイン内の衝突組の発火ケース（`triggers.md`）。`gen-eval-cases.py` が両方を `claude plugin eval` のケース（シナリオは `llm` グレーダー、発火は `tool_used`）へ生成し、スキル無しとの差（Δ）を測る。追補ルール6 の分岐が実効を持つかを verify-fresh S-3/S-4 で検出する |
+| 記録 | 主題 |
+|------|------|
+| [2026-09-03-fable-5-1-audit](decisions/2026-09-03-fable-5-1-audit.md) | model-setup の監査 |
+| [2026-09-03-long-run-constraints-and-spec-load](decisions/2026-09-03-long-run-constraints-and-spec-load.md) | pipeline の SPEC 注入フック |
+| [2026-09-05-design-doc-subagents](decisions/2026-09-05-design-doc-subagents.md) | pipeline の design-docs・design-doc-checker |
+| [2026-09-05-feedback-rules](decisions/2026-09-05-feedback-rules.md) | feedback-rules の設計と先行事例 |
+| [2026-09-05-learning-prompt-as-skill](decisions/2026-09-05-learning-prompt-as-skill.md) | learning-coach の設計 |
+| [2026-09-06-adoption-review](decisions/2026-09-06-adoption-review.md) | adoption-review の設計と先行事例 |
+| [2026-09-06-plan-review-before-present](decisions/2026-09-06-plan-review-before-present.md) | cli-bridge のプラン前 Codex レビュー |
+| [2026-09-07-plugin-inventory-and-official-spec-alignment](decisions/2026-09-07-plugin-inventory-and-official-spec-alignment.md) | プラグイン棚卸しと公式仕様への整合 |
+| [2026-09-13-skill-duplication-check](decisions/2026-09-13-skill-duplication-check.md) | スキル単位の重複（車輪の再発明）チェック |
+| [2026-09-19-retire-codex-bridge-and-cli-bridge](decisions/2026-09-19-retire-codex-bridge-and-cli-bridge.md) | codex-bridge 廃止と cli-bridge 統合 |
+| [2026-10-02-sonnet-5-5-model-effort-review](decisions/2026-10-02-sonnet-5-5-model-effort-review.md) | モデル割り当てと effort の見直し |
+| [2026-10-03-tsundoku-claude-code-16-items-adoption](decisions/2026-10-03-tsundoku-claude-code-16-items-adoption.md) | 積読16件の採否（積読索引の照合用） |
+| [2026-10-03-skill-usability-and-mattpocock](decisions/2026-10-03-skill-usability-and-mattpocock.md) | mattpocock-skills の精読と取り込み |
+| [2026-10-03-skill-description-budget](decisions/2026-10-03-skill-description-budget.md) | スキル description 予算（CI の予算検査の根拠） |
+| [2026-10-06-tsundoku-agent-14-items-adoption](decisions/2026-10-06-tsundoku-agent-14-items-adoption.md) | 積読14件の採否（積読索引の照合用） |
+| [2026-10-06-repo-cleanup](decisions/2026-10-06-repo-cleanup.md) | リポジトリ整理と残す基準 |
+| [2026-10-07-review-panel-wan-huiyan-import](decisions/2026-10-07-review-panel-wan-huiyan-import.md) | review-panel への取り込み |
+| [2026-10-08-tsundoku-task-band-mod](decisions/2026-10-08-tsundoku-task-band-mod.md) | task-band と mod の同梱判断（積読索引の照合用） |
+| [2026-10-10-manual-skills](decisions/2026-10-10-manual-skills.md) | manual-write・manual-check・manual-checker |
+| [2026-10-10-grilling-unanswerable-and-understanding-debt](decisions/2026-10-10-grilling-unanswerable-and-understanding-debt.md) | grilling の未回答の扱い |
+| [2026-10-11-yagni-docs](decisions/2026-10-11-yagni-docs.md) | 文書の重複を削り「1つの事実は1か所」にする |

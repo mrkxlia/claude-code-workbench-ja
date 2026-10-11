@@ -2,12 +2,12 @@ import { describe, expect, mock, test } from 'claude-code/testing'
 import type { Engine } from 'claude-code/testing'
 import type { On } from 'claude-code'
 
-import { EMPTY, idleMinutes, itemLabel, meter, replaceTodos, restartClock, setItem } from '../hooks/model'
+import { EMPTY, idleMinutes, itemLabel, meter, parseStatus, replaceTodos, restartClock, setItem } from '../hooks/model'
 
 const working = { turnActive: true, inFlight: 0 }
 
-// エンジン側の代役: タスク系・TodoWrite は成功を返す
-const engine = (on: On) => {
+// エンジン側の代役: タスク系・TodoWrite は成功を返す。files はリポジトリのファイル（パス → [中身, 更新時刻]）
+const engine = (on: On, files: Record<string, [string, number]> = {}) => {
   const clock = mock.clock(on, { now: 1_000_000 })
   const toasts: string[] = []
   let nextId = 0
@@ -29,8 +29,41 @@ const engine = (on: On) => {
   on('tool.call', { tool: 'TaskUpdate' }, ($, e) => ({
     result: { success: true, taskId: e.taskId, updatedFields: ['status'] },
   }))
-  return { clock, toasts }
+  // エンジンは相対パスを作業ディレクトリで絶対パスにしてから渡す。代役は docs/ から先だけを見る
+  const rel = (path: string) => path.slice(Math.max(0, path.indexOf('docs/')))
+  on('fs.list', ($, e) => {
+    const prefix = `${rel(e.path)}/`
+    const names = new Map<string, { kind: 'file' | 'dir'; mtimeMs: number }>()
+    for (const [path, [, mtimeMs]] of Object.entries(files)) {
+      if (!path.startsWith(prefix)) continue
+      const [name, ...rest] = path.slice(prefix.length).split('/')
+      names.set(name!, rest.length > 0 ? { kind: 'dir', mtimeMs: 0 } : { kind: 'file', mtimeMs })
+    }
+    if (names.size === 0) throw new Error('ENOENT')
+    return { value: [...names].map(([name, x]) => ({ name, kind: x.kind, size: 0, mtimeMs: x.mtimeMs, isLink: false })) }
+  })
+  on('fs.read', ($, e) => {
+    const f = files[rel(e.path)]
+    if (!f) throw new Error('ENOENT')
+    return { value: f[0] }
+  })
+  on('tool.call', { tool: 'Write' }, () => ({ result: { type: 'update' } }) as never)
+  return { clock, toasts, files }
 }
+
+// task-pipeline の status.md（テンプレートどおり）。done は済んだフェーズの数
+const status = (done: number, review = '差し戻し 0/3') =>
+  [
+    '# パイプラインの進行状況',
+    '- [ ] Phase 0: 準備',
+    '- [ ] Phase 1: Research → research.md 保存',
+    '- [ ] Phase 2: Requirements → grilling で要件を詰める → requirements.md 保存 → 🛑 要件承認（承認: ／方式: ）',
+    '- [ ] Phase 3: Brief → grilling で構成を詰める → brief.md 保存 → 🛑 ブリーフ承認（承認: ／方式: ）',
+    '- [ ] Phase 4: Build',
+    `- [ ] Phase 5: Review — ${review} → 🛑 最終レビュー（承認: ）`,
+  ]
+    .map((l, i) => (i >= 1 && i <= done ? l.replace('[ ]', '[x]') : l))
+    .join('\n')
 
 const boot = ($: Engine) => $.session.start({ cwd: '', surface: 'terminal', isInteractive: true } as never)
 const startTurn = ($: Engine) => $.turn.start({ text: '', turnId: 't' } as never)
@@ -80,6 +113,23 @@ describe('model.ts', () => {
     expect(idleMinutes(b, { ...working, inFlight: 1 }, at(16))).toBeNull()
     expect(idleMinutes(b, { ...working, turnActive: false }, at(16))).toBeNull()
     expect(idleMinutes(b, working, at(16))).toBe(16)
+  })
+
+  test('status.md: 成果物が保存済みの関門だけを承認待ちにし、まだなら次の関門として予告する', () => {
+    expect(parseStatus(status(3), 'auth', new Set(['status.md', 'brief.md']))).toMatchObject({
+      phase: 'Phase3',
+      done: 3,
+      total: 6,
+      waiting: 'ブリーフ承認',
+      gate: null,
+    })
+    expect(parseStatus(status(3), 'auth', new Set(['status.md']))).toMatchObject({ waiting: null, gate: 'ブリーフ承認' })
+  })
+
+  test('status.md: 差し戻しの回数を拾い、全部済んだら null', () => {
+    expect(parseStatus(status(5, '差し戻し 2/3'), 'auth', new Set())?.rejects).toBe('2/3')
+    expect(parseStatus(status(6), 'auth', new Set())).toBeNull()
+    expect(parseStatus('チェック行なし', 'auth', new Set())).toBeNull()
   })
 
   test('メーターはタスクが多いと幅に合わせて縮める', () => {
@@ -171,4 +221,33 @@ test('並列のツール呼び出しの中で詰まりに入っても、トー�
   await seen.clock.advance(16 * 60 * 1000)
   await Promise.all([create($, 'x'), create($, 'y'), create($, 'z')])
   expect(seen.toasts).toHaveLength(1)
+})
+
+test('パイプライン: タスクが無くても、進行中の task-pipeline のフェーズと承認待ちを出す', async ($, on) => {
+  engine(on, {
+    'docs/task-pipeline/auth/status.md': [status(3), 2],
+    'docs/task-pipeline/auth/brief.md': ['', 2],
+    'docs/task-pipeline/old/status.md': [status(1), 1],
+    'docs/task-pipeline/done/status.md': [status(6), 3],
+  })
+  await boot($)
+  for (const surface of ['terminal', 'desktop'] as const) {
+    expect(await row($, surface)).toBe('◆ auth Phase3 (+1)  🛑 ブリーフ承認待ち')
+  }
+})
+
+test('パイプライン: タスクと並べて出し、status.md が書かれたら読み直す', async ($, on) => {
+  const seen = engine(on, { 'docs/task-pipeline/auth/status.md': [status(2), 1] })
+  await boot($)
+  await create($, '図を描く')
+  expect(await row($)).toBe('◆ auth Phase2  → 要件承認  │  ▱ 0/1  実行中のタスクなし')
+  seen.files['docs/task-pipeline/auth/requirements.md'] = ['', 2]
+  await $.tool.call({ tool: 'Write', file_path: 'docs/task-pipeline/auth/requirements.md', content: '' } as never)
+  expect(await row($)).toBe('◆ auth Phase2  🛑 要件承認待ち  │  ▱ 0/1  実行中のタスクなし')
+})
+
+test('パイプライン: docs/task-pipeline が無いリポジトリでは何も出さない', async ($, on) => {
+  engine(on)
+  await boot($)
+  expect(await row($)).toBeNull()
 })

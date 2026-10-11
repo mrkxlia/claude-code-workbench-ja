@@ -83,8 +83,8 @@ enforce:
 間は、フックは何もしません**（黙って素通りします）。次に `/feedback-setup` で置き場所を決め、
 `/feedback-rule` で最初のルールを作ります。
 
-コピーして使う場合は `hooks/feedback-hook.sh` と `hooks/feedback_rules.py` を
-`.claude/hooks/` へ置き、[`setup/settings.json`](setup/settings.json) の内容を
+コピーして使う場合は `skills/*` を `.claude/skills/`、`agents/*` を `.claude/agents/`、
+`hooks/feedback-hook.sh` と `hooks/feedback_rules.py` を `.claude/hooks/` へ置き（`feedback-hook.sh` に `chmod +x`）、[`setup/settings.json`](setup/settings.json) の内容を
 `.claude/settings.json` にマージしてください。
 
 ## 手で使うコマンド
