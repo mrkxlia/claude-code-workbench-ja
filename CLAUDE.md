@@ -16,7 +16,7 @@ Claude Code のテーマから外れる独立ツール・サンプルは別リ�
 
 ## ディレクトリ構成
 
-トップレベルは **plugins/**（プラグイン導入可能なセクション）・**tools/**（独立ツール）・**docs/**（リポジトリ内ドキュメント）の3分類。
+トップレベルは **plugins/**（プラグイン導入可能なセクション）・**docs/**（リポジトリ内ドキュメント）の2分類。
 ルートの `.claude-plugin/` は分類対象外（規約4）。各プラグインの中身（スキル・エージェント・フックの一覧）は**そのプラグインの README だけ**に書く（規約7）。
 
 ```
@@ -30,7 +30,6 @@ claude-code-workbench-ja/
 │   ├── .claude-plugin/plugin.json
 │   ├── skills/ agents/ hooks/ #   既定探索パス（配信対象。変更したら version を上げる）
 │   └── setup/settings.json    #   コピー導入用テンプレート（あれば）
-├── tools/<name>/              # プラグインとして配布しない単体ツール
 └── docs/
     ├── decisions/             #   日付つきの決定記録（一覧と残す基準は docs/README.md）
     ├── lessons.md             #   過去 PR から蒸留した「繰り返さない判断」
@@ -45,7 +44,7 @@ feedback-rules・learning-coach・task-band・agent-flow・unstuck・watch-kit�
 
 ## このリポジトリの規約
 
-1. **トップレベルは plugins/・tools/・docs/ の分類、セクションはディレクトリ単位で管理する** — 新しいセクションは、プラグイン導入可能なら `plugins/`、独立ツールなら `tools/` に専用ディレクトリを作り、ルート直下にファイルを置かない。新しい分類（`templates/` 等）は中身が2つ以上そろってから作る（lessons 教訓4）。
+1. **トップレベルは plugins/・docs/ の分類、セクションはディレクトリ単位で管理する** — 新しいセクションは `plugins/` に専用ディレクトリを作り、ルート直下にファイルを置かない。プラグインにならない単体ツールなどの新しい分類（`tools/`・`templates/` 等）は中身が2つ以上そろってから作る（lessons 教訓4）。
 2. **各ディレクトリには README.md を置く** — セクションの目的・使い方・ファイル構成を説明する README.md を必ず用意する。
 3. **リポジトリ全体の言語は日本語** — README.md・CLAUDE.md など、このリポジトリ自体のドキュメントは日本語で記述する。
 4. **マーケットプレイス定義はルートの `.claude-plugin/` に置く** — Claude Code プラグイン仕様上の必須配置であり、規約1の例外。

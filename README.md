@@ -60,7 +60,6 @@ Claude Code をより快適に使うためのプラグイン・テンプレー�
 
 ## その他のディレクトリ
 
-- [`tools/`](tools/) — プラグインとして配布しない単体ツール（task-pipeline の進み具合を statusline と HTML に出す `progress`）
 - [`docs/`](docs/) — 決定記録・教訓・スキルの書き方・eval・おすすめ Skills ガイド
 
 Claude Code のテーマから外れるものは別リポジトリに分けています:

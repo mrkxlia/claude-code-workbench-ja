@@ -57,4 +57,4 @@ claude plugin test plugins/task-band
 テストはテストキット上の描画（terminal と desktop）と状態遷移です。**実機の画面での描画は、まだ確かめていません。**
 
 経緯: [`docs/decisions/2026-10-08-tsundoku-task-band-mod.md`](../../docs/decisions/2026-10-08-tsundoku-task-band-mod.md)（帯に絞った理由）・
-[`docs/decisions/2026-10-11-yagni-docs.md`](../../docs/decisions/2026-10-11-yagni-docs.md)（Python の `tools/progress` を取り込んだ理由）。
+[`docs/decisions/2026-10-11-yagni-docs.md`](../../docs/decisions/2026-10-11-yagni-docs.md)（Python で書いていた進み具合のツールを取り込んだ理由）。
