@@ -1,7 +1,7 @@
 {
   "name": "task-band",
-  "version": "0.1.0",
-  "description": "プロンプトの上に、タスクの進捗を1行の帯で出す mod（function hooks・トークン0・何も保存しない）。TaskCreate・TaskUpdate・TodoWrite から ▰▰▰▱▱ 3/5 ▶ 実行中のタスクと経過時間 を出し、メインのターンが動いているのに15分どのタスクも完了しないときは帯を黄色にして1度だけトーストで知らせる（人の番・質問中・ツール実行中は数えない）。/task-band on|off|list。エージェントの地図は claude-agent-flow、詰まりの詳しい検知は unstuck との併用を想定。現行モデルでは CLAUDE_CODE_ENABLE_TODO_TOOLS=1 が前提。",
+  "version": "0.2.0",
+  "description": "プロンプトの上に、タスクの進捗を1行の帯で出す mod（function hooks・トークン0・何も保存しない）。TaskCreate・TaskUpdate・TodoWrite から ▰▰▰▱▱ 3/5 ▶ 実行中のタスクと経過時間 を、pipeline の task-pipeline を使っていれば docs/task-pipeline/*/status.md からフェーズと承認待ち（🛑）を出す。メインのターンが動いているのに15分どのタスクも完了しないときは帯を黄色にして1度だけトーストで知らせる。/task-band on|off|list。タスクの表示は現行モデルでは CLAUDE_CODE_ENABLE_TODO_TOOLS=1 が前提。",
   "author": {
     "name": "mrkxlia",
     "url": "https://github.com/mrkxlia"
@@ -16,6 +16,7 @@
     "tasks",
     "progress",
     "todo",
+    "task-pipeline",
     "stuck",
     "japanese"
   ],

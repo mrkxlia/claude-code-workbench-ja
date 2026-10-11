@@ -7,7 +7,6 @@
 | [`lessons.md`](lessons.md) | 過去 PR から蒸留した「繰り返さない判断」。何かを作る前に読む |
 | [`skill-authoring.md`](skill-authoring.md) | スキルの書き方（公式ガイド準拠。frontmatter・分冊基準・CI の検査との対応） |
 | [`evals/`](evals/) | 主要スキル5件の期待挙動シナリオと発火ケース。走らせ方は [`evals/README.md`](evals/README.md) |
-| [`skills-guide/`](skills-guide/) | おすすめ Skills ガイドと私用PC・会社PCの導入プロファイル |
 | [`decisions/`](decisions/) | 日付つきの決定記録（下記） |
 
 ## decisions/ — 決定記録

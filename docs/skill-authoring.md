@@ -1,7 +1,7 @@
 # skill-authoring — このリポジトリでスキルをどう書くか
 
 公式ガイド **The Complete Guide to Building Skills for Claude** に沿ってスキルを書くための指針。
-「**どのスキルを入れるか**」（消費者向け）は [`skills-guide/README.md`](skills-guide/README.md) を参照。
+「**どのスキルを入れるか**」はルートの [`README.md`](../README.md) のプラグイン一覧を参照。
 こちらは「**スキルをどう書くか**」（作者向け）。
 
 ## 出典

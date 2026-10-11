@@ -38,28 +38,12 @@ Claude Code プラグインとして配布されており、レビューと実�
 - **プラン提示前の Codex レビュー**（`plan-review-codex.sh`）— 公式のゲートは Stop 時のレビューだけ
 - `/kiro-review`・`/kiro-ask` — Kiro 側には公式相当のプラグインが見つかっていない
 
-## 旧 codex-bridge / kiro-bridge からの移行
+## 旧 codex-bridge / kiro-bridge を入れていた場合
 
-2026-09-19 に `codex-bridge` を廃止し、`kiro-bridge` を `cli-bridge` へ改名して統合しました。
-
-| 旧 | 新 |
-|---|---|
-| `/codex-review` | 公式プラグインの `/codex:review`（敵対的レビューは `/codex:adversarial-review`） |
-| `/codex-implement` | 公式プラグインの `/codex:rescue` |
-| `/codex-ask` | 変更なし（このプラグインに収録） |
-| `/codex-agents`（AGENTS.md 生成） | 2026-10-06 に削除。下の「Claude のルールを Codex にも効かせる」 |
-| `/kiro-review`・`/kiro-ask` | 変更なし（このプラグインに収録） |
-| `plugin install codex-bridge@workbench-ja` | 廃止 |
-| `plugin install kiro-bridge@workbench-ja` | `plugin install cli-bridge@workbench-ja` |
-
-マーケットプレイス定義に `renames`（`kiro-bridge` → `cli-bridge`、`codex-bridge` → `null`）を
-入れてあるので、Claude Code v2.1.193 以降なら `enabledPlugins`・`pluginConfigs` のキーは
-自動で書き換わり、通知が1回出ます。ただし**リモートソースでは改名後に `plugin-cache-miss` に
-なるため、`/plugin install cli-bridge@workbench-ja` を一度だけ実行**してください。
-出典: [Plugin marketplaces](https://code.claude.com/docs/en/plugin-marketplaces)（2026-09-19 取得）。
-
-`plan-review-codex.sh` の状態ディレクトリ（`.claude/codex-bridge/`）は、進行中セッションの
-ゲートが二重に開くのを避けるため**意図的に旧名のまま**です。
+`/codex-review`・`/codex-implement` は公式の `/codex:review`・`/codex:rescue` に、`kiro-bridge` はこのプラグインに置き換わりました。
+改名はマーケットプレイスの `renames` で自動的に引き継がれますが、リモートソースでは `plugin-cache-miss` になるため
+`/plugin install cli-bridge@workbench-ja` を一度だけ実行してください（[Plugin marketplaces](https://code.claude.com/docs/en/plugin-marketplaces)、2026-09-19 取得）。
+`plan-review-codex.sh` の状態ディレクトリ（`.claude/codex-bridge/`）は、進行中のゲートが二重に開かないよう旧名のままです。
 
 ## なぜこの構成か
 
@@ -172,9 +156,7 @@ cp plugins/cli-bridge/hooks/plan-review-codex.sh  .claude/hooks/
 
 ## Claude のルールを Codex にも効かせる（AGENTS.md）
 
-以前は `/codex-agents` と SessionStart フックで CLAUDE.md から平らな `AGENTS.md` を生成していたが、
-2026-10-06 に削除した。生成物を同期し続けるより、**正本を1つにする**ほうが壊れない
-（[教訓2](../../docs/lessons.md)「重複を自動化する前に、重複そのものを消す」）。
+生成物を同期し続けるより、**正本を1つにする**ほうが壊れない（[教訓2](../../docs/lessons.md)「重複を自動化する前に、重複そのものを消す」）。
 
 - **推奨**: ルールの正本を `AGENTS.md` に書き、`CLAUDE.md` からは `@AGENTS.md` で読み込む。
   Claude Code は AGENTS.md もネイティブに読む（v2.1.277〜）。

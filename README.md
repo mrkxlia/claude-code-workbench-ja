@@ -13,7 +13,7 @@ Claude Code をより快適に使うためのプラグイン・テンプレー�
 ```
 
 マーケットプレイスが使えない環境では `git clone --depth 1 https://github.com/mrkxlia/claude-code-workbench-ja` して、
-各プラグイン README の手順でコピーします。私用PC・会社PCでの導入プロファイルは [`docs/skills-guide/`](docs/skills-guide/) を参照。
+各プラグイン README の手順でコピーします。私用PC（Opus+Sonnet）・会社PC（Sonnet 単独）での使い分けは [model-setup](plugins/model-setup/) を参照。
 
 ## はじめに: どこから始める？
 
@@ -38,7 +38,7 @@ Claude Code をより快適に使うためのプラグイン・テンプレー�
 | [model-setup](plugins/model-setup/) | Opus+Sonnet / Sonnet 単独の運用ルール（CLAUDE.md テンプレート・追補・設定サンプル）と fresh context 検証 | `/verify-fresh` | なし |
 | [feedback-rules](plugins/feedback-rules/) | 指摘を1指摘1ファイルで残し、指摘回数で warn → ask → deny と強制力を上げる | `/feedback-rule`・`/feedback-audit`・`/feedback-setup` | あり（ルールが無い間は素通り） |
 | [learning-coach](plugins/learning-coach/) | Claude を教師役にして、変更や設計判断を人間が説明できるまで教える | `/deep-understand` | なし |
-| [task-band](plugins/task-band/) | プロンプトの上にタスクの進捗を1行で出す mod（トークン0） | — | あり |
+| [task-band](plugins/task-band/) | プロンプトの上に、タスクの進捗と task-pipeline のフェーズ・承認待ちを1行で出す mod（トークン0） | `/task-band` | あり |
 | [agent-flow](plugins/agent-flow/) | サブエージェントの木をペインに出す mod（上流を無改変で同梱） | `/flow` | あり（観測のみ） |
 | [unstuck](plugins/unstuck/) | 堂々巡りを検知して知らせ、1キーで抜け出す mod（上流を無改変で同梱） | `/unstuck` | あり |
 | [watch-kit](plugins/watch-kit/) | task-band・agent-flow・unstuck を1回で入れるバンドル | — | — |
@@ -79,4 +79,3 @@ Claude Code のテーマから外れるものは別リポジトリに分けて�
 | [learning-coach](plugins/learning-coach/) | 2026-08-11 に共有された Anthropic メンバーの「仕事の学習用プロンプト」 | 規範をスキル規約に載せ替えた独自実装 |
 | [agent-flow](plugins/agent-flow/) | [Charlie0113-T/claude-agent-flow](https://github.com/Charlie0113-T/claude-agent-flow) | 無改変で同梱（Apache-2.0） |
 | [unstuck](plugins/unstuck/) | [sniperunder123/unstuck](https://github.com/sniperunder123/unstuck) | 無改変で同梱（MIT） |
-| [docs/skills-guide](docs/skills-guide/) | [anthropics/skills](https://github.com/anthropics/skills)・[obra/superpowers](https://github.com/obra/superpowers)・[mattpocock/skills](https://github.com/mattpocock/skills) | リンクと独自解説のみ |

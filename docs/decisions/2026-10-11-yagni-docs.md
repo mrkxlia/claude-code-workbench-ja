@@ -31,13 +31,21 @@ lessons 教訓2（N個のファイルがずれるなら、まず N を1にする
 - 移行の案内として利用者に必要な経緯（model-setup の旧名からの入れ替え手順など）は残した。
 - 決定記録の本文は変えていない（記録は書いたら変えない）。
 
-## 次に削る候補（使われていなければ）
+## 追記（同日）: 候補のうち2件を片づけた
 
-利用実績を確かめてから判断する。どれも「いま使っていない」と分かれば消してよい。
+- **`docs/skills-guide/` を削除した** — 外部スキルの推奨リストで、上流の改名・削除に追い続ける必要があった。
+  私用PC・会社PCの使い分けは model-setup が持つので、ルート README からはそちらへ案内する。
+- **task-pipeline の進み具合の表示を task-band に取り込んだ（task-band 0.2.0）** — `tools/progress`（Python・statusline の設定・
+  HTML ダッシュボード）と task-band（帯）が同じ「いまどこまで進んだか」を別々の仕組みで出していた。task-band が mod の `$.fs` で
+  `docs/task-pipeline/*/status.md` を読み、フェーズ・承認待ち（🛑）・差し戻し回数を帯の左に出す。判定（成果物が保存済みの関門だけを
+  承認待ちにする）は progress.py と同じ。これで Python も statusline の設定も要らず、タスクツール（`CLAUDE_CODE_ENABLE_TODO_TOOLS=1`）が
+  無効な現行モデルでもパイプラインの表示は出る。HTML ダッシュボードは持ち込まなかった（帯で足り、ブラウザを開いたままにする使い方の実績が無い）。
+  `tools/progress/` の削除は別に確認を取ってから行う。
+- 大きいプラグイン README（pipeline・model-setup・cli-bridge）から削除の経緯を外し、移行に必要な手順だけを残した（規約8）。
+
+## 残る候補
 
 | 候補 | 削る理由になりうること |
 |------|------------------------|
-| `tools/progress/` | 対象が task-pipeline の `status.md` だけで、進捗の表示は task-band と重なり始めている。`tools/` の中身もこれ1つ（教訓4） |
-| `docs/skills-guide/` | 外部スキルの推奨リストで、上流の改名・削除に追従し続ける必要がある（2026-09-04 の検証が最後） |
+| `tools/progress/` | 上記のとおり task-band に置き換わった。消すと `tools/` が空になるので、規約1の分類からも外す |
 | 決定記録のうち現行コードから引かれなくなったもの | 残す基準（docs/README）に照らして定期的に見直す |
-| 大きいプラグイン README（cli-bridge・agent-review-panel・pipeline） | SKILL.md と同じ説明を繰り返している箇所が無いか、規約7で見直す |

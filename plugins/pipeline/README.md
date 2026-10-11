@@ -14,14 +14,11 @@ Claude Code のサブエージェント・スキル・フックを組み合わ�
 
 人間が判断するのは3つの承認チェックポイントだけで、その間は専門エージェントが自走します。途中経過は
 `docs/task-pipeline/<slug>/`（status.md / research.md / requirements.md / brief.md）にファイルとして残るので、
-セッションが切れても `/task-pipeline 再開 <slug>` で続きから再開できます。
+セッションが切れても `/task-pipeline 再開 <slug>` で続きから再開できます。いまどのフェーズで、何があなたの承認を待っているかは
+[task-band](../task-band/) を入れるとプロンプトの上に1行で出ます。
 
-> **コードの機能開発は superpowers を使ってください。** 以前あったコードモード（`/feature-pipeline`・
-> backend/frontend-builder・test-verifier）は 2026-10-06 に削除しました（pipeline 5.0.0）。
-> [obra/superpowers](https://github.com/obra/superpowers)（導入手順は上流の README）が
-> 計画・TDD・サブエージェント駆動の実装・レビュー・worktree 隔離まで、継続的に保守された形で持っているためです
-> （経緯は [`docs/decisions/2026-10-06-repo-cleanup.md`](../../docs/decisions/2026-10-06-repo-cleanup.md) の第10段）。
-> 導入済みプロジェクトの `docs/pipeline/` はそのまま残せますが、`/feature-pipeline 再開` はできなくなります。
+> **コードの機能開発は [obra/superpowers](https://github.com/obra/superpowers) を使ってください**（計画・TDD・サブエージェント駆動の
+> 実装・レビュー・worktree 隔離まで保守された形で持っているため）。
 
 > 本セクションは @sairahul1 氏の記事
 > [How to Build a Software Factory with Claude Code That Ships Features While You Sleep](https://x.com/sairahul1/status/2058832033628241931)

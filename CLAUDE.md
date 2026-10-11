@@ -35,8 +35,7 @@ claude-code-workbench-ja/
     ├── decisions/             #   日付つきの決定記録（一覧と残す基準は docs/README.md）
     ├── lessons.md             #   過去 PR から蒸留した「繰り返さない判断」
     ├── skill-authoring.md     #   スキルの書き方（公式ガイド準拠）
-    ├── evals/                 #   主要スキルの期待挙動シナリオ
-    └── skills-guide/          #   おすすめ Skills ガイド
+    └── evals/                 #   主要スキルの期待挙動シナリオ
 ```
 
 現在のプラグインは marketplace.json に登録された11個（pipeline・cli-bridge・agent-review-panel・adoption-review・model-setup・

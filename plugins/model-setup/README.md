@@ -3,12 +3,8 @@
 「Opus+Sonnet が使える私用 PC」と「Sonnet しか使えない会社 PC」の2プロファイルで Claude Code を
 使うための、CLAUDE.md テンプレートと検証の仕組みです。
 
-**公式ガイドや本体機能で足りるものは持ちません。** 2026-10-06 に、公式プロンプトガイドの翻訳
-（ルール・PROMPTS の大半・モデル仕様表）と、本体機能・既存 OSS の再発明だったスキル4種
-（`task-brief`→Plan モード、`fan-out`→本体の委譲・dynamic workflows・`/batch`、`long-run`→`/goal`、
-`backlog-loop`→[Backlog.md](https://github.com/MrLesk/Backlog.md)）とエージェント2種
-（`task-worker`・`bulk-scanner`→本体の汎用エージェント・Explore）を削除しました。経緯は
-[整理の記録](../../docs/decisions/2026-10-06-repo-cleanup.md)。
+**公式ガイドや本体機能で足りるものは持ちません。** 公式プロンプトガイドのスニペットは原文で貼り、計画は Plan モード、
+並列化は本体の委譲・`/batch`、完了まで回すのは `/goal`、タスク管理は [Backlog.md](https://github.com/MrLesk/Backlog.md) に任せます。
 
 > **旧名 `sonnet-setup` からの改名**: 旧プラグインを導入済みの場合は `claude plugin uninstall sonnet-setup` →
 > `claude plugin install model-setup@workbench-ja` で入れ替えてください。

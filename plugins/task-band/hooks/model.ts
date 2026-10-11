@@ -1,7 +1,7 @@
 // 状態の更新と、帯に出す値の計算。エンジンに触れない純粋な関数だけを置く
 import type { BuiltinToolInputs } from 'claude-code'
 
-import type { Activity, Band, Item, ItemStatus } from '../types'
+import type { Activity, Band, Item, ItemStatus, Pipeline } from '../types'
 
 // メインのターンが動いていて、未完了のタスクがあるのに、この時間タスクが1つも完了しなければ「詰まり」とみなす
 const IDLE_LIMIT_MS = 15 * 60 * 1000
@@ -108,3 +108,38 @@ export const meter = (done: number, total: number, width: number) => {
   const filled = total === 0 ? 0 : Math.round((done / total) * cells)
   return { filled: '▰'.repeat(filled), empty: '▱'.repeat(cells - filled) }
 }
+
+// ---- task-pipeline の status.md ----
+
+export const PIPELINE_DIR = 'docs/task-pipeline'
+
+const CHECK = /^\s*- \[( |x|X)\] (.+)$/
+
+// status.md を読み、進行中なら Pipeline を返す（チェック行が無い・全部済みなら null）。
+// 未チェック行の 🛑 は「そのフェーズの終わりにある関門」なので、その行の成果物（「brief.md 保存」）が
+// 同じフォルダにそろっているときだけ承認待ちとみなし、そうでなければ次の関門として予告する
+export const parseStatus = (text: string, slug: string, files: ReadonlySet<string>): Omit<Pipeline, 'others'> | null => {
+  const lines = text.split('\n').flatMap(l => {
+    const m = CHECK.exec(l)
+    return m ? [{ done: m[1] !== ' ', text: m[2]!.trim() }] : []
+  })
+  const current = lines.find(l => !l.done)
+  if (!current) return null
+  const phase = /Phase\s*(\d+)/.exec(current.text)
+  const stop = current.text.includes('🛑') ? current.text.split('🛑')[1]!.split(/[（(]/)[0]!.trim() : null
+  const saved = [...current.text.matchAll(/(\S+\.md) 保存/g)].map(x => x[1]!)
+  const isWaiting = stop !== null && saved.length > 0 && saved.every(f => files.has(f))
+  const rejects = /差し戻し\s*(\d+\s*\/\s*\d+)/.exec(current.text)
+  return {
+    slug,
+    phase: phase ? `Phase${phase[1]}` : current.text.slice(0, 12),
+    done: lines.length - lines.filter(l => !l.done).length,
+    total: lines.length,
+    waiting: isWaiting ? stop : null,
+    gate: isWaiting ? null : stop,
+    rejects: rejects ? rejects[1]!.replace(/\s/g, '') : null,
+  }
+}
+
+export const pipelineLabel = (p: Pipeline) =>
+  `◆ ${p.slug} ${p.phase}${p.rejects ? ` 差し戻し${p.rejects}` : ''}${p.others > 0 ? ` (+${p.others})` : ''}`
