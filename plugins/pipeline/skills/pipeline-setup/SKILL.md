@@ -26,8 +26,7 @@ disable-model-invocation: true
 解析項目・配置ファイル・チェックリストの詳細は別冊 [`references/deliverable-mode.md`](references/deliverable-mode.md)
 を該当 Step で必ず参照する。
 
-**コードで機能開発したいリポジトリには導入しない。** 以前あったコードモード（`/feature-pipeline`）は
-2026-10-06 に削除した。コードの機能開発は [superpowers](https://github.com/obra/superpowers)
+**コードで機能開発したいリポジトリには導入しない。** [superpowers](https://github.com/obra/superpowers)
 （導入手順は上流の README）を案内して止まる。
 
 その他の別冊（必要になった Step で読む）:

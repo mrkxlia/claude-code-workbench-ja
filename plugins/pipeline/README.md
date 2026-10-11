@@ -200,6 +200,25 @@ cp -r /tmp/workbench/plugins/pipeline/skills/notes ~/.claude/skills/
 - 既存の図・ドキュメントからの仕様逆引き（SPEC.md の作成）は持ちません。[daishir0/cc-rsg](https://github.com/daishir0/cc-rsg)
   等の外部ツールに委ねます
 
+## 一般的な仕様駆動開発（SDD）との対応
+
+GitHub [spec-kit](https://github.com/github/spec-kit)・Kiro・cc-sdd などは `requirements → design → tasks` を前提にします。
+このパイプラインの対応物は次のとおりです。
+
+| 一般的な SDD | このパイプラインの相当物 |
+|--------------|--------------------------|
+| requirements.md | `requirements.md`（受け入れ基準つき成果物要件） |
+| design.md | `brief.md`（作業ブリーフ） |
+| tasks.md | Phase の連鎖＋ `status.md`（進行管理） |
+| PRD / living spec | `SPEC.md`（完了時に増分更新） |
+| spec-tracker（更新漏れ警告） | `spec-sync-reminder` フック |
+| spec-validator（成果物と仕様の突合） | `final-reviewer` エージェント |
+
+違いは、(1) 対象を**コード以外の成果物**に絞ったこと（コードは superpowers や上記ツールに任せる）、(2) 各工程を独立した
+サブエージェントに分けたこと、(3) `notes` の実装ノートと `SPEC.md` を連動させ「1 Todo = 1 Commit = 1 Spec Update」で
+仕様を同期させること、の3点です（参考: [Zenn / Luup Developers](https://zenn.dev/luup_developers/articles/server-jang-20251215)・
+[Qiita / kanagawa41 氏](https://qiita.com/kanagawa41/items/ef134490b61b41675e01)）。
+
 ## ライセンス・出典
 
 [@sairahul1 氏の記事](https://x.com/sairahul1/status/2058832033628241931)のコンセプト（専門エージェントの連鎖・
